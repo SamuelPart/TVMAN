@@ -2792,19 +2792,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyAppTheme() {
-        val sharedPref = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-        val selectedTheme = sharedPref.getString("theme_pref", "system") ?: "system"
-        
-        val isDark = if (selectedTheme == "system") {
-            val currentNightMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
-            currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
-        } else {
-            selectedTheme == "dark"
-        }
-        
-        binding.root.post {
-            updateAppThemeColors(isDark)
-        }
+        // TVMAN is a TV-only app: all non-video screens use the light canvas.
+        binding.root.post { updateAppThemeColors(false) }
     }
 
     private fun updateAppThemeColors(isDark: Boolean) {

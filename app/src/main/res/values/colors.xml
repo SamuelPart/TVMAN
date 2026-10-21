@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Legacy names kept for compatibility -->
-    <color name="black">#FF000000</color>
+    <color name="black">#FF171A25</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="orange">#FFC9A96E</color>
-    <color name="dark_gray">#0A1834</color>
-    <color name="card_bg">#0A1834</color>
-    <color name="purple_200">#FFD4BFA3</color>
-    <color name="purple_500">#FFC9A96E</color>
-    <color name="purple_700">#FF6B5B3E</color>
-    <color name="teal_200">#FF30D158</color>
-    <color name="teal_700">#FFC9A96E</color>
+    <color name="orange">#FF5267E8</color>
+    <color name="dark_gray">#FFE9EDF5</color>
+    <color name="card_bg">#FFFFFFFF</color>
+    <color name="purple_200">#FF7B88EF</color>
+    <color name="purple_500">#FF5267E8</color>
+    <color name="purple_700">#FF374CC5</color>
+    <color name="teal_200">#FF30A6A0</color>
+    <color name="teal_700">#FF27837F</color>
 
-    <!-- v3 design system: midnight-indigo glass (iPhone cards + PS5 glow) -->
-    <color name="ios_bg">#0A1834</color>
-    <color name="ios_surface">#0A1834</color>
-    <color name="ios_surface_2">#0A1834</color>
-    <color name="ios_blue">#FFC9A96E</color>
-    <color name="ios_indigo">#FF9E7E4C</color>
-    <color name="ios_violet">#FFD4BFA3</color>
-    <color name="ios_cyan">#FF30D158</color>
-    <color name="ios_gray">#FF98989F</color>
-    <color name="ios_stroke">#2EFFFFFF</color>
-    <color name="ic_launcher_background">#0A1834</color>
+    <color name="ios_bg">#FFF6F8FC</color>
+    <color name="ios_surface">#FFFFFFFF</color>
+    <color name="ios_surface_2">#FFF0F3F8</color>
+    <color name="ios_blue">#FF5267E8</color>
+    <color name="ios_indigo">#FF4355C9</color>
+    <color name="ios_violet">#FF6276F1</color>
+    <color name="ios_cyan">#FF2F8FC5</color>
+    <color name="ios_gray">#FF596273</color>
+    <color name="ios_stroke">#FFDDE2EC</color>
+    <color name="ic_launcher_background">#FFF6F8FC</color>
 </resources>
