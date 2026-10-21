@@ -35,17 +35,24 @@ class TVManApplication : Application() {
         override fun onActivityResumed(activity: Activity) {
             val videoScreen = activity is PlayerActivity || activity is WebVideoPlayerActivity || activity is WallpaperViewerActivity
             if (videoScreen) return
-            activity.window.statusBarColor = Color.WHITE
-            activity.window.navigationBarColor = Color.WHITE
-            activity.window.decorView.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            if (activity is TvHomeActivity) {
+                activity.window.statusBarColor = Color.TRANSPARENT
+                activity.window.navigationBarColor = Color.TRANSPARENT
+                activity.window.decorView.systemUiVisibility =
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            } else {
+                activity.window.statusBarColor = Color.WHITE
+                activity.window.navigationBarColor = Color.WHITE
+                activity.window.decorView.systemUiVisibility =
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            }
             activity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
             val content = activity.findViewById<ViewGroup>(android.R.id.content)
             content.post {
                 if (content.childCount == 0) return@post
                 val root = content.getChildAt(0)
-                root.setBackgroundColor(Color.rgb(246, 248, 252))
+                if (activity !is TvHomeActivity) root.setBackgroundColor(Color.rgb(246, 248, 252))
                 prepareRemoteFocus(root, activity.resources.displayMetrics.density)
             }
         }
