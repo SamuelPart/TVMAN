@@ -1,30 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tv_background"
-    android:focusableInTouchMode="true">
+    android:background="@drawable/bg_bunny_splash"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/splashContent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
 
-        <com.tvman.app.LoadingMascotView
-            android:layout_width="220dp"
-            android:layout_height="255dp"
-            android:contentDescription="Mascota con ojos y orejas animados durante la carga" />
+        <FrameLayout
+            android:id="@+id/splashStage"
+            android:layout_width="230dp"
+            android:layout_height="208dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <View
+                android:id="@+id/splashAura"
+                android:layout_width="174dp"
+                android:layout_height="174dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_bunny_ring" />
+
+            <View
+                android:id="@+id/splashOrbit"
+                android:layout_width="204dp"
+                android:layout_height="204dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_bunny_orbit" />
+
+            <com.tvman.app.LoadingMascotView
+                android:id="@+id/splashBunny"
+                android:layout_width="184dp"
+                android:layout_height="198dp"
+                android:layout_gravity="center"
+                android:contentDescription="Conejo TVMAN con mirada intensa, parpadeo y orejas animadas" />
+        </FrameLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="LOADING..."
-            android:textColor="@color/tv_text_primary"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.2" />
+            android:layout_marginTop="-2dp"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.18"
+            android:text="TVMAN"
+            android:textColor="#FFF7FBFF"
+            android:textSize="25sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.16"
+            android:text="TU MUNDO. TU PANTALLA."
+            android:textColor="#FFB8C7DD"
+            android:textSize="10sp" />
+
+        <View
+            android:id="@+id/splashProgress"
+            android:layout_width="132dp"
+            android:layout_height="3dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/bg_splash_progress" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.12"
+            android:text="PREPARANDO LA EXPERIENCIA"
+            android:textColor="#FF8FA4BC"
+            android:textSize="9sp" />
     </LinearLayout>
 </FrameLayout>
