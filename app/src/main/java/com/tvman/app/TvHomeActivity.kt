@@ -114,14 +114,17 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.sideNavMovies).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "movie") }
         findViewById<View>(R.id.sideNavSeries).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "series") }
         findViewById<View>(R.id.sideNavPopular).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineMood = "top") }
-        findViewById<View>(R.id.sideNavForYou).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineMood = "personalized") }
+        findViewById<View>(R.id.sideNavReleases).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "new") }
+        findViewById<View>(R.id.sideNavGames).setOnClickListener {
+            Toast.makeText(this, "Juegos próximamente", Toast.LENGTH_SHORT).show()
+        }
         findViewById<View>(R.id.sideNavSettings).setOnClickListener { openMainTab(MainActivity.TAB_SETTINGS) }
         findViewById<View>(R.id.sideNavExit).setOnClickListener { finishAffinity() }
 
         val sidebarSearch = findViewById<android.widget.EditText>(R.id.sideSearchInput)
         fun submitSidebarSearch() {
             val query = sidebarSearch.text.toString().trim()
-            openMainTab(MainActivity.TAB_SEARCH, query = query)
+            openMainTab(MainActivity.TAB_CINE, query = query)
         }
         findViewById<View>(R.id.sideSearchAction).setOnClickListener { submitSidebarSearch() }
         sidebarSearch.setOnEditorActionListener { _, actionId, _ ->
@@ -139,6 +142,13 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.tvPostersHint).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
         loadingOverlay.requestFocus()
         loadCatalog()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        findViewById<View>(R.id.tvTopBar)?.let { sidebar ->
+            TvSidebarController.updateMyListCount(sidebar, FavoritesManager.getAll(this).count { !it.isChannel })
+        }
     }
 
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {

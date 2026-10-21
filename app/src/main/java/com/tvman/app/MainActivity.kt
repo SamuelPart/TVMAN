@@ -127,9 +127,11 @@ class MainActivity : AppCompatActivity() {
         updateCineFilterButtons()
         updateParaTiChips()
         intent.getStringExtra(EXTRA_SEARCH_QUERY)?.takeIf { it.isNotBlank() }?.let { query ->
-            binding.bottomNavigation.selectedItemId = R.id.navigation_search
-            binding.edtSearchTab.setText(query)
-            performChannelsSearch(query)
+            selectedCineType = "all"
+            cineMood = null
+            binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+            binding.edtCineSearch.setText(query)
+            performCineSearch(query)
         }
         when (intent.getStringExtra(EXTRA_CINE_ACTION)) {
             "continue" -> startActivity(Intent(this, WatchHistoryActivity::class.java))
@@ -214,7 +216,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.sideNavMovies).setOnClickListener { showSidebarCine("movie", null) }
         findViewById<View>(R.id.sideNavSeries).setOnClickListener { showSidebarCine("series", null) }
         findViewById<View>(R.id.sideNavPopular).setOnClickListener { showSidebarCine("all", "top") }
-        findViewById<View>(R.id.sideNavForYou).setOnClickListener { showSidebarCine("all", "personalized") }
+        findViewById<View>(R.id.sideNavReleases).setOnClickListener { showSidebarCine("new", null) }
+        findViewById<View>(R.id.sideNavGames).setOnClickListener {
+            Toast.makeText(this, "Juegos próximamente", Toast.LENGTH_SHORT).show()
+        }
         findViewById<View>(R.id.sideNavSettings).setOnClickListener {
             binding.bottomNavigation.selectedItemId = R.id.navigation_settings
         }
@@ -223,10 +228,13 @@ class MainActivity : AppCompatActivity() {
         val searchInput = findViewById<android.widget.EditText>(R.id.sideSearchInput)
         fun runSearch() {
             val query = searchInput.text.toString().trim()
-            binding.bottomNavigation.selectedItemId = R.id.navigation_search
+            selectedCineType = "all"
+            cineMood = null
+            binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+            updateTVMANNav(R.id.navigation_cine)
             if (query.isNotEmpty()) {
-                binding.edtSearchTab.setText(query)
-                performChannelsSearch(query)
+                binding.edtCineSearch.setText(query)
+                performCineSearch(query)
             }
         }
         findViewById<View>(R.id.sideSearchAction).setOnClickListener { runSearch() }
@@ -398,6 +406,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        TvSidebarController.updateMyListCount(findViewById(R.id.tvSidebar), FavoritesManager.getAll(this).count { !it.isChannel })
         // Al volver a la app: aplica los posters horneados y repinta
         if (allCineMedia.isNotEmpty()) {
             allCineMedia.forEach { CineRepository.applyPosterCache(it) }
@@ -2408,7 +2417,7 @@ class MainActivity : AppCompatActivity() {
             R.id.navigation_search -> R.id.sideSearchInput
             R.id.navigation_cine -> when {
                 cineMood == "top" -> R.id.sideNavPopular
-                cineMood == "personalized" -> R.id.sideNavForYou
+                selectedCineType == "new" -> R.id.sideNavReleases
                 selectedCineType == "series" -> R.id.sideNavSeries
                 selectedCineType == "movie" -> R.id.sideNavMovies
                 else -> View.NO_ID
@@ -2417,8 +2426,8 @@ class MainActivity : AppCompatActivity() {
             else -> View.NO_ID
         }
         listOf(R.id.sideNavHome, R.id.sideNavContinue, R.id.sideNavMyList, R.id.sideNavChannels,
-            R.id.sideNavSeries, R.id.sideNavMovies, R.id.sideNavPopular, R.id.sideNavForYou,
-            R.id.sideNavSettings, R.id.sideNavExit, R.id.sideSearchInput).forEach { id ->
+            R.id.sideNavSeries, R.id.sideNavMovies, R.id.sideNavGames, R.id.sideNavReleases,
+            R.id.sideNavPopular, R.id.sideNavSettings, R.id.sideNavExit, R.id.sideSearchInput).forEach { id ->
             findViewById<View>(id)?.isSelected = id == selectedSidebarId
         }
     }

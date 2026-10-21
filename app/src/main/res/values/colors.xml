@@ -22,6 +22,7 @@
     <color name="tv_accent">#FFB792FF</color>
     <color name="tv_accent_strong">#FF8E50F5</color>
     <color name="tv_accent_cyan">#FF68D9D5</color>
+    <color name="tv_nav_accent">#FFFF5268</color>
     <color name="tv_outline">#FF35445E</color>
 
     <!-- Compatibility tokens used by the existing layouts -->

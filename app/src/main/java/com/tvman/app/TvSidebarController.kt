@@ -25,8 +25,8 @@ object TvSidebarController {
 
     private val rowIds = intArrayOf(
         R.id.sideNavHome, R.id.sideNavContinue, R.id.sideNavMyList, R.id.sideNavChannels,
-        R.id.sideNavSeries, R.id.sideNavMovies, R.id.sideNavPopular, R.id.sideNavForYou,
-        R.id.sideNavSettings, R.id.sideNavExit
+        R.id.sideNavSeries, R.id.sideNavMovies, R.id.sideNavGames, R.id.sideNavReleases,
+        R.id.sideNavPopular, R.id.sideNavSettings, R.id.sideNavExit
     )
 
     fun install(activity: Activity, sidebar: View, contentScroll: View? = null) {
@@ -37,7 +37,7 @@ object TvSidebarController {
         val labels = rowIds.asIterable().mapNotNull { id ->
             root.findViewById<TextView>(id)?.let { id to it.text.toString() }
         }.toMap()
-        val focusableIds = rowIds + intArrayOf(R.id.sideSearchAction, R.id.sideSearchInput)
+        val focusableIds = rowIds + intArrayOf(R.id.sideSearchAction, R.id.sideSearchInput, R.id.sideCollapseButton)
         focusableIds.forEach { id ->
             root.findViewById<View>(id)?.setOnFocusChangeListener { view, hasFocus ->
                 view.animate().cancel()
@@ -71,6 +71,15 @@ object TvSidebarController {
             root.findViewById<View>(R.id.sideSectionTrend)?.visibility = if (show) View.VISIBLE else View.GONE
             root.findViewById<View>(R.id.sideSectionGeneral)?.visibility = if (show) View.VISIBLE else View.GONE
             root.findViewById<EditText>(R.id.sideSearchInput)?.visibility = if (show) View.VISIBLE else View.GONE
+            root.findViewById<ImageButton>(R.id.sideCollapseButton)?.let { button ->
+                button.rotation = if (show) 180f else 0f
+                button.contentDescription = if (show) "Contraer navegación" else "Expandir navegación"
+            }
+            root.findViewById<TextView>(R.id.sideMyListBadge)?.let { badge ->
+                val count = badge.tag as? Int ?: 0
+                badge.text = if (count > 99) "99+" else count.toString()
+                badge.visibility = if (show && count > 0) View.VISIBLE else View.GONE
+            }
             fadingDetails.forEach { it.alpha = 1f }
 
             root.findViewById<View>(R.id.sideSearchContainer)?.let { search ->
@@ -151,10 +160,15 @@ object TvSidebarController {
             }
         }
 
+        root.findViewById<View>(R.id.sideCollapseButton)?.setOnClickListener {
+            setExpanded(!expanded, animated = true)
+        }
+
         root.layoutParams?.let { params ->
             params.width = collapsedWidth
             root.layoutParams = params
         }
+        updateMyListCount(root, FavoritesManager.getAll(context).count { !it.isChannel })
         applyDetails(false)
         root.viewTreeObserver.addOnGlobalFocusChangeListener { _, newFocus ->
             val focusInside = newFocus != null && isDescendantOf(newFocus, root)
@@ -171,6 +185,15 @@ object TvSidebarController {
             val currentFocus = activity.currentFocus
             setExpanded(currentFocus != null && isDescendantOf(currentFocus, root), animated = true)
         }
+    }
+
+    fun updateMyListCount(sidebar: View, count: Int) {
+        val badge = sidebar.findViewById<TextView>(R.id.sideMyListBadge) ?: return
+        badge.tag = count.coerceAtLeast(0)
+        badge.text = if (count > 99) "99+" else count.coerceAtLeast(0).toString()
+        val expandedWidth = dp(sidebar.context, 130)
+        val isExpanded = (sidebar.layoutParams?.width ?: sidebar.width) >= expandedWidth
+        badge.visibility = if (isExpanded && count > 0) View.VISIBLE else View.GONE
     }
 
     private fun isDescendantOf(view: View, ancestor: View): Boolean {
