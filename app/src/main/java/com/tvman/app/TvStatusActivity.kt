@@ -2,30 +2,21 @@ package com.tvman.app
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.SystemClock
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-/** Full-screen animated loading scene shown before the rest of the TV app. */
+/** Short animated splash shown before the TV home; never waits on network requests. */
 class TvStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tv_status)
 
-        val startedAt = SystemClock.elapsedRealtime()
         lifecycleScope.launch {
-            // Prime the shared catalog cache before opening Home; remote failures fall back locally.
-            withContext(Dispatchers.IO) {
-                runCatching { CineRepository.getBundledQuickCatalog(this@TvStatusActivity) }
-                runCatching { CineRepository.getCineCatalog(this@TvStatusActivity) }
-            }
-            val remaining = MIN_SPLASH_MS - (SystemClock.elapsedRealtime() - startedAt)
-            if (remaining > 0L) delay(remaining)
-            if (!isFinishing) {
+            // Keep the mascot visible for one full animation loop, then open Home.
+            delay(SPLASH_DURATION_MS)
+            if (!isFinishing && !isDestroyed) {
                 startActivity(Intent(this@TvStatusActivity, TvHomeActivity::class.java))
                 finish()
             }
@@ -33,6 +24,6 @@ class TvStatusActivity : AppCompatActivity() {
     }
 
     private companion object {
-        const val MIN_SPLASH_MS = 2_400L
+        const val SPLASH_DURATION_MS = 2_600L
     }
 }
