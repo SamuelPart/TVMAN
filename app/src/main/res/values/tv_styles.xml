@@ -1,5 +1,5 @@
 <resources>
-    <style name="TVMan.TVNavItem">
+    <style name="TvNavItem">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">58dp</item>
         <item name="android:layout_marginBottom">7dp</item>
@@ -13,7 +13,7 @@
         <item name="android:clickable">true</item>
         <item name="android:background">@drawable/tv_focus_selector</item>
     </style>
-    <style name="TVMan.TVCategoryCard">
+    <style name="TvCategoryCard">
         <item name="android:layout_height">142dp</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:padding">18dp</item>
