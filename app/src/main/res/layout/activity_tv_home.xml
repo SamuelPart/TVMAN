@@ -198,13 +198,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="start" />
 
-    <include
-        android:id="@+id/tvStatusBar"
-        layout="@layout/view_tv_status_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_gravity="top|end" />
-
     <FrameLayout
         android:id="@+id/tvLoadingOverlay"
         android:layout_width="match_parent"

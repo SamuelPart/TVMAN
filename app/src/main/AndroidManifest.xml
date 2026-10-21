@@ -35,9 +35,9 @@
             android:name=".MainActivity"
             android:exported="false"  android:screenOrientation="landscape" />
 
-        <!-- Android TV-only launcher: landscape, remote-first interface. -->
+        <!-- Dedicated pre-app status screen; the user enters the TV home from here. -->
         <activity
-            android:name=".TvHomeActivity"
+            android:name=".TvStatusActivity"
             android:exported="true"
             android:screenOrientation="landscape">
             <intent-filter>
@@ -46,6 +46,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".TvHomeActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
 
         <!-- Deep links compartidos (tvman://ver?d=...): abren la app directo
              en el titulo compartido. AutoVerify no aplica a esquemas custom;

@@ -213,14 +213,6 @@ class MainActivity : AppCompatActivity() {
         }
         setupSidebarNavigation()
         TvSidebarController.install(this, findViewById(R.id.tvSidebar))
-        TvStatusBarController.install(
-            this,
-            findViewById(R.id.tvStatusBar),
-            onSearch = { focusCineAction(search = true) },
-            onFilters = { focusCineAction(search = false) },
-            onSettings = { binding.bottomNavigation.selectedItemId = R.id.navigation_settings },
-            onNotifications = { Toast.makeText(this, "No tienes notificaciones nuevas", Toast.LENGTH_SHORT).show() }
-        )
     }
 
     private fun setupSidebarNavigation() {
@@ -243,17 +235,6 @@ class MainActivity : AppCompatActivity() {
             binding.bottomNavigation.selectedItemId = R.id.navigation_settings
         }
         findViewById<View>(R.id.sideNavExit).setOnClickListener { finishAffinity() }
-    }
-
-    private fun focusCineAction(search: Boolean) {
-        selectedCineType = "all"
-        cineMood = null
-        binding.bottomNavigation.selectedItemId = R.id.navigation_cine
-        updateTVMANNav(R.id.navigation_cine)
-        binding.root.post {
-            val target = if (search) binding.edtCineSearch else binding.btnCineFilterAll
-            target.requestFocus()
-        }
     }
 
     private fun showSidebarCine(type: String, mood: String?) {

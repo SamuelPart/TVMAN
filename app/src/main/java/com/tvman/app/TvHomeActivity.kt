@@ -90,14 +90,6 @@ class TvHomeActivity : AppCompatActivity() {
             findViewById(R.id.tvTopBar),
             findViewById(R.id.tvContentScroll)
         )
-        TvStatusBarController.install(
-            this,
-            findViewById(R.id.tvStatusBar),
-            onSearch = { openMainTab(MainActivity.TAB_CINE, focusCineSearch = true) },
-            onFilters = { openMainTab(MainActivity.TAB_CINE, focusCineFilters = true) },
-            onSettings = { openMainTab(MainActivity.TAB_SETTINGS) },
-            onNotifications = { Toast.makeText(this, "No tienes notificaciones nuevas", Toast.LENGTH_SHORT).show() }
-        )
 
         loadingOverlay.alpha = 1f
         findViewById<View>(R.id.tvCatalogRetry).setOnClickListener {

@@ -201,7 +201,6 @@
         android:id="@+id/contentContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="72dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/tvSidebar"
@@ -3050,13 +3049,5 @@
 
         </LinearLayout>
     </FrameLayout>
-
-    <include
-        android:id="@+id/tvStatusBar"
-        layout="@layout/view_tv_status_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
