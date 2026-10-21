@@ -17,7 +17,11 @@ class TvStatusActivity : AppCompatActivity() {
             // Keep the mascot visible for one full animation loop, then open Home.
             delay(SPLASH_DURATION_MS)
             if (!isFinishing && !isDestroyed) {
-                startActivity(Intent(this@TvStatusActivity, TvHomeActivity::class.java))
+                val isTelevision = (resources.configuration.uiMode and
+                    android.content.res.Configuration.UI_MODE_TYPE_MASK) ==
+                    android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+                val destination = if (isTelevision) TvHomeActivity::class.java else MainActivity::class.java
+                startActivity(Intent(this@TvStatusActivity, destination))
                 finish()
             }
         }

@@ -101,6 +101,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        if (!isTelevision) findViewById<View>(R.id.tvSidebar).visibility = View.GONE
 
         applyAppTheme()
 
@@ -164,10 +165,13 @@ class MainActivity : AppCompatActivity() {
         }, 3200)
     }
 
+    private fun isTelevisionDevice(): Boolean =
+        (resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK) == Configuration.UI_MODE_TYPE_TELEVISION
+
     private fun setupBottomNavigation() {
-        // Legacy BottomNavigationView remains hidden for internal tab routing only.
+        // Legacy BottomNavigationView remains hidden; phones use the visible dock.
         binding.bottomNavigation.visibility = View.GONE
-        binding.tvmanNavBar.visibility = View.GONE
+        binding.tvmanNavBar.visibility = if (isTelevisionDevice()) View.GONE else View.VISIBLE
         updateTVMANNav(R.id.navigation_home)
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             updateTVMANNav(item.itemId)
@@ -195,8 +199,14 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+        binding.navBtnHome.setOnClickListener { returnToTvHome() }
+        binding.navBtnChannels.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_channels }
+        binding.navBtnSearch.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_search }
+        binding.navBtnCine.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_cine }
+        binding.navBtnSettings.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_settings }
+
         setupSidebarNavigation()
-        TvSidebarController.install(this, findViewById(R.id.tvSidebar))
+        if (isTelevisionDevice()) TvSidebarController.install(this, findViewById(R.id.tvSidebar))
     }
 
     private fun setupSidebarNavigation() {
@@ -234,6 +244,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun returnToTvHome() {
+        if (!isTelevisionDevice()) {
+            showTab(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE)
+            updateTVMANNav(R.id.navigation_home)
+            return
+        }
         startActivity(Intent(this, TvHomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
         finish()
     }
