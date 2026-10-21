@@ -15,8 +15,8 @@ class TvStatusActivity : AppCompatActivity() {
             android.content.res.Configuration.UI_MODE_TYPE_MASK) ==
             android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
         if (!isTelevision) {
-            // Phone entry skips the TV-only animated canvas and opens the phone-compatible main screen.
-            startActivity(Intent(this, MainActivity::class.java))
+            // Open the same TV home immediately on phones; skip only the TV splash to keep launch reliable.
+            startActivity(Intent(this, TvHomeActivity::class.java))
             finish()
             return
         }
