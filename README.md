@@ -1,16 +1,24 @@
 # TVMAN para Android TV
 
-TVMAN toma como base funcional la rama [`arena/01a09a92-iptv`](https://github.com/SamuelPart/iptv/tree/arena/01a09a92-iptv) del proyecto IPTV (commit base `bed9c31`): gestión y filtrado de listas M3U, canales en vivo, reproducción, búsqueda, cine/series, favoritos, historial y ajustes. Este repositorio es la adaptación independiente para Android TV y móviles Android; la rama de referencia no se modifica.
+TVMAN es una app exclusiva para Android TV basada funcionalmente en la rama [`arena/01a09a92-iptv`](https://github.com/SamuelPart/iptv/tree/arena/01a09a92-iptv) del proyecto IPTV (commit `bed9c31`). Conserva listas M3U, canales en vivo, reproducción, cine/series, búsqueda, favoritos, historial y ajustes.
 
-## Abrir en Android Studio
-1. Abrir la carpeta raíz de este repositorio.
-2. Usar JDK 17 y sincronizar Gradle.
-3. Ejecutar `app` en un emulador Android TV, televisor/dispositivo Android TV o teléfono Android compatible.
+## Interfaz TV
+- Inicio cinematográfico a pantalla completa: fondo TMDB inmersivo, navegación lateral que se expande al enfocarla y filas que se recorren con el mando.
+- El hero permite avanzar o retroceder entre títulos destacados con botones o DPAD, actualizando el arte, título y sinopsis.
+- «Continuar viendo» se coloca bajo el hero cuando hay progreso guardado; sin progreso, las recomendaciones quedan como primera fila.
+- Al enfocar pósteres aparece una ficha rápida; tras una pausa breve, la portada cambia al arte TMDB del título sin iniciar la reproducción.
+- Incluye colecciones editoriales y una opción para activar, ocultar y reordenar filas desde el mando.
+- Las fichas y secciones usan transiciones suaves coherentes con el estilo cinematográfico.
+- Muestra una pantalla de carga mientras prepara el catálogo y el arte TMDB; el título destacado y los pósteres usan `backdropUrl` / `posterUrl` del catálogo.
+- Todas las pantallas se fuerzan a horizontal; los controles reciben un contorno de foco visible, navegación DPAD y restauración del último elemento enfocado al volver.
+- El reproductor responde a las teclas multimedia del mando y permite revelar/enfocar controles con DPAD; si falla la reproducción, ofrece reintentar o volver.
+- Búsqueda y catálogo muestran estados de carga/sin resultados y acciones de reintento; los estados vacíos de Canales y Buscar llevan directamente a Ajustes.
+- Todas las pantallas dan foco visible y descripciones accesibles a los controles, restauran el foco al volver y usan transiciones de actividad coherentes.
+- Android TV/Leanback es requisito; no se publica un lanzador para teléfonos.
 
-El manifiesto añade `LEANBACK_LAUNCHER` para TV, mantiene el lanzador Android normal para teléfonos, declara el dispositivo táctil como opcional y usa el identificador de aplicación `com.tvman.app`. La interfaz principal queda libre para orientarse en móvil; el reproductor de vídeo mantiene orientación horizontal.
+## Abrir y ejecutar
+1. Abrir la raíz del proyecto en Android Studio.
+2. Usar JDK 21 o 17 para Gradle y sincronizar.
+3. Iniciar un emulador Android TV desde Device Manager y ejecutar `app`.
 
-## Anuncios
-Los anuncios están desactivados en esta versión: no se inicializa AdMob, no se solicitan anuncios y la reproducción no tiene una puerta de anuncios.
-
-## Alcance
-La app hereda los flujos y funciones de la rama IPTV indicada. Esta adaptación todavía requiere una pasada de pruebas en controles remotos y tamaños de pantalla de TV. No incluye listas/canales licenciados; el usuario aporta sus propias fuentes M3U.
+Identificador: `com.tvman.app`. Los anuncios están desactivados. TVMAN no distribuye canales licenciados; configura tus propias fuentes M3U.

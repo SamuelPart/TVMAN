@@ -55,7 +55,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
-                android:textColor="#C9A96E"
+                android:textColor="@color/tv_accent"
                 android:textSize="12sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
@@ -67,7 +67,7 @@
             android:layout_height="28dp"
             android:background="@drawable/bg_circle_glass"
             android:src="@drawable/ic_ios_xmark"
-            app:tint="#C9A96E"
+            app:tint="@color/tv_accent"
             android:padding="7dp"
             android:visibility="gone"
             android:contentDescription="Seleccionar" />

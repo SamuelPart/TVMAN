@@ -15,7 +15,7 @@
         android:paddingHorizontal="14dp"
         android:paddingVertical="8dp"
         android:text="SAGA"
-        android:textColor="#C9A96E"
+        android:textColor="@color/tv_accent"
         android:textSize="12sp"
         android:textStyle="bold"
         android:maxLines="2"

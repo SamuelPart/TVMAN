@@ -3,14 +3,10 @@ package com.tvman.app
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.tvman.app.databinding.ActivityThemeBinding
 
-/**
- * Pantalla de TEMA (sistema / oscuro / claro). Guarda la preferencia y marca
- * [SettingsSync] para que MainActivity repinte los colores al volver.
- */
+/** Mantiene el tema cinematográfico uniforme en todas las secciones de TVMAN. */
 class ThemeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityThemeBinding
@@ -20,28 +16,12 @@ class ThemeActivity : AppCompatActivity() {
         binding = ActivityThemeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btnThemeBack.setOnClickListener { finish() }
-
-        binding.btnThemeSystem.setOnClickListener { pick("system") }
-        binding.btnThemeDark.setOnClickListener { pick("dark") }
-        binding.btnThemeLight.setOnClickListener { pick("light") }
-
-        paintSelection()
-    }
-
-    private fun pick(value: String) {
+        // TVMAN uses one shared dark theme so screens stay visually consistent with Home.
         getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-            .edit().putString("theme_pref", value).apply()
-        SettingsSync.mark(this)
-        Toast.makeText(this, "Tema aplicado ⚡", Toast.LENGTH_SHORT).show()
-        finish()
-    }
-
-    private fun paintSelection() {
-        val current = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-            .getString("theme_pref", "system") ?: "system"
-        binding.checkThemeSystem.visibility = if (current == "system") View.VISIBLE else View.GONE
-        binding.checkThemeDark.visibility = if (current == "dark") View.VISIBLE else View.GONE
-        binding.checkThemeLight.visibility = if (current == "light") View.VISIBLE else View.GONE
+            .edit().putString("theme_pref", "dark").apply()
+        binding.checkThemeSystem.visibility = View.GONE
+        binding.checkThemeLight.visibility = View.GONE
+        binding.checkThemeDark.visibility = View.VISIBLE
+        binding.btnThemeBack.setOnClickListener { finish() }
     }
 }
