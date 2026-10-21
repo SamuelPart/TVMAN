@@ -12,10 +12,10 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <com.tvman.app.LoadingHandView
+        <com.tvman.app.LoadingMascotView
             android:layout_width="220dp"
             android:layout_height="255dp"
-            android:contentDescription="Animación de una mano azul tocando con cuatro dedos" />
+            android:contentDescription="Mascota con ojos y orejas animados durante la carga" />
 
         <TextView
             android:layout_width="wrap_content"
