@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.software.leanback" android:required="true" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <!-- Internet Permission is essential to load playlists and play streams -->
@@ -30,15 +30,20 @@
         android:theme="@style/Theme.TVMan"
         android:usesCleartextTraffic="true">
 
-        <!-- Main Activity: Shows grid of channels and IPTV link loader -->
+        <!-- Internal IPTV screens; the only public entry point is the TV home below. -->
         <activity
             android:name=".MainActivity"
+            android:exported="false"  android:screenOrientation="landscape" />
+
+        <!-- Android TV-only launcher: landscape, remote-first interface. -->
+        <activity
+            android:name=".TvHomeActivity"
             android:exported="true"
-           >
+            android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
 
@@ -49,7 +54,7 @@
             android:name=".DeepLinkActivity"
             android:exported="true"
            
-            android:theme="@android:style/Theme.NoDisplay">
+            android:theme="@android:style/Theme.NoDisplay" android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -71,63 +76,63 @@
             android:name=".WebVideoPlayerActivity"
             android:supportsPictureInPicture="true"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
-            android:hardwareAccelerated="true" />
+            android:hardwareAccelerated="true"  android:screenOrientation="landscape" />
         <activity
             android:name=".CineSearchActivity"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustResize"  android:screenOrientation="landscape" />
         <activity
             android:name=".WatchHistoryActivity"
-            android:exported="false" />
+            android:exported="false"  android:screenOrientation="landscape" />
         <activity
             android:name=".CineWallpapersActivity"
-            android:exported="false" />
+            android:exported="false"  android:screenOrientation="landscape" />
         <activity
             android:name=".WallpaperViewerActivity"
-            android:exported="false" />
+            android:exported="false"  android:screenOrientation="landscape" />
         <activity
             android:name=".CinePopularAllActivity"
-            android:exported="false" />
+            android:exported="false"  android:screenOrientation="landscape" />
 
         <activity
             android:name=".CineMovieDetailActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
 
         <!-- TV Show Details Activity -->
         <activity
             android:name=".CineTvShowDetailActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
 
         <!-- Pantallas de Ajustes -->
         <activity
             android:name=".IptvListActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
         <activity
             android:name=".ParentalControlActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
         <activity
             android:name=".ThemeActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
         <activity
             android:name=".AccentColorActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
         <activity
             android:name=".HistoryActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
         <activity
             android:name=".StorageActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
         <activity
             android:name=".StatsActivity"
             android:exported="false"
-            />
+             android:screenOrientation="landscape" />
 
         <!-- Google Cast Options Provider for Native Chromecast Support -->
         <meta-data

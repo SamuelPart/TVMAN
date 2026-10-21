@@ -39,7 +39,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="N"
-                android:textColor="#C9A96E"
+                android:textColor="@color/tv_accent"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:visibility="gone" />

@@ -125,6 +125,14 @@ class CineSearchActivity : AppCompatActivity() {
         }
         rvResults.adapter = resultsAdapter
 
+        txtResultsEmpty.isFocusable = true
+        txtResultsEmpty.isClickable = true
+        txtResultsEmpty.foreground = getDrawable(R.drawable.tv_focus_ring)
+        txtResultsEmpty.contentDescription = "Estado de búsqueda. Pulsa OK para reintentar si el catálogo no está disponible."
+        txtResultsEmpty.setOnClickListener {
+            if (catalogReady && catalog.isNotEmpty()) submitSearch(lastSubmitted)
+            else loadCatalog()
+        }
         findViewById<TextView>(R.id.btnSearchCancel).setOnClickListener { finish() }
         findViewById<TextView>(R.id.btnClearHistory).setOnClickListener {
             SearchHistoryStore.clear(this)
@@ -173,9 +181,18 @@ class CineSearchActivity : AppCompatActivity() {
 
         refreshHistory()
 
+        loadCatalog()
+    }
+
+    private fun loadCatalog() {
         lifecycleScope.launch {
+            catalogReady = false
+            if (edtInput.text.isNotBlank()) {
+                txtResultsEmpty.text = "Cargando catálogo…"
+                txtResultsEmpty.visibility = View.VISIBLE
+            }
             val cat = withContext(Dispatchers.IO) {
-                try { CineRepository.getCineCatalog(this@CineSearchActivity) } catch (e: Exception) { emptyList() }
+                try { CineRepository.getCineCatalog(this@CineSearchActivity) } catch (_: Exception) { emptyList() }
             }
             catalog = cat
             catalogNorm = cat.map { it to norm(it.searchTitle.ifEmpty { it.title }) }
@@ -183,6 +200,10 @@ class CineSearchActivity : AppCompatActivity() {
             loadPopular()
             val q = edtInput.text.toString().trim()
             if (q.isNotEmpty()) submitSearch(q)
+            if (cat.isEmpty() && q.isNotEmpty()) {
+                txtResultsEmpty.text = "No se pudo cargar el catálogo. Pulsa OK para reintentar."
+                txtResultsEmpty.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -295,7 +316,14 @@ class CineSearchActivity : AppCompatActivity() {
             } else emptyList()
             val merged = local + byPerson
             resultsAdapter.submit(merged)
-            txtResultsEmpty.visibility = if (merged.isEmpty()) View.VISIBLE else View.GONE
+            if (merged.isEmpty()) {
+                txtResultsEmpty.text = when {
+                    !catalogReady -> "Cargando catálogo…"
+                    catalog.isEmpty() -> "No se pudo cargar el catálogo. Pulsa OK para reintentar."
+                    else -> "Sin resultados para tu búsqueda"
+                }
+                txtResultsEmpty.visibility = View.VISIBLE
+            } else txtResultsEmpty.visibility = View.GONE
         }
     }
 
@@ -356,6 +384,7 @@ class CineSearchActivity : AppCompatActivity() {
         val dest = if (media.type == "movie") CineMovieDetailActivity::class.java
         else CineTvShowDetailActivity::class.java
         startActivity(Intent(this, dest).apply { putExtra("media", media) })
+        overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }
 
     private fun hideKeyboard() {

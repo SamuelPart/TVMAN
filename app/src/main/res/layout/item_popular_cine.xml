@@ -70,7 +70,7 @@
                 android:layout_margin="6dp"
                 android:background="@drawable/bg_circle_glass"
                 android:src="@drawable/ic_ios_play"
-                app:tint="#C9A96E"
+                app:tint="@color/tv_accent"
                 android:padding="7dp"
                 android:visibility="gone"
                 android:contentDescription="Reproducir" />

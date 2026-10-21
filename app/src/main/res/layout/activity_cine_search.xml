@@ -7,7 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A1834">
+    android:background="@color/tv_background">
 
     <LinearLayout
         android:id="@+id/searchHeader"
@@ -23,7 +23,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="46dp"
+            android:layout_height="56dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_apple_glass_pill"
@@ -34,7 +34,7 @@
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:src="@drawable/ic_ios_search"
-                app:tint="#C9A96E"
+                app:tint="@color/tv_accent"
                 android:contentDescription="Buscar" />
 
             <EditText
@@ -45,11 +45,12 @@
                 android:layout_marginStart="10dp"
                 android:background="@null"
                 android:hint="Buscar película, serie, actor o director…"
-                android:textColorHint="#6E6E78"
+                android:textColorHint="@color/tv_text_muted"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="18sp"
                 android:maxLines="1"
                 android:inputType="text"
+                android:contentDescription="Buscar película, serie, actor o director"
                 android:imeOptions="actionSearch"
                 android:importantForAutofill="no" />
 
@@ -59,7 +60,7 @@
                 android:layout_height="32dp"
                 android:padding="8dp"
                 android:src="@drawable/ic_ios_xmark"
-                app:tint="#8A8A93"
+                app:tint="@color/tv_text_muted"
                 android:visibility="gone"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Limpiar" />
@@ -109,7 +110,7 @@
                         android:layout_height="wrap_content"
                         android:padding="6dp"
                         android:text="Limpiar"
-                        android:textColor="#8A8A93"
+                        android:textColor="@color/tv_text_muted"
                         android:textSize="13sp"
                         android:clickable="true"
                         android:focusable="true" />
@@ -121,7 +122,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Aún no tienes búsquedas guardadas"
-                    android:textColor="#6E6E78"
+                    android:textColor="@color/tv_text_muted"
                     android:textSize="13sp"
                     android:visibility="gone" />
 
@@ -176,7 +177,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Sin resultados para tu búsqueda"
-            android:textColor="#8A8A93"
+            android:textColor="@color/tv_text_muted"
             android:textSize="14sp"
             android:visibility="gone" />
     </FrameLayout>
