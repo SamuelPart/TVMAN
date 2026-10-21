@@ -844,6 +844,43 @@ class PlayerActivity : AppCompatActivity() {
         releasePlayer()
     }
 
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.action == android.view.KeyEvent.ACTION_DOWN) {
+            when (event.keyCode) {
+                android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                    if (activeCastDevice != null) toggleCastPlayPause()
+                    else if (mediaPlayer?.isPlaying == true) mediaPlayer?.pause() else mediaPlayer?.play()
+                    if (::appleOverlay.isInitialized) appleOverlay.notifyPlayingStateChanged()
+                    return true
+                }
+                android.view.KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                    if (activeCastDevice != null) {
+                        if (!isCastPlaying) toggleCastPlayPause()
+                    } else mediaPlayer?.play()
+                    if (::appleOverlay.isInitialized) appleOverlay.notifyPlayingStateChanged()
+                    return true
+                }
+                android.view.KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                    if (activeCastDevice != null) {
+                        if (isCastPlaying) toggleCastPlayPause()
+                    } else mediaPlayer?.pause()
+                    if (::appleOverlay.isInitialized) appleOverlay.notifyPlayingStateChanged()
+                    return true
+                }
+                android.view.KeyEvent.KEYCODE_DPAD_UP,
+                android.view.KeyEvent.KEYCODE_DPAD_DOWN,
+                android.view.KeyEvent.KEYCODE_DPAD_LEFT,
+                android.view.KeyEvent.KEYCODE_DPAD_RIGHT,
+                android.view.KeyEvent.KEYCODE_DPAD_CENTER,
+                android.view.KeyEvent.KEYCODE_ENTER -> {
+                    if (::appleOverlay.isInitialized && appleOverlay.visibility == View.VISIBLE &&
+                        appleOverlay.revealForRemote()) return true
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
     private fun hideSystemUI() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.setDecorFitsSystemWindows(false)
@@ -1122,6 +1159,7 @@ class PlayerActivity : AppCompatActivity() {
         )
         // Se ve desde el primer segundo: el cambio es inconfundible.
         appleOverlay.showControls()
+        appleOverlay.post { appleOverlay.focusForRemote() }
     }
 
     private val appleVlcDelegate = object : ApplePlayerOverlay.Delegate {

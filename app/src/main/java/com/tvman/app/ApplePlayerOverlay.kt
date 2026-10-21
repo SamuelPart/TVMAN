@@ -149,7 +149,29 @@ class ApplePlayerOverlay @JvmOverloads constructor(
             findViewById(R.id.btnApplePlay), btnRew, btnFwd,
             findViewById(R.id.btnAppleInfo), findViewById(R.id.btnAppleResume),
             btnCC, btnAudio, btnSpeed
-        ).forEach { it.springPress() }
+        ).forEach { button ->
+            button.foreground = context.getDrawable(R.drawable.tv_focus_ring)
+            button.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+            button.springPress()
+            button.setOnFocusChangeListener { _, focused ->
+                if (focused) cancelHide() else scheduleHide()
+            }
+        }
+
+        mapOf(
+            R.id.btnAppleClose to "Cerrar reproductor",
+            R.id.btnApplePip to "Imagen en imagen",
+            R.id.btnAppleCast to "Transmitir a otro dispositivo",
+            R.id.btnAppleShare to "Compartir contenido",
+            R.id.btnApplePlay to "Reproducir o pausar",
+            R.id.btnAppleRew to "Retroceder diez segundos",
+            R.id.btnAppleFwd to "Avanzar diez segundos",
+            R.id.btnAppleCC to "Opciones de subtítulos",
+            R.id.btnAppleAudio to "Pista de audio",
+            R.id.btnAppleSpeed to "Velocidad de reproducción",
+            R.id.btnAppleInfo to "Información del contenido",
+            R.id.btnAppleResume to "Continuar viendo"
+        ).forEach { (id, label) -> findViewById<View>(id).contentDescription = label }
 
         findViewById<View>(R.id.btnAppleClose).setOnClickListener { delegate?.onClose() }
         findViewById<View>(R.id.btnApplePip).setOnClickListener { delegate?.onPip() }
@@ -277,6 +299,48 @@ class ApplePlayerOverlay @JvmOverloads constructor(
         scheduleHide()
     }
 
+    /** Reveal the transport controls and give the TV remote a predictable starting focus. */
+    fun focusForRemote() {
+        showControls()
+        findViewById<View>(R.id.btnApplePlay).requestFocus()
+    }
+
+    fun revealForRemote(): Boolean {
+        if (controlsVisible && hasFocus()) return false
+        focusForRemote()
+        return true
+    }
+
+    /** Shared hardware-key handling for Android TV remotes and media keys. */
+    fun handleRemoteKey(keyCode: Int): Boolean {
+        when (keyCode) {
+            android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                delegate?.onPlayPause()
+                showControls()
+                return true
+            }
+            android.view.KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                val playing = delegate?.snapshot()?.playing == true
+                if (!playing) delegate?.onPlayPause()
+                showControls()
+                return true
+            }
+            android.view.KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                val playing = delegate?.snapshot()?.playing == true
+                if (playing) delegate?.onPlayPause()
+                showControls()
+                return true
+            }
+            android.view.KeyEvent.KEYCODE_DPAD_UP,
+            android.view.KeyEvent.KEYCODE_DPAD_DOWN,
+            android.view.KeyEvent.KEYCODE_DPAD_LEFT,
+            android.view.KeyEvent.KEYCODE_DPAD_RIGHT,
+            android.view.KeyEvent.KEYCODE_DPAD_CENTER,
+            android.view.KeyEvent.KEYCODE_ENTER -> return revealForRemote()
+        }
+        return false
+    }
+
     private fun hideControls() = applyControlsVisible(false, animated = true)
 
     private fun applyControlsVisible(visible: Boolean, animated: Boolean) {
@@ -308,7 +372,9 @@ class ApplePlayerOverlay @JvmOverloads constructor(
 
     private fun scheduleHide() {
         cancelHide()
-        val r = Runnable { if (controlsVisible && !scrubbing) hideControls() }
+        // Never hide the controls underneath an active DPAD focus target.
+        if (hasFocus()) return
+        val r = Runnable { if (controlsVisible && !scrubbing && !hasFocus()) hideControls() }
         hideRunnable = r
         postDelayed(r, AUTO_HIDE_MS)
     }

@@ -641,6 +641,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
         )
         // Visible desde el primer segundo, mientras el BOT prepara el video.
         appleOverlay.showControls()
+        appleOverlay.post { appleOverlay.focusForRemote() }
 
         val web = binding.webFramePlayer
         web.setBackgroundColor(0xFF000000.toInt())
@@ -988,6 +989,13 @@ class WebVideoPlayerActivity : AppCompatActivity() {
             }
             else -> Toast.makeText(this, "Dispositivo no soportado por embeds", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.action == android.view.KeyEvent.ACTION_DOWN &&
+            ::appleOverlay.isInitialized && appleOverlay.visibility == View.VISIBLE &&
+            appleOverlay.handleRemoteKey(event.keyCode)) return true
+        return super.dispatchKeyEvent(event)
     }
 
     @Deprecated("Back: navega el historial del iframe si puede")

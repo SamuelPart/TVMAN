@@ -34,6 +34,8 @@ class TvHomeActivity : AppCompatActivity() {
     private lateinit var descriptionView: TextView
     private lateinit var addButton: TextView
     private lateinit var postersTitle: TextView
+    private lateinit var continueTitle: TextView
+    private lateinit var continueRow: LinearLayout
     private lateinit var loadingOverlay: View
     private var loadingDismissed = false
     private var homeEntranceStarted = false
@@ -52,6 +54,8 @@ class TvHomeActivity : AppCompatActivity() {
         descriptionView = findViewById(R.id.tvHeroDescription)
         addButton = findViewById(R.id.tvHeroAdd)
         postersTitle = findViewById(R.id.tvPostersTitle)
+        continueTitle = findViewById(R.id.tvContinueTitle)
+        continueRow = findViewById(R.id.tvContinueRow)
         loadingOverlay = findViewById(R.id.tvLoadingOverlay)
         loadingOverlay.alpha = 1f
         Handler(Looper.getMainLooper()).postDelayed({
@@ -110,6 +114,13 @@ class TvHomeActivity : AppCompatActivity() {
         fillPosterRow(posterRow, if (favorites.isNotEmpty()) favorites else recommendations.take(14))
         findViewById<TextView>(R.id.tvSecondRowTitle).text = "LO MÁS VISTO"
         fillPosterRow(popularRow, ranked.filter { it !== featured && tmdbImage(it.posterUrl) }.take(14))
+        val resumeItems = ContinueWatchingManager.getAll(this)
+            .filter { !it.isChannel && it.media != null }
+            .take(12)
+        fillContinueRow(resumeItems)
+        val showContinue = continueRow.childCount > 0
+        continueTitle.visibility = if (showContinue) View.VISIBLE else View.GONE
+        continueRow.parent?.let { (it as? View)?.visibility = if (showContinue) View.VISIBLE else View.GONE }
         startHomeEntranceIfReady()
     }
 
@@ -145,7 +156,9 @@ class TvHomeActivity : AppCompatActivity() {
                 })
                 .into(backdrop)
         }
-        addButton.text = if (FavoritesManager.isFavorite(this, media.url)) "✓" else "+"
+        val isSaved = FavoritesManager.isFavorite(this, media.url)
+        addButton.text = if (isSaved) "✓" else "+"
+        addButton.contentDescription = if (isSaved) "Quitar de Mi lista" else "Añadir a Mi lista"
     }
 
     private fun fillPosterRow(row: LinearLayout, items: List<CineMedia>) {
@@ -186,6 +199,74 @@ class TvHomeActivity : AppCompatActivity() {
                 view.animate().scaleX(if (focused) 1.06f else 1f).scaleY(if (focused) 1.06f else 1f).setDuration(130).start()
             }
             row.addView(card)
+        }
+    }
+
+    private fun fillContinueRow(entries: List<ContinueWatchingManager.ResumeEntry>) {
+        continueRow.removeAllViews()
+        entries.forEach { entry ->
+            val media = entry.media ?: return@forEach
+            val poster = media.posterUrl?.takeIf(::tmdbImage) ?: return@forEach
+            val percent = if (entry.durationMs > 0L)
+                ((entry.positionMs * 100L) / entry.durationMs).toInt().coerceIn(0, 100) else 0
+            val card = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                isFocusable = true
+                isClickable = true
+                contentDescription = "Continuar viendo ${media.title}, $percent por ciento visto"
+                foreground = getDrawable(R.drawable.tv_focus_ring)
+                setPadding(dp(3), dp(3), dp(3), dp(5))
+                layoutParams = LinearLayout.LayoutParams(dp(112), dp(195)).apply { marginEnd = dp(15) }
+                setOnClickListener {
+                    startActivity(Intent(this@TvHomeActivity, PlayerActivity::class.java).apply {
+                        putExtra("channelName", entry.title)
+                        putExtra("channelUrl", entry.url)
+                        putExtra("startPosition", entry.positionMs)
+                        putExtra("cineMedia", media)
+                        putExtra("isLiveTv", false)
+                    })
+                }
+            }
+            val image = ImageView(this).apply {
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                background = getDrawable(R.drawable.tv_poster_placeholder)
+                clipToOutline = true
+                contentDescription = media.title
+                layoutParams = LinearLayout.LayoutParams(dp(106), dp(148))
+            }
+            Glide.with(this).load(poster).centerCrop()
+                .placeholder(R.drawable.tv_poster_placeholder).into(image)
+            val name = TextView(this).apply {
+                text = media.title
+                setTextColor(Color.WHITE)
+                textSize = 11f
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                setPadding(dp(2), dp(6), dp(2), 0)
+                layoutParams = LinearLayout.LayoutParams(dp(106), dp(22))
+            }
+            val progress = android.widget.ProgressBar(
+                this, null, android.R.attr.progressBarStyleHorizontal
+            ).apply {
+                max = 100
+                this.progress = percent
+                progressTintList = android.content.res.ColorStateList.valueOf(Color.rgb(163, 65, 255))
+                progressBackgroundTintList = android.content.res.ColorStateList.valueOf(0x66FFFFFF)
+                contentDescription = "$percent por ciento visto"
+                layoutParams = LinearLayout.LayoutParams(dp(106), dp(4)).apply {
+                    topMargin = dp(5)
+                    marginStart = dp(1)
+                }
+            }
+            card.addView(image)
+            card.addView(name)
+            card.addView(progress)
+            card.setOnFocusChangeListener { view, focused ->
+                view.animate().cancel()
+                view.animate().scaleX(if (focused) 1.06f else 1f)
+                    .scaleY(if (focused) 1.06f else 1f).setDuration(130).start()
+            }
+            continueRow.addView(card)
         }
     }
 
@@ -232,7 +313,8 @@ class TvHomeActivity : AppCompatActivity() {
             R.id.tvSearchAction, R.id.tvProfile,
             R.id.tvHeroEyebrow, R.id.tvHeroTitle, R.id.tvHeroMeta, R.id.tvHeroDescription,
             R.id.tvHeroPlay, R.id.tvHeroAdd, R.id.tvPostersTitle, R.id.tvPostersHint,
-            R.id.tvPosterScroll, R.id.tvSecondRowTitle, R.id.tvPopularRow
+            R.id.tvPosterScroll, R.id.tvSecondRowTitle, R.id.tvPopularRow,
+            R.id.tvContinueTitle, R.id.tvContinueScroll
         ).mapNotNull { findViewById<View>(it) }
 
         var delay = 0L
@@ -240,7 +322,7 @@ class TvHomeActivity : AppCompatActivity() {
             animateEntrance(view, delay, 18f)
             delay += 55L
         }
-        listOf(posterRow, popularRow).forEach { row ->
+        listOf(posterRow, popularRow, continueRow).forEach { row ->
             for (index in 0 until row.childCount) {
                 animateEntrance(row.getChildAt(index), delay, 24f)
                 delay += 38L
