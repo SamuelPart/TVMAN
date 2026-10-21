@@ -19,7 +19,6 @@ class TVManApplication : Application() {
         // Keep playlist/scraper and catalog refresh workflows from the IPTV source branch.
         ScraperConfig.loadCached(this)
         CoroutineScope(Dispatchers.IO).launch { ScraperConfig.refresh(this@TVManApplication) }
-        CoroutineScope(Dispatchers.IO).launch { CineRepository.prefetchCatalog(this@TVManApplication) }
         CatalogBot.start(this)
     }
 
