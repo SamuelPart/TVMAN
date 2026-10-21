@@ -11,7 +11,17 @@ import kotlinx.coroutines.launch
 class TvStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Keep the bunny loading screen on every device, then open the same TV home UI.
+        val isTelevision = (resources.configuration.uiMode and
+            android.content.res.Configuration.UI_MODE_TYPE_MASK) ==
+            android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+        if (!isTelevision) {
+            // The custom animated splash is unstable on this phone; bypass it and launch the TV UI directly.
+            startActivity(Intent(this, TvHomeActivity::class.java))
+            finish()
+            return
+        }
+
+        // Keep the animated bunny splash on Android TV, then open the TV home.
         setContentView(R.layout.activity_tv_status)
         lifecycleScope.launch {
             delay(SPLASH_DURATION_MS)
