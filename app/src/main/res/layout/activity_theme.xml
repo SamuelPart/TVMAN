@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A1834"
+    android:background="@color/tv_background"
     android:orientation="vertical">
 
     <!-- Cabecera -->
@@ -50,6 +50,7 @@
 
         <LinearLayout
             android:id="@+id/btnThemeSystem"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -57,7 +58,8 @@
             android:orientation="horizontal"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:background="?android:attr/selectableItemBackground">
+            android:clickable="false"
+            android:focusable="false">
 
             <TextView
                 android:layout_width="0dp"
@@ -72,19 +74,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="✓"
-                android:textColor="#C9A96E"
+                android:textColor="@color/tv_accent"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
         </LinearLayout>
 
         <View
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#14FFFFFF" />
 
         <LinearLayout
             android:id="@+id/btnThemeDark"
+            android:clickable="false"
+            android:focusable="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -107,19 +112,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="✓"
-                android:textColor="#C9A96E"
+                android:textColor="@color/tv_accent"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
         </LinearLayout>
 
         <View
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#14FFFFFF" />
 
         <LinearLayout
             android:id="@+id/btnThemeLight"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -142,10 +149,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="✓"
-                android:textColor="#C9A96E"
+                android:textColor="@color/tv_accent"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="12dp"
+        android:text="El mismo estilo cinematográfico se aplica a Inicio, Canales, Búsqueda, Cine y Ajustes."
+        android:textColor="@color/tv_text_secondary"
+        android:textSize="14sp" />
 </LinearLayout>

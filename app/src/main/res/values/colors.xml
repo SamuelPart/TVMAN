@@ -1,24 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF171A25</color>
+    <color name="black">#FF080D17</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="orange">#FF5267E8</color>
-    <color name="dark_gray">#FFE9EDF5</color>
-    <color name="card_bg">#FFFFFFFF</color>
-    <color name="purple_200">#FF7B88EF</color>
-    <color name="purple_500">#FF5267E8</color>
-    <color name="purple_700">#FF374CC5</color>
-    <color name="teal_200">#FF30A6A0</color>
-    <color name="teal_700">#FF27837F</color>
+    <item name="orange" type="color">@color/tv_accent</item>
+    <color name="dark_gray">#FF8593A8</color>
+    <color name="card_bg">#FF121D32</color>
+    <color name="purple_200">#FFD0B4FF</color>
+    <color name="purple_500">#FF9B63FF</color>
+    <color name="purple_700">#FF7541D8</color>
+    <color name="teal_200">#FF78E4DB</color>
+    <color name="teal_700">#FF30A6A0</color>
 
-    <color name="ios_bg">#FFF6F8FC</color>
-    <color name="ios_surface">#FFFFFFFF</color>
-    <color name="ios_surface_2">#FFF0F3F8</color>
-    <color name="ios_blue">#FF5267E8</color>
-    <color name="ios_indigo">#FF4355C9</color>
-    <color name="ios_violet">#FF6276F1</color>
-    <color name="ios_cyan">#FF2F8FC5</color>
-    <color name="ios_gray">#FF596273</color>
-    <color name="ios_stroke">#FFDDE2EC</color>
-    <color name="ic_launcher_background">#FFF6F8FC</color>
+    <!-- Shared TV cinematic palette -->
+    <color name="tv_background">#FF080D17</color>
+    <color name="tv_surface">#FF121D32</color>
+    <color name="tv_surface_raised">#FF1A2943</color>
+    <color name="tv_surface_high">#FF243550</color>
+    <color name="tv_text_primary">#FFF6F8FC</color>
+    <color name="tv_text_secondary">#FFC2CDDC</color>
+    <color name="tv_text_muted">#FF96A4B8</color>
+    <color name="tv_accent">#FFB792FF</color>
+    <color name="tv_accent_strong">#FF8E50F5</color>
+    <color name="tv_accent_cyan">#FF68D9D5</color>
+    <color name="tv_outline">#FF35445E</color>
+
+    <!-- Compatibility tokens used by the existing layouts -->
+    <item name="ios_bg" type="color">@color/tv_background</item>
+    <item name="ios_surface" type="color">@color/tv_surface</item>
+    <item name="ios_surface_2" type="color">@color/tv_surface_raised</item>
+    <item name="ios_blue" type="color">@color/tv_accent</item>
+    <color name="ios_indigo">#FF7556D8</color>
+    <item name="ios_violet" type="color">@color/tv_accent_strong</item>
+    <item name="ios_cyan" type="color">@color/tv_accent_cyan</item>
+    <item name="ios_gray" type="color">@color/tv_text_secondary</item>
+    <item name="ios_stroke" type="color">@color/tv_outline</item>
+    <color name="ic_launcher_background">#FF080D17</color>
 </resources>

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A1834"
+    android:background="@color/tv_background"
     android:orientation="vertical">
 
     <!-- Cabecera -->
@@ -58,7 +58,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Enlace M3U"
-                android:textColor="#8A8A8E"
+                android:textColor="@color/tv_text_muted"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -88,7 +88,7 @@
                     android:inputType="textUri"
                     android:maxLines="1"
                     android:textColor="#FFFFFF"
-                    android:textColorHint="#5A5A5E"
+                    android:textColorHint="@color/tv_text_muted"
                     android:textSize="15sp" />
 
                 <Button
@@ -142,7 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
                 android:text="Listas rápidas"
-                android:textColor="#8A8A8E"
+                android:textColor="@color/tv_text_muted"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -161,7 +161,7 @@
                     android:backgroundTint="#14C9A96E"
                     android:text="España"
                     android:textAllCaps="false"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="12sp" />
 
                 <Space
@@ -177,7 +177,7 @@
                     android:backgroundTint="#14C9A96E"
                     android:text="Global"
                     android:textAllCaps="false"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="12sp" />
 
                 <Space
@@ -193,7 +193,7 @@
                     android:backgroundTint="#14C9A96E"
                     android:text="Noticias"
                     android:textAllCaps="false"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -202,7 +202,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
                 android:text="Estas listas son públicas y gratuitas (iptv-org)."
-                android:textColor="#5A5A5E"
+                android:textColor="@color/tv_text_muted"
                 android:textSize="11sp" />
 
         </LinearLayout>

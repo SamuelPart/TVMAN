@@ -2805,14 +2805,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyAppTheme() {
-        // TVMAN is a TV-only app: all non-video screens use the light canvas.
-        binding.root.post { updateAppThemeColors(false) }
+        // The dark cinematic palette is shared by Home, Channels, Search, Cine and Settings.
+        binding.root.post { updateAppThemeColors(isDark = true) }
     }
 
     private fun updateAppThemeColors(isDark: Boolean) {
-        val bgColor = if (isDark) android.graphics.Color.parseColor("#0A1834") else android.graphics.Color.parseColor("#F5F5F5")
-        val cardColor = if (isDark) android.graphics.Color.parseColor("#14294F") else android.graphics.Color.parseColor("#FFFFFF")
-        val textColor = if (isDark) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+        val bgColor = if (isDark) androidx.core.content.ContextCompat.getColor(this, R.color.tv_background) else android.graphics.Color.parseColor("#F1F3F7")
+        val cardColor = if (isDark) androidx.core.content.ContextCompat.getColor(this, R.color.tv_surface) else android.graphics.Color.WHITE
+        val textColor = if (isDark) androidx.core.content.ContextCompat.getColor(this, R.color.tv_text_primary) else android.graphics.Color.BLACK
         
         // 1. Update window background
         window.decorView.setBackgroundColor(bgColor)
@@ -2840,19 +2840,28 @@ class MainActivity : AppCompatActivity() {
         val textColor = if (isDark) android.graphics.Color.WHITE else android.graphics.Color.BLACK
         val cardColor = if (isDark) android.graphics.Color.parseColor("#14294F") else android.graphics.Color.parseColor("#FFFFFF")
         
-        if (view is androidx.cardview.widget.CardView) {
+        if (view is android.widget.EditText) {
+            // EditText extends TextView, so handle it first; keep search/input fields dark too.
+            view.setTextColor(textColor)
+            view.setHintTextColor(if (isDark) android.graphics.Color.parseColor("#96A4B8") else android.graphics.Color.parseColor("#7D8797"))
+            if (isDark) {
+                androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_settings_card)?.let { view.background = it }
+            } else {
+                view.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
+            }
+        } else if (view is androidx.cardview.widget.CardView) {
             view.setCardBackgroundColor(cardColor)
         } else if (view is android.widget.TextView) {
-            // Do not override primary orange/red/yellow colored texts
-            val isOrange = view.currentTextColor == android.graphics.Color.parseColor("#FF9800")
-            val isRed = view.currentTextColor == android.graphics.Color.parseColor("#D32F2F")
-            if (!isOrange && !isRed) {
+            // Keep explicit accent and dark-on-lavender action labels intact; lift default dark text.
+            val current = view.currentTextColor
+            val defaultDarkText = current == android.graphics.Color.BLACK ||
+                current == android.graphics.Color.parseColor("#FF212121")
+            val hasDrawableSurface = view.background != null && view.background !is android.graphics.drawable.ColorDrawable
+            if (isDark && defaultDarkText && !hasDrawableSurface) {
+                view.setTextColor(textColor)
+            } else if (!isDark && defaultDarkText) {
                 view.setTextColor(textColor)
             }
-        } else if (view is android.widget.EditText) {
-            view.setTextColor(textColor)
-            view.setHintTextColor(if (isDark) android.graphics.Color.parseColor("#666666") else android.graphics.Color.parseColor("#999999"))
-            view.setBackgroundColor(if (isDark) android.graphics.Color.parseColor("#14294F") else android.graphics.Color.parseColor("#E0E0E0"))
         }
         
         if (view is android.view.ViewGroup) {

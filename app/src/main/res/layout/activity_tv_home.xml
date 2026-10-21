@@ -3,7 +3,7 @@
     android:id="@+id/tvRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#050A0B"
+    android:background="@color/tv_background"
     android:focusableInTouchMode="true">
 
     <FrameLayout

@@ -87,7 +87,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_nav_tv"
-                app:tint="#8A8A93" />
+                app:tint="@color/tv_text_muted" />
 
             <TextView
                 android:id="@+id/txtNavChannels"
@@ -115,7 +115,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_nav_search"
-                app:tint="#8A8A93" />
+                app:tint="@color/tv_text_muted" />
 
             <TextView
                 android:id="@+id/txtNavSearch"
@@ -143,7 +143,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_nav_cine"
-                app:tint="#8A8A93" />
+                app:tint="@color/tv_text_muted" />
 
             <TextView
                 android:id="@+id/txtNavCine"
@@ -171,7 +171,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_nav_gear"
-                app:tint="#8A8A93" />
+                app:tint="@color/tv_text_muted" />
 
             <TextView
                 android:id="@+id/txtNavSettings"
@@ -241,7 +241,7 @@
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_ios_search"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="Buscar" />
 
                         <TextSwitcher
@@ -257,7 +257,7 @@
                                 android:id="@+id/homeSearchRotatorText1"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#8A8A93"
+                                android:textColor="@color/tv_text_muted"
                                 android:textSize="14sp"
                                 android:maxLines="1"
                                 android:ellipsize="end" />
@@ -266,7 +266,7 @@
                                 android:id="@+id/homeSearchRotatorText2"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#8A8A93"
+                                android:textColor="@color/tv_text_muted"
                                 android:textSize="14sp"
                                 android:maxLines="1"
                                 android:ellipsize="end" />
@@ -281,7 +281,7 @@
                         android:padding="12dp"
                         android:background="@drawable/bg_apple_glass_pill"
                         android:src="@drawable/ic_ios_clock"
-                        app:tint="#C9A96E"
+                        app:tint="@color/tv_accent"
                         android:contentDescription="Historial de lo visto" />
                 </LinearLayout>
 
@@ -412,7 +412,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="ÚLTIMAMENTE NUEVO"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -449,7 +449,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_arrow_right"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -479,7 +479,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_refresh"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -499,7 +499,7 @@
                     android:layout_height="34dp"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="14dp"
-                    android:indeterminateTint="#C9A96E"
+                    android:indeterminateTint="@color/tv_accent"
                     android:visibility="gone" />
 
                 <!-- Anuncio en bloque bajo los botones -->
@@ -515,7 +515,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="STREAMING - PLATAFORMAS"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -536,7 +536,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="EL NUEVO STREAMING DE HOY"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -571,7 +571,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_arrow_right"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -601,7 +601,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_refresh"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -621,7 +621,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="ESTRENOS EN CINE"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -656,7 +656,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_arrow_right"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -686,7 +686,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_refresh"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -706,7 +706,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="SAGAS EN TENDENCIA"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -741,7 +741,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_arrow_right"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -771,7 +771,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_refresh"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -870,7 +870,7 @@
                     android:paddingStart="28dp"
                     android:paddingEnd="28dp"
                     android:text="ABRIR AJUSTES"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#0A1834"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:contentDescription="Abrir ajustes para cargar una lista M3U" />
@@ -1016,7 +1016,7 @@
                     android:paddingStart="28dp"
                     android:paddingEnd="28dp"
                     android:text="ABRIR AJUSTES"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#0A1834"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:contentDescription="Abrir ajustes para cargar una lista M3U" />
@@ -1167,7 +1167,7 @@
             android:id="@+id/containerBrowser"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#0A1834"
+            android:background="@color/tv_background"
             android:visibility="gone">
 
             <ScrollView
@@ -1226,7 +1226,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
                                 android:text="Cada opción abre su propia pantalla"
-                                android:textColor="#8A8A8E"
+                                android:textColor="@color/tv_text_muted"
                                 android:textSize="13sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -1258,7 +1258,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_ios_tv"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1279,7 +1279,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Añade o cambia tu lista M3U"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1288,7 +1288,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1313,7 +1313,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_ios_shield"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1334,7 +1334,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="PIN y canales bloqueados"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1343,7 +1343,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1368,7 +1368,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_theme"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1389,7 +1389,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Oscuro, claro o automático"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1398,7 +1398,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1422,7 +1422,7 @@
                                 android:layout_width="22dp"
                                 android:layout_height="22dp"
                                 android:background="@drawable/bg_settings_accent"
-                                android:backgroundTint="#C9A96E" />
+                                android:backgroundTint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1443,7 +1443,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Tinta principal de la app"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1452,7 +1452,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1477,7 +1477,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_ios_clock"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1498,7 +1498,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Tus listas recientes"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1507,7 +1507,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1553,7 +1553,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Borrar caché de lista"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1562,7 +1562,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1587,7 +1587,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_ios_message"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1608,7 +1608,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Tu semana en números"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1617,7 +1617,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -1638,7 +1638,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"
-            android:background="#0A1834">
+            android:background="@color/tv_background">
                     <!-- ================= PANTALLA PREMIER ================= -->
             <androidx.core.widget.NestedScrollView
                 android:id="@+id/premierScroll"
@@ -1702,7 +1702,7 @@
                             android:background="@android:color/transparent"
                             android:padding="10dp"
                             android:src="@drawable/ic_ios_search"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="Buscar en cine" />
                 </LinearLayout>
 
@@ -1757,7 +1757,7 @@
                                 android:clickable="true"
                                 android:focusable="true"
                                 android:text="See all ›"
-                                android:textColor="#98989F"
+                                android:textColor="@color/tv_text_secondary"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1966,7 +1966,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="20dp"
                             android:text="ESTRENOS · 2026"
-                            android:textColor="#C9A96E"
+                            android:textColor="@color/tv_accent"
                             android:letterSpacing="0.24"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -2092,7 +2092,7 @@
                             android:gravity="center"
                             android:paddingVertical="9dp"
                             android:text="Películas"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />
 
@@ -2108,7 +2108,7 @@
                             android:gravity="center"
                             android:paddingVertical="9dp"
                             android:text="Series"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -2163,7 +2163,7 @@
                         android:background="@color/ios_surface_2"
                         android:text="Películas"
                         android:textAllCaps="false"
-                        android:textColor="#98989F"
+                        android:textColor="@color/tv_text_secondary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -2176,7 +2176,7 @@
                         android:background="@color/ios_surface_2"
                         android:text="Series"
                         android:textAllCaps="false"
-                        android:textColor="#98989F"
+                        android:textColor="@color/tv_text_secondary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -2189,7 +2189,7 @@
                         android:background="@color/ios_surface_2"
                         android:text="Novedades ✨"
                         android:textAllCaps="false"
-                        android:textColor="#98989F"
+                        android:textColor="@color/tv_text_secondary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -2212,7 +2212,7 @@
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
                         android:text="🆕 Estrenos 2024+"
-                        android:textColor="#98989F"
+                        android:textColor="@color/tv_text_secondary"
                         android:textSize="11sp" />
 
                     <Button
@@ -2226,7 +2226,7 @@
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
                         android:text="Top valoradas"
-                        android:textColor="#98989F"
+                        android:textColor="@color/tv_text_secondary"
                         android:textSize="11sp" />
                 </LinearLayout>
 </LinearLayout>
@@ -2255,7 +2255,7 @@
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="9dp"
                             android:text="Todos"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />                        <TextView
                             android:id="@+id/chipMoodAccion"
@@ -2269,7 +2269,7 @@
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="9dp"
                             android:text="Acción"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />                        <TextView
                             android:id="@+id/chipMoodFeel"
@@ -2283,7 +2283,7 @@
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="9dp"
                             android:text="Feel good"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />                        <TextView
                             android:id="@+id/chipMoodSerie"
@@ -2297,7 +2297,7 @@
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="9dp"
                             android:text="Serie larga"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />                        <TextView
                             android:id="@+id/chipMoodCorta"
@@ -2311,7 +2311,7 @@
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="9dp"
                             android:text="Corta &#60; 2h"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />                        <TextView
                             android:id="@+id/chipMoodTop2"
@@ -2325,7 +2325,7 @@
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="9dp"
                             android:text="Top valoradas"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />                        <TextView
                             android:id="@+id/chipMoodEstrenos2"
@@ -2338,7 +2338,7 @@
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="9dp"
                             android:text="Estrenos"
-                            android:textColor="#98989F"
+                            android:textColor="@color/tv_text_secondary"
                             android:textSize="11sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -2403,7 +2403,7 @@
                     android:layout_height="34dp"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="12dp"
-                    android:indeterminateTint="#C9A96E"
+                    android:indeterminateTint="@color/tv_accent"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -2486,7 +2486,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:text="TVMAN"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.3"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -2512,7 +2512,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="6dp"
                 android:text="TIPO DE CONTENIDO"
-                android:textColor="#98989F"
+                android:textColor="@color/tv_text_secondary"
                 android:letterSpacing="0.14"
                 android:textSize="9.5sp"
                 android:textStyle="bold" />
@@ -2534,7 +2534,7 @@
                     android:paddingHorizontal="14dp"
                     android:paddingVertical="8dp"
                     android:text="PELÍCULAS"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
 
@@ -2548,7 +2548,7 @@
                     android:paddingHorizontal="14dp"
                     android:paddingVertical="8dp"
                     android:text="SERIES"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -2567,7 +2567,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_ios_star_fill"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -2593,7 +2593,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_ios_play"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -2619,7 +2619,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_ios_photo"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -2646,7 +2646,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_ios_grid"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -2661,7 +2661,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="▸"
-                android:textColor="#98989F"
+                android:textColor="@color/tv_text_secondary"
                 android:textSize="14sp" />
         </LinearLayout>
         <LinearLayout
@@ -2688,7 +2688,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="Acción"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
 
@@ -2703,7 +2703,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="Comedia"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -2725,7 +2725,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="Romance"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
 
@@ -2740,7 +2740,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="Anime"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -2761,7 +2761,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="Terror"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
 
@@ -2775,7 +2775,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="Drama"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -2796,7 +2796,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_ios_clock"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -2822,7 +2822,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_ios_message"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -2848,7 +2848,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_ios_globe"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -2863,7 +2863,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="▸"
-                android:textColor="#98989F"
+                android:textColor="@color/tv_text_secondary"
                 android:textSize="14sp" />
         </LinearLayout>
         <LinearLayout
@@ -2890,7 +2890,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="NETFLIX"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
 
@@ -2905,7 +2905,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="DISNEY+"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -2927,7 +2927,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="MAX"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
 
@@ -2942,7 +2942,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="PRIME"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -2963,7 +2963,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="APPLE TV+"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
 
@@ -2977,7 +2977,7 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="7dp"
                     android:text="HULU"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -2998,7 +2998,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_gear_modern"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -3024,7 +3024,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_ios_search"
-                app:tint="#C9A96E" />
+                app:tint="@color/tv_accent" />
 
             <TextView
                 android:layout_width="0dp"
