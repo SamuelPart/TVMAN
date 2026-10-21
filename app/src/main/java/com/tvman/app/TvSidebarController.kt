@@ -34,23 +34,23 @@ object TvSidebarController {
         val context = activity
         val expandedWidth = dp(context, EXPANDED_WIDTH_DP)
         val collapsedWidth = dp(context, COLLAPSED_WIDTH_DP)
-        val labels = rowIds.mapNotNull { id ->
+        val labels = rowIds.asIterable().mapNotNull { id ->
             root.findViewById<TextView>(id)?.let { id to it.text.toString() }
         }.toMap()
-        val fadingDetails = listOfNotNull(
-            root.findViewById(R.id.sideBrand),
-            root.findViewById(R.id.sideProfileDetails),
-            root.findViewById(R.id.sideSectionMenu),
-            root.findViewById(R.id.sideSectionTrend),
-            root.findViewById(R.id.sideSectionGeneral),
-            root.findViewById(R.id.sideSearchInput)
+        val fadingDetails: List<View> = listOfNotNull(
+            root.findViewById<View>(R.id.sideBrand),
+            root.findViewById<View>(R.id.sideProfileDetails),
+            root.findViewById<View>(R.id.sideSectionMenu),
+            root.findViewById<View>(R.id.sideSectionTrend),
+            root.findViewById<View>(R.id.sideSectionGeneral),
+            root.findViewById<View>(R.id.sideSearchInput)
         )
         var animator: ValueAnimator? = null
         var expanded = false
 
         fun applyDetails(show: Boolean) {
             root.findViewById<View>(R.id.sideProfileDetails)?.visibility = if (show) View.VISIBLE else View.GONE
-            root.findViewById<View>(R.id.sideProfile)?.let { profile ->
+            root.findViewById<LinearLayout>(R.id.sideProfile)?.let { profile ->
                 profile.gravity = if (show) android.view.Gravity.CENTER_VERTICAL else android.view.Gravity.CENTER
             }
             root.findViewById<View>(R.id.sideBrand)?.visibility = if (show) View.VISIBLE else View.GONE
