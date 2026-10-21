@@ -7,7 +7,7 @@ TVMAN toma como base funcional la rama [`arena/01a09a92-iptv`](https://github.co
 2. Usar JDK 17 y sincronizar Gradle.
 3. Ejecutar `app` en un emulador Android TV, televisor/dispositivo Android TV o teléfono Android compatible.
 
-El manifiesto añade `LEANBACK_LAUNCHER` para TV, mantiene el lanzador Android normal para teléfonos, declara el dispositivo táctil como opcional y usa el identificador de aplicación `com.tvman.app`. La interfaz principal queda libre para orientarse en móvil; el reproductor de vídeo mantiene orientación horizontal.
+TVMAN ahora presenta una interfaz de inicio propia para Android TV: lienzo claro, navegación lateral y botones/cards con estados de foco para control remoto. El lanzador normal conserva la interfaz móvil; Android TV usa `LEANBACK_LAUNCHER` y abre el inicio TV. Ambas interfaces conectan a las funciones compartidas de canales, cine/series, búsqueda y ajustes. El dispositivo táctil es opcional y el identificador es `com.tvman.app`.
 
 ## Anuncios
 Los anuncios están desactivados en esta versión: no se inicializa AdMob, no se solicitan anuncios y la reproducción no tiene una puerta de anuncios.

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="#F5F7FB"
+    android:focusableInTouchMode="true">
+
+    <LinearLayout
+        android:id="@+id/tvSidebar"
+        android:layout_width="238dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:elevation="3dp"
+        android:paddingStart="22dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="34dp"
+        android:paddingBottom="24dp">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="54dp" android:gravity="center_vertical" android:orientation="horizontal" android:layout_marginBottom="38dp">
+            <TextView android:layout_width="42dp" android:layout_height="42dp" android:gravity="center" android:background="@drawable/tv_logo_bg" android:text="T" android:textColor="#FFFFFF" android:textSize="25sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="TVMAN" android:textColor="#171A25" android:textSize="25sp" android:fontFamily="sans" android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginBottom="12dp" android:text="MENÚ" android:textColor="#9299A8" android:textSize="11sp" android:letterSpacing="0.12" android:textStyle="bold" />
+        <TextView android:id="@+id/tvNavHome" style="@style/TVMan.TVNavItem" android:text="⌂     Inicio" android:background="@drawable/tv_focus_selector" />
+        <TextView android:id="@+id/tvNavChannels" style="@style/TVMan.TVNavItem" android:text="▣     Canales en vivo" />
+        <TextView android:id="@+id/tvNavMovies" style="@style/TVMan.TVNavItem" android:text="▶     Cine y series" />
+        <TextView android:id="@+id/tvNavSearch" style="@style/TVMan.TVNavItem" android:text="⌕     Buscar" />
+        <TextView android:id="@+id/tvNavSettings" style="@style/TVMan.TVNavItem" android:text="⚙     Ajustes" />
+        <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="12dp" android:text="SIN ANUNCIOS\nTVMAN para tu televisor" android:textColor="#737B8C" android:textSize="12sp" android:lineSpacingExtra="4dp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/tvContentScroll"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:focusable="false"
+        android:paddingStart="42dp"
+        android:paddingEnd="48dp">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingTop="30dp" android:paddingBottom="44dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" android:layout_marginBottom="20dp">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ENTRETENIMIENTO EN GRANDE" android:textColor="#596CE0" android:textSize="11sp" android:letterSpacing="0.14" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Hola, bienvenido a TVMAN" android:textColor="#171A25" android:textSize="27sp" android:textStyle="bold" />
+                </LinearLayout>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/tv_focus_selector" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingTop="10dp" android:paddingBottom="10dp" android:text="●  TV EN VIVO" android:textColor="#28344E" android:textSize="13sp" android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/tvFeatured" android:layout_width="match_parent" android:layout_height="260dp" android:orientation="horizontal" android:background="@drawable/tv_focus_selector" android:padding="26dp" android:gravity="center_vertical" android:layout_marginBottom="25dp">
+                <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1.15" android:gravity="center_vertical" android:orientation="vertical" android:paddingEnd="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TU TELEVISIÓN, A TU MANERA" android:textColor="#596CE0" android:textSize="11sp" android:letterSpacing="0.12" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="Todo lo que quieres ver.\nEn una sola pantalla." android:textColor="#171A25" android:textSize="29sp" android:lineSpacingExtra="3dp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="9dp" android:text="Conecta tu lista M3U y disfruta tus canales, películas y series." android:textColor="#687184" android:textSize="14sp" android:maxLines="2" />
+                    <TextView android:id="@+id/tvFeaturedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="15dp" android:background="@drawable/tv_focus_selector" android:paddingStart="19dp" android:paddingEnd="19dp" android:paddingTop="11dp" android:paddingBottom="11dp" android:focusable="true" android:clickable="true" android:text="Explorar canales   ›" android:textColor="#28344E" android:textSize="14sp" android:textStyle="bold" />
+                </LinearLayout>
+                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.85" android:background="#EEF1FF">
+                    <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:text="TV\n▶" android:textColor="#596CE0" android:textSize="53sp" android:lineSpacingExtra="8dp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="bottom|end" android:layout_margin="12dp" android:text="TVMAN · SIN ANUNCIOS" android:textColor="#737B8C" android:textSize="10sp" android:textStyle="bold" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="11dp" android:text="Explora TVMAN" android:textColor="#171A25" android:textSize="20sp" android:textStyle="bold" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:weightSum="3" android:layout_marginBottom="24dp">
+                <TextView android:id="@+id/tvCardChannels" style="@style/TVMan.TVCategoryCard" android:layout_width="0dp" android:layout_weight="1" android:text="▣\nCanales en vivo\n\nNoticias, deportes y más" />
+                <TextView android:id="@+id/tvCardMovies" style="@style/TVMan.TVCategoryCard" android:layout_width="0dp" android:layout_weight="1" android:layout_marginStart="14dp" android:text="▶\nCine y series\n\nEncuentra algo para ver" />
+                <TextView android:id="@+id/tvCardSearch" style="@style/TVMan.TVCategoryCard" android:layout_width="0dp" android:layout_weight="1" android:layout_marginStart="14dp" android:text="⌕\nBuscar contenido\n\nVe directo a tu favorito" />
+            </LinearLayout>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="11dp" android:text="Empieza en segundos" android:textColor="#171A25" android:textSize="20sp" android:textStyle="bold" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <TextView android:layout_width="0dp" android:layout_height="78dp" android:layout_weight="1" android:background="@drawable/tv_focus_selector" android:gravity="center_vertical" android:padding="18dp" android:text="1   Abre Ajustes y agrega tu lista M3U" android:textColor="#4A5364" android:textSize="14sp" />
+                <TextView android:layout_width="0dp" android:layout_height="78dp" android:layout_weight="1" android:layout_marginStart="14dp" android:background="@drawable/tv_focus_selector" android:gravity="center_vertical" android:padding="18dp" android:text="2   Elige Canales o Cine y disfruta" android:textColor="#4A5364" android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

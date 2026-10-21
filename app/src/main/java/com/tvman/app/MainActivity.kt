@@ -2,6 +2,7 @@ package com.tvman.app
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -40,6 +41,14 @@ import java.net.URLEncoder
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val EXTRA_TV_TAB = "tvman_tv_tab"
+        const val TAB_CHANNELS = "channels"
+        const val TAB_CINE = "cine"
+        const val TAB_SEARCH = "search"
+        const val TAB_SETTINGS = "settings"
+    }
 
     private lateinit var binding: ActivityMainBinding
 
@@ -80,6 +89,12 @@ class MainActivity : AppCompatActivity() {
     // Public test lists (legal & free streams)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val isTelevision = (resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK) == Configuration.UI_MODE_TYPE_TELEVISION
+        if (isTelevision && intent.getStringExtra(EXTRA_TV_TAB) == null) {
+            startActivity(Intent(this, TvHomeActivity::class.java))
+            finish()
+            return
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -90,6 +105,12 @@ class MainActivity : AppCompatActivity() {
 
 
         setupBottomNavigation()
+        when (intent.getStringExtra(EXTRA_TV_TAB)) {
+            TAB_CHANNELS -> binding.bottomNavigation.selectedItemId = R.id.navigation_channels
+            TAB_CINE -> binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+            TAB_SEARCH -> binding.bottomNavigation.selectedItemId = R.id.navigation_search
+            TAB_SETTINGS -> binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
         setupRecyclerViews()
         incrementOpenCounter()
         setupHomeBanner()
