@@ -2,6 +2,7 @@ package com.tvman.app
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -40,6 +41,14 @@ import java.net.URLEncoder
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val EXTRA_TV_TAB = "tvman_tv_tab"
+        const val TAB_CHANNELS = "channels"
+        const val TAB_CINE = "cine"
+        const val TAB_SEARCH = "search"
+        const val TAB_SETTINGS = "settings"
+    }
 
     private lateinit var binding: ActivityMainBinding
 
@@ -80,6 +89,12 @@ class MainActivity : AppCompatActivity() {
     // Public test lists (legal & free streams)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val isTelevision = (resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK) == Configuration.UI_MODE_TYPE_TELEVISION
+        if (isTelevision && intent.getStringExtra(EXTRA_TV_TAB) == null) {
+            startActivity(Intent(this, TvHomeActivity::class.java))
+            finish()
+            return
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -90,6 +105,12 @@ class MainActivity : AppCompatActivity() {
 
 
         setupBottomNavigation()
+        when (intent.getStringExtra(EXTRA_TV_TAB)) {
+            TAB_CHANNELS -> binding.bottomNavigation.selectedItemId = R.id.navigation_channels
+            TAB_CINE -> binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+            TAB_SEARCH -> binding.bottomNavigation.selectedItemId = R.id.navigation_search
+            TAB_SETTINGS -> binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
         setupRecyclerViews()
         incrementOpenCounter()
         setupHomeBanner()
@@ -132,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         updateTVMANNav(R.id.navigation_home)
         listOf(binding.navBtnHome, binding.navBtnChannels, binding.navBtnSearch,
             binding.navBtnCine, binding.navBtnSettings).forEach { it.springPress() }
-        binding.navBtnHome.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_home }
+        binding.navBtnHome.setOnClickListener { returnToTvHome() }
         binding.navBtnChannels.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_channels }
         binding.navBtnSearch.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_search }
         binding.navBtnCine.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_cine }
@@ -142,7 +163,7 @@ class MainActivity : AppCompatActivity() {
             updateTVMANNav(item.itemId)
             when (item.itemId) {
                 R.id.navigation_home -> {
-                    showTab(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE)
+                    returnToTvHome()
                     true
                 }
                 R.id.navigation_channels -> {
@@ -170,6 +191,11 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    private fun returnToTvHome() {
+        startActivity(Intent(this, TvHomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        finish()
     }
 
     private fun showTab(homeVis: Int, channelsVis: Int, cineVis: Int, browserVis: Int, searchVis: Int) {
@@ -947,6 +973,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        findViewById<View>(R.id.btnChannelsEmptySettings).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
+        findViewById<View>(R.id.btnSearchEmptySettings).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
+
         // Search Tab Input Listener
         binding.edtSearchTab.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -2618,6 +2651,7 @@ class MainActivity : AppCompatActivity() {
             putExtra("media", media)
         }
         startActivity(intent)
+        overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }
 
     private fun hideKeyboard() {
@@ -2771,19 +2805,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyAppTheme() {
-        val sharedPref = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-        val selectedTheme = sharedPref.getString("theme_pref", "system") ?: "system"
-        
-        val isDark = if (selectedTheme == "system") {
-            val currentNightMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
-            currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
-        } else {
-            selectedTheme == "dark"
-        }
-        
-        binding.root.post {
-            updateAppThemeColors(isDark)
-        }
+        // TVMAN is a TV-only app: all non-video screens use the light canvas.
+        binding.root.post { updateAppThemeColors(false) }
     }
 
     private fun updateAppThemeColors(isDark: Boolean) {

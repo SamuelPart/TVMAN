@@ -858,6 +858,23 @@
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/btnChannelsEmptySettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="22dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp"
+                    android:text="ABRIR AJUSTES"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:contentDescription="Abrir ajustes para cargar una lista M3U" />
+
             </LinearLayout>
 
             <!-- Contenido cargado: panel "TV EN VIVO" -->
@@ -986,6 +1003,23 @@
                     android:textColor="@color/ios_blue"
                     android:textSize="16sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btnSearchEmptySettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp"
+                    android:text="ABRIR AJUSTES"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:contentDescription="Abrir ajustes para cargar una lista M3U" />
             </LinearLayout>
 
             <!-- Search Content (Loaded) -->
