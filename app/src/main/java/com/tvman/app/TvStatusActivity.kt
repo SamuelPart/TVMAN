@@ -11,16 +11,7 @@ import kotlinx.coroutines.launch
 class TvStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val isTelevision = (resources.configuration.uiMode and
-            android.content.res.Configuration.UI_MODE_TYPE_MASK) ==
-            android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
-        if (!isTelevision) {
-            // Open the same TV home immediately on phones; skip only the TV splash to keep launch reliable.
-            startActivity(Intent(this, TvHomeActivity::class.java))
-            finish()
-            return
-        }
-
+        // Keep the bunny loading screen on every device, then open the same TV home UI.
         setContentView(R.layout.activity_tv_status)
         lifecycleScope.launch {
             delay(SPLASH_DURATION_MS)
