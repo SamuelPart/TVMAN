@@ -2644,6 +2644,7 @@ class MainActivity : AppCompatActivity() {
             putExtra("media", media)
         }
         startActivity(intent)
+        overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }
 
     private fun hideKeyboard() {

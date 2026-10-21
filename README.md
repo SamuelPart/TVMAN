@@ -6,6 +6,9 @@ TVMAN es una app exclusiva para Android TV basada funcionalmente en la rama [`ar
 - Inicio cinematográfico a pantalla completa: fondo TMDB inmersivo, navegación lateral que se expande al enfocarla y filas que se recorren con el mando.
 - El hero permite avanzar o retroceder entre títulos destacados con botones o DPAD, actualizando el arte, título y sinopsis.
 - «Continuar viendo» se coloca bajo el hero cuando hay progreso guardado; sin progreso, las recomendaciones quedan como primera fila.
+- Al enfocar pósteres aparece una ficha rápida; tras una pausa breve, la portada cambia al arte TMDB del título sin iniciar la reproducción.
+- Incluye colecciones editoriales y una opción para activar, ocultar y reordenar filas desde el mando.
+- Las fichas y secciones usan transiciones suaves coherentes con el estilo cinematográfico.
 - Muestra una pantalla de carga mientras prepara el catálogo y el arte TMDB; el título destacado y los pósteres usan `backdropUrl` / `posterUrl` del catálogo.
 - Todas las pantallas se fuerzan a horizontal; los controles reciben un contorno de foco visible, navegación DPAD y restauración del último elemento enfocado al volver.
 - El reproductor responde a las teclas multimedia del mando y permite revelar/enfocar controles con DPAD; los controles no se ocultan mientras tengan el foco.

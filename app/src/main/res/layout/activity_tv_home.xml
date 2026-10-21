@@ -95,29 +95,100 @@
                         android:orientation="horizontal" />
                 </HorizontalScrollView>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:gravity="center_vertical" android:orientation="horizontal">
-                    <TextView android:id="@+id/tvPostersTitle" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="PARA TI" android:textColor="#FFFFFFFF" android:textSize="17sp" android:textStyle="bold" android:letterSpacing="0.05" />
-                    <TextView android:id="@+id/tvPostersHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ver todo   ›" android:textColor="#FFD3D8DD" android:textSize="12sp" />
-                </LinearLayout>
-
-                <HorizontalScrollView
-                    android:id="@+id/tvPosterScroll"
+                <LinearLayout
+                    android:id="@+id/tvHomeSections"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="11dp"
-                    android:clipToPadding="false"
-                    android:fillViewport="false"
-                    android:scrollbars="none">
-                    <LinearLayout android:id="@+id/tvPosterRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" />
-                </HorizontalScrollView>
-
-                <TextView android:id="@+id/tvSecondRowTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="22dp" android:text="LO MÁS VISTO" android:textColor="#FFFFFFFF" android:textSize="17sp" android:textStyle="bold" android:letterSpacing="0.05" />
-                <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="11dp" android:clipToPadding="false" android:scrollbars="none">
-                    <LinearLayout android:id="@+id/tvPopularRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" />
-                </HorizontalScrollView>
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:id="@+id/tvSectionRecommendations"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="vertical">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                            <TextView android:id="@+id/tvPostersTitle" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="PARA TI" android:textColor="#FFFFFFFF" android:textSize="17sp" android:textStyle="bold" android:letterSpacing="0.05" />
+                            <TextView android:id="@+id/tvPostersHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ver todo   ›" android:textColor="#FFD3D8DD" android:textSize="12sp" />
+                        </LinearLayout>
+                        <HorizontalScrollView android:id="@+id/tvPosterScroll" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="11dp" android:clipToPadding="false" android:fillViewport="false" android:scrollbars="none">
+                            <LinearLayout android:id="@+id/tvPosterRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" />
+                        </HorizontalScrollView>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/tvSectionPopular"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="22dp"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/tvSecondRowTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="LO MÁS VISTO" android:textColor="#FFFFFFFF" android:textSize="17sp" android:textStyle="bold" android:letterSpacing="0.05" />
+                        <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="11dp" android:clipToPadding="false" android:scrollbars="none">
+                            <LinearLayout android:id="@+id/tvPopularRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" />
+                        </HorizontalScrollView>
+                    </LinearLayout>
+                    <LinearLayout android:id="@+id/tvSectionAction" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="22dp" android:orientation="vertical" android:visibility="gone">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ACCIÓN Y AVENTURA" android:textColor="#FFFFFFFF" android:textSize="17sp" android:textStyle="bold" android:letterSpacing="0.05" />
+                        <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="11dp" android:clipToPadding="false" android:scrollbars="none"><LinearLayout android:id="@+id/tvActionRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" /></HorizontalScrollView>
+                    </LinearLayout>
+                    <LinearLayout android:id="@+id/tvSectionSciFi" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="22dp" android:orientation="vertical" android:visibility="gone">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CIENCIA FICCIÓN" android:textColor="#FFFFFFFF" android:textSize="17sp" android:textStyle="bold" android:letterSpacing="0.05" />
+                        <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="11dp" android:clipToPadding="false" android:scrollbars="none"><LinearLayout android:id="@+id/tvSciFiRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" /></HorizontalScrollView>
+                    </LinearLayout>
+                    <LinearLayout android:id="@+id/tvSectionFamily" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="22dp" android:orientation="vertical" android:visibility="gone">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PARA VER EN FAMILIA" android:textColor="#FFFFFFFF" android:textSize="17sp" android:textStyle="bold" android:letterSpacing="0.05" />
+                        <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="11dp" android:clipToPadding="false" android:scrollbars="none"><LinearLayout android:id="@+id/tvFamilyRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" /></HorizontalScrollView>
+                    </LinearLayout>
+                </LinearLayout>
 
             </LinearLayout>
         </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/tvPosterPreview"
+            android:layout_width="390dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="112dp"
+            android:layout_marginEnd="64dp"
+            android:background="@drawable/tv_preview_panel"
+            android:elevation="8dp"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/tvPosterPreviewTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:maxLines="2"
+                android:ellipsize="end" />
+            <TextView
+                android:id="@+id/tvPosterPreviewMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="#FFDDE2E8"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/tvPosterPreviewGenres"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:textColor="#FFC99AFF"
+                android:textSize="13sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <TextView
+                android:id="@+id/tvPosterPreviewOverview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="9dp"
+                android:textColor="#FFCBD1D8"
+                android:textSize="14sp"
+                android:maxLines="4"
+                android:ellipsize="end" />
+        </LinearLayout>
     </FrameLayout>
 
     <LinearLayout
@@ -148,6 +219,7 @@
         <TextView android:id="@+id/tvNavMovies" style="@style/TvTopNavItem" android:layout_width="match_parent" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:text="PELÍCULAS" />
         <TextView android:id="@+id/tvNavSeries" style="@style/TvTopNavItem" android:layout_width="match_parent" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:text="SERIES" />
         <TextView android:id="@+id/tvNavKids" style="@style/TvTopNavItem" android:layout_width="match_parent" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:text="INFANTIL" />
+        <TextView android:id="@+id/tvCustomizeAction" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:paddingStart="12dp" android:background="@drawable/tv_top_action" android:focusable="true" android:clickable="true" android:text="⚙   PERSONALIZAR" android:textColor="#FFFFFFFF" android:textSize="13sp" android:contentDescription="Personalizar filas del inicio" />
         <View android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
         <TextView android:id="@+id/tvSearchAction" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginBottom="10dp" android:gravity="center_vertical" android:paddingStart="12dp" android:background="@drawable/tv_top_action" android:focusable="true" android:clickable="true" android:text="⌕   BUSCAR" android:textColor="#FFFFFFFF" android:textSize="14sp" android:contentDescription="Buscar contenido" />
         <TextView android:id="@+id/tvProfile" android:layout_width="match_parent" android:layout_height="52dp" android:gravity="center_vertical" android:paddingStart="12dp" android:background="@drawable/tv_top_action" android:focusable="true" android:clickable="true" android:text="T   PERFIL" android:textColor="#FFFFFFFF" android:textSize="14sp" android:textStyle="bold" android:contentDescription="Perfil y ajustes" />

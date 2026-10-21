@@ -356,6 +356,7 @@ class CineSearchActivity : AppCompatActivity() {
         val dest = if (media.type == "movie") CineMovieDetailActivity::class.java
         else CineTvShowDetailActivity::class.java
         startActivity(Intent(this, dest).apply { putExtra("media", media) })
+        overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }
 
     private fun hideKeyboard() {
