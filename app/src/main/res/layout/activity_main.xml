@@ -26,9 +26,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <include
+        android:id="@+id/tvSidebar"
+        layout="@layout/view_tv_sidebar"
+        android:layout_width="278dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
     <!-- ═══ DOCK INFERIOR APPLE (v7): vidrio oscuro flotante, iconos SF + labels ═══ -->
     <LinearLayout
         android:id="@+id/tvmanNavBar"
+        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="64dp"
         android:layout_marginHorizontal="16dp"
@@ -189,11 +199,11 @@
     <!-- Main Content Container -->
     <FrameLayout
         android:id="@+id/contentContainer"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/tvmanNavBar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tvSidebar"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- ================= TAB 1: INICIO (HOME HUB - v3.1) ================= -->
@@ -213,7 +223,7 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
                 android:paddingTop="10dp"
-                android:paddingBottom="120dp">
+                android:paddingBottom="36dp">
 
                 <!-- Buscador de Inicio: icono a la izquierda + placeholder rotativo
                      con las busquedas pasadas; el reloj abre el historial visto -->

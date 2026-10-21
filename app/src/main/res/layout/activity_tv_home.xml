@@ -37,7 +37,7 @@
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:fillViewport="true"
-            android:paddingStart="118dp"
+            android:paddingStart="302dp"
             android:paddingEnd="64dp"
             android:scrollbars="none">
 
@@ -191,39 +191,12 @@
         </LinearLayout>
     </FrameLayout>
 
-    <LinearLayout
+    <include
         android:id="@+id/tvTopBar"
-        android:layout_width="82dp"
+        layout="@layout/view_tv_sidebar"
+        android:layout_width="278dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="#E6080B10"
-        android:elevation="12dp"
-        android:gravity="top"
-        android:orientation="vertical"
-        android:paddingStart="22dp"
-        android:paddingEnd="18dp"
-        android:paddingTop="34dp"
-        android:paddingBottom="28dp">
-
-        <TextView
-            android:id="@+id/tvBrand"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="34dp"
-            android:text="TVMAN"
-            android:textColor="#FFFFFFFF"
-            android:textSize="21sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08" />
-        <TextView android:id="@+id/tvNavHome" style="@style/TvTopNavItem" android:layout_width="match_parent" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:text="⌂   INICIO" />
-        <TextView android:id="@+id/tvNavMovies" style="@style/TvTopNavItem" android:layout_width="match_parent" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:text="PELÍCULAS" />
-        <TextView android:id="@+id/tvNavSeries" style="@style/TvTopNavItem" android:layout_width="match_parent" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:text="SERIES" />
-        <TextView android:id="@+id/tvNavKids" style="@style/TvTopNavItem" android:layout_width="match_parent" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:text="INFANTIL" />
-        <TextView android:id="@+id/tvCustomizeAction" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginBottom="8dp" android:gravity="center_vertical" android:paddingStart="12dp" android:background="@drawable/tv_top_action" android:focusable="true" android:clickable="true" android:text="⚙   PERSONALIZAR" android:textColor="#FFFFFFFF" android:textSize="13sp" android:contentDescription="Personalizar filas del inicio" />
-        <View android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
-        <TextView android:id="@+id/tvSearchAction" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginBottom="10dp" android:gravity="center_vertical" android:paddingStart="12dp" android:background="@drawable/tv_top_action" android:focusable="true" android:clickable="true" android:text="⌕   BUSCAR" android:textColor="#FFFFFFFF" android:textSize="14sp" android:contentDescription="Buscar contenido" />
-        <TextView android:id="@+id/tvProfile" android:layout_width="match_parent" android:layout_height="52dp" android:gravity="center_vertical" android:paddingStart="12dp" android:background="@drawable/tv_top_action" android:focusable="true" android:clickable="true" android:text="T   PERFIL" android:textColor="#FFFFFFFF" android:textSize="14sp" android:textStyle="bold" android:contentDescription="Perfil y ajustes" />
-    </LinearLayout>
+        android:layout_gravity="start" />
 
     <FrameLayout
         android:id="@+id/tvLoadingOverlay"

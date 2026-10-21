@@ -48,6 +48,10 @@ class MainActivity : AppCompatActivity() {
         const val TAB_CINE = "cine"
         const val TAB_SEARCH = "search"
         const val TAB_SETTINGS = "settings"
+        const val EXTRA_CINE_TYPE = "tvman_cine_type"
+        const val EXTRA_CINE_MOOD = "tvman_cine_mood"
+        const val EXTRA_CINE_ACTION = "tvman_cine_action"
+        const val EXTRA_SEARCH_QUERY = "tvman_search_query"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -105,6 +109,8 @@ class MainActivity : AppCompatActivity() {
 
 
         setupBottomNavigation()
+        selectedCineType = intent.getStringExtra(EXTRA_CINE_TYPE) ?: "all"
+        cineMood = intent.getStringExtra(EXTRA_CINE_MOOD)
         when (intent.getStringExtra(EXTRA_TV_TAB)) {
             TAB_CHANNELS -> binding.bottomNavigation.selectedItemId = R.id.navigation_channels
             TAB_CINE -> binding.bottomNavigation.selectedItemId = R.id.navigation_cine
@@ -118,6 +124,17 @@ class MainActivity : AppCompatActivity() {
         setupHomeSections()
         setupSearchHistories()
         setupListeners()
+        updateCineFilterButtons()
+        updateParaTiChips()
+        intent.getStringExtra(EXTRA_SEARCH_QUERY)?.takeIf { it.isNotBlank() }?.let { query ->
+            binding.bottomNavigation.selectedItemId = R.id.navigation_search
+            binding.edtSearchTab.setText(query)
+            performChannelsSearch(query)
+        }
+        when (intent.getStringExtra(EXTRA_CINE_ACTION)) {
+            "continue" -> startActivity(Intent(this, WatchHistoryActivity::class.java))
+            "favorites" -> openCineList("MI LISTA", "favorites")
+        }
         if (android.os.Build.VERSION.SDK_INT >= 33 &&
             androidx.core.app.ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             androidx.core.app.ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 77)
@@ -146,42 +163,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
-        // iOS look: system blue when selected, iOS gray otherwise
-        val navTint = androidx.core.content.ContextCompat.getColorStateList(this, R.color.nav_item_tint)
-        binding.bottomNavigation.itemIconTintList = navTint
-        binding.bottomNavigation.itemTextColor = navTint
+        // Legacy BottomNavigationView remains hidden for internal tab routing only.
+        binding.bottomNavigation.visibility = View.GONE
+        binding.tvmanNavBar.visibility = View.GONE
         updateTVMANNav(R.id.navigation_home)
-        listOf(binding.navBtnHome, binding.navBtnChannels, binding.navBtnSearch,
-            binding.navBtnCine, binding.navBtnSettings).forEach { it.springPress() }
-        binding.navBtnHome.setOnClickListener { returnToTvHome() }
-        binding.navBtnChannels.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_channels }
-        binding.navBtnSearch.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_search }
-        binding.navBtnCine.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_cine }
-        binding.navBtnSettings.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_settings }
-
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             updateTVMANNav(item.itemId)
             when (item.itemId) {
-                R.id.navigation_home -> {
-                    returnToTvHome()
-                    true
-                }
+                R.id.navigation_home -> { returnToTvHome(); true }
                 R.id.navigation_channels -> {
                     showTab(View.GONE, View.VISIBLE, View.GONE, View.GONE, View.GONE)
-                    SmartTips.showOnce(this, "channels",
-                        "💡 Toca el filtro para ordenar los canales por país o categoría")
+                    SmartTips.showOnce(this, "channels", "💡 Toca el filtro para ordenar los canales por país o categoría")
                     true
                 }
                 R.id.navigation_search -> {
                     showTab(View.GONE, View.GONE, View.GONE, View.GONE, View.VISIBLE)
-                    SmartTips.showOnce(this, "search",
-                        "💡 Busca canales y películas al instante, con historial incluido")
+                    SmartTips.showOnce(this, "search", "💡 Busca canales y películas al instante, con historial incluido")
                     true
                 }
                 R.id.navigation_cine -> {
                     showTab(View.GONE, View.GONE, View.VISIBLE, View.GONE, View.GONE)
-                    SmartTips.showOnce(this, "cine",
-                        "💡 El BOT busca los mejores servidores por ti: toca una película y solo disfruta")
+                    SmartTips.showOnce(this, "cine", "💡 El BOT busca los mejores servidores por ti: toca una película y solo disfruta")
                     true
                 }
                 R.id.navigation_settings -> {
@@ -190,6 +192,60 @@ class MainActivity : AppCompatActivity() {
                 }
                 else -> false
             }
+        }
+        setupSidebarNavigation()
+    }
+
+    private fun setupSidebarNavigation() {
+        val name = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
+            .getString("profile_name", "Usuario")?.trim().takeUnless { it.isNullOrEmpty() } ?: "Usuario"
+        findViewById<TextView>(R.id.sideProfileName).text = name
+        findViewById<TextView>(R.id.sideProfileInitial).text = name.firstOrNull()?.uppercase() ?: "U"
+
+        findViewById<View>(R.id.sideNavHome).setOnClickListener { returnToTvHome() }
+        findViewById<View>(R.id.sideNavContinue).setOnClickListener {
+            startActivity(Intent(this, WatchHistoryActivity::class.java))
+        }
+        findViewById<View>(R.id.sideNavMyList).setOnClickListener { openCineList("MI LISTA", "favorites") }
+        findViewById<View>(R.id.sideNavChannels).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_channels
+        }
+        findViewById<View>(R.id.sideNavMovies).setOnClickListener { showSidebarCine("movie", null) }
+        findViewById<View>(R.id.sideNavSeries).setOnClickListener { showSidebarCine("series", null) }
+        findViewById<View>(R.id.sideNavPopular).setOnClickListener { showSidebarCine("all", "top") }
+        findViewById<View>(R.id.sideNavForYou).setOnClickListener { showSidebarCine("all", "personalized") }
+        findViewById<View>(R.id.sideNavSettings).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
+        findViewById<View>(R.id.sideNavExit).setOnClickListener { finishAffinity() }
+
+        val searchInput = findViewById<android.widget.EditText>(R.id.sideSearchInput)
+        fun runSearch() {
+            val query = searchInput.text.toString().trim()
+            binding.bottomNavigation.selectedItemId = R.id.navigation_search
+            if (query.isNotEmpty()) {
+                binding.edtSearchTab.setText(query)
+                performChannelsSearch(query)
+            }
+        }
+        findViewById<View>(R.id.sideSearchAction).setOnClickListener { runSearch() }
+        searchInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_DONE) {
+                runSearch()
+                true
+            } else false
+        }
+    }
+
+    private fun showSidebarCine(type: String, mood: String?) {
+        selectedCineType = type
+        cineMood = mood
+        binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+        updateTVMANNav(R.id.navigation_cine)
+        binding.root.post {
+            updateCineFilterButtons()
+            updateParaTiChips()
+            applyCineFilters()
         }
     }
 
@@ -2021,6 +2077,7 @@ class MainActivity : AppCompatActivity() {
             val matchesMood = when (cineMood) {
                 "estrenos" -> (it.releaseDate?.take(4)?.toIntOrNull() ?: 0) >= 2024
                 "top" -> (it.rating ?: 0.0) >= 7.5
+                "personalized" -> true
                 "accion" -> listOf("accion", "acción", "action", "aventura", "guerra", "combate", "pelea", "espionaje", "ninja", "superhéroe", "superheroe").any { k ->
                     (it.title + " " + (it.overview ?: "") + " " + it.group).lowercase().contains(k)
                 }
@@ -2033,8 +2090,10 @@ class MainActivity : AppCompatActivity() {
         }
             val ordered = if (selectedCineType == "new") {
                 filtered.sortedByDescending { it.releaseDate ?: "" }
-            } else if (selectedCineType == "all" && cineMood == null && query.isEmpty()) {
-                // orden casa: lo mejor segun TMDB primero, sin tocar el resto
+            } else if (cineMood == "personalized") {
+                filtered.sortedByDescending { TasteProfile.score(this@MainActivity, it) }
+            } else if (cineMood == "top" || (selectedCineType == "all" && cineMood == null && query.isEmpty())) {
+                // Top and default catalogue use TMDB ranking.
                 filtered.sortedByDescending { it.rating ?: -1.0 }
             } else filtered
             ordered
@@ -2341,6 +2400,26 @@ class MainActivity : AppCompatActivity() {
         style(binding.navBtnSearch, binding.imgNavSearch, binding.txtNavSearch, R.id.navigation_search)
         style(binding.navBtnCine, binding.imgNavCine, binding.txtNavCine, R.id.navigation_cine)
         style(binding.navBtnSettings, binding.imgNavSettings, binding.txtNavSettings, R.id.navigation_settings)
+
+        val selectedSidebarId = when (activeId) {
+            R.id.navigation_home -> R.id.sideNavHome
+            R.id.navigation_channels -> R.id.sideNavChannels
+            R.id.navigation_search -> R.id.sideSearchInput
+            R.id.navigation_cine -> when {
+                cineMood == "top" -> R.id.sideNavPopular
+                cineMood == "personalized" -> R.id.sideNavForYou
+                selectedCineType == "series" -> R.id.sideNavSeries
+                selectedCineType == "movie" -> R.id.sideNavMovies
+                else -> View.NO_ID
+            }
+            R.id.navigation_settings -> R.id.sideNavSettings
+            else -> View.NO_ID
+        }
+        listOf(R.id.sideNavHome, R.id.sideNavContinue, R.id.sideNavMyList, R.id.sideNavChannels,
+            R.id.sideNavSeries, R.id.sideNavMovies, R.id.sideNavPopular, R.id.sideNavForYou,
+            R.id.sideNavSettings, R.id.sideNavExit, R.id.sideSearchInput).forEach { id ->
+            findViewById<View>(id)?.isSelected = id == selectedSidebarId
+        }
     }
 
     private fun platformIconOf(label: String): Int = when {
@@ -2844,9 +2923,10 @@ class MainActivity : AppCompatActivity() {
             // EditText extends TextView, so handle it first; keep search/input fields dark too.
             view.setTextColor(textColor)
             view.setHintTextColor(if (isDark) android.graphics.Color.parseColor("#96A4B8") else android.graphics.Color.parseColor("#7D8797"))
-            if (isDark) {
+            val transparentBackground = (view.background as? android.graphics.drawable.ColorDrawable)?.color == android.graphics.Color.TRANSPARENT
+            if (isDark && !transparentBackground && view.id != R.id.sideSearchInput) {
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_settings_card)?.let { view.background = it }
-            } else {
+            } else if (!isDark) {
                 view.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
             }
         } else if (view is androidx.cardview.widget.CardView) {

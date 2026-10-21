@@ -1,7 +1,6 @@
 package com.tvman.app
 
 import android.content.Intent
-import android.animation.ValueAnimator
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Handler
@@ -45,8 +44,6 @@ class TvHomeActivity : AppCompatActivity() {
     private lateinit var continueRow: LinearLayout
     private lateinit var loadingOverlay: View
     private lateinit var catalogErrorOverlay: View
-    private lateinit var navigationRail: View
-    private lateinit var contentScroll: View
     private lateinit var previewPanel: View
     private lateinit var previewTitle: TextView
     private lateinit var previewMeta: TextView
@@ -55,8 +52,6 @@ class TvHomeActivity : AppCompatActivity() {
     private val previewHandler = Handler(Looper.getMainLooper())
     private var pendingPreviewBackdrop: Runnable? = null
     private var pendingPreviewDismiss: Runnable? = null
-    private var navigationExpanded = false
-    private var railAnimator: ValueAnimator? = null
     private var loadingDismissed = false
     private var homeEntranceStarted = false
     private var catalog: List<CineMedia> = emptyList()
@@ -84,23 +79,17 @@ class TvHomeActivity : AppCompatActivity() {
         continueRow = findViewById(R.id.tvContinueRow)
         loadingOverlay = findViewById(R.id.tvLoadingOverlay)
         catalogErrorOverlay = findViewById(R.id.tvCatalogErrorOverlay)
-        navigationRail = findViewById(R.id.tvTopBar)
-        contentScroll = findViewById(R.id.tvContentScroll)
         previewPanel = findViewById(R.id.tvPosterPreview)
         previewTitle = findViewById(R.id.tvPosterPreviewTitle)
         previewMeta = findViewById(R.id.tvPosterPreviewMeta)
         previewGenres = findViewById(R.id.tvPosterPreviewGenres)
         previewOverview = findViewById(R.id.tvPosterPreviewOverview)
-        setNavigationExpanded(false, animated = false)
-        listOf(R.id.tvNavHome, R.id.tvNavMovies, R.id.tvNavSeries, R.id.tvNavKids,
-            R.id.tvCustomizeAction, R.id.tvSearchAction, R.id.tvProfile).forEach { id ->
-            findViewById<View>(id).setOnFocusChangeListener { _, focused ->
-                if (focused) setNavigationExpanded(true)
-                else navigationRail.postDelayed({
-                    if (!navigationRail.hasFocus()) setNavigationExpanded(false)
-                }, 100L)
-            }
-        }
+        val profileName = getSharedPreferences("iptv_pref", MODE_PRIVATE)
+            .getString("profile_name", "Usuario")?.trim().takeUnless { it.isNullOrEmpty() } ?: "Usuario"
+        findViewById<TextView>(R.id.sideProfileName).text = profileName
+        findViewById<TextView>(R.id.sideProfileInitial).text = profileName.firstOrNull()?.uppercase() ?: "U"
+        findViewById<View>(R.id.sideNavHome).isSelected = true
+
         loadingOverlay.alpha = 1f
         findViewById<View>(R.id.tvCatalogRetry).setOnClickListener {
             catalogErrorOverlay.visibility = View.GONE
@@ -113,13 +102,31 @@ class TvHomeActivity : AppCompatActivity() {
         }
         scheduleLoadingTimeout()
 
-        findViewById<View>(R.id.tvNavHome).setOnClickListener { findViewById<View>(R.id.tvNavHome).requestFocus() }
-        findViewById<View>(R.id.tvNavMovies).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
-        findViewById<View>(R.id.tvNavSeries).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
-        findViewById<View>(R.id.tvNavKids).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
-        findViewById<View>(R.id.tvCustomizeAction).setOnClickListener { showHomeCustomization() }
-        findViewById<View>(R.id.tvSearchAction).setOnClickListener { openMainTab(MainActivity.TAB_SEARCH) }
-        findViewById<View>(R.id.tvProfile).setOnClickListener { openMainTab(MainActivity.TAB_SETTINGS) }
+        findViewById<View>(R.id.sideNavHome).setOnClickListener { findViewById<View>(R.id.sideNavHome).requestFocus() }
+        findViewById<View>(R.id.sideNavContinue).setOnClickListener { openMainTab(MainActivity.TAB_SEARCH, cineAction = "continue") }
+        findViewById<View>(R.id.sideNavMyList).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineAction = "favorites") }
+        findViewById<View>(R.id.sideNavChannels).setOnClickListener { openMainTab(MainActivity.TAB_CHANNELS) }
+        findViewById<View>(R.id.sideNavMovies).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "movie") }
+        findViewById<View>(R.id.sideNavSeries).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "series") }
+        findViewById<View>(R.id.sideNavPopular).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineMood = "top") }
+        findViewById<View>(R.id.sideNavForYou).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineMood = "personalized") }
+        findViewById<View>(R.id.sideNavSettings).setOnClickListener { openMainTab(MainActivity.TAB_SETTINGS) }
+        findViewById<View>(R.id.sideNavExit).setOnClickListener { finishAffinity() }
+
+        val sidebarSearch = findViewById<android.widget.EditText>(R.id.sideSearchInput)
+        fun submitSidebarSearch() {
+            val query = sidebarSearch.text.toString().trim()
+            openMainTab(MainActivity.TAB_SEARCH, query = query)
+        }
+        findViewById<View>(R.id.sideSearchAction).setOnClickListener { submitSidebarSearch() }
+        sidebarSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                actionId == android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
+                actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                submitSidebarSearch()
+                true
+            } else false
+        }
         findViewById<View>(R.id.tvHeroPlay).setOnClickListener { featured?.let(::openMedia) ?: openMainTab(MainActivity.TAB_CINE) }
         findViewById<View>(R.id.tvHeroPrev).setOnClickListener { moveFeatured(-1) }
         findViewById<View>(R.id.tvHeroNext).setOnClickListener { moveFeatured(1) }
@@ -127,39 +134,6 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.tvPostersHint).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
         loadingOverlay.requestFocus()
         loadCatalog()
-    }
-
-    private fun setNavigationExpanded(expanded: Boolean, animated: Boolean = true) {
-        if (navigationExpanded == expanded && animated) return
-        navigationExpanded = expanded
-        val labels = mapOf(
-            R.id.tvBrand to if (expanded) "TVMAN" else "TV",
-            R.id.tvNavHome to if (expanded) "⌂   INICIO" else "⌂",
-            R.id.tvNavMovies to if (expanded) "PELÍCULAS" else "▣",
-            R.id.tvNavSeries to if (expanded) "SERIES" else "▤",
-            R.id.tvNavKids to if (expanded) "INFANTIL" else "♧",
-            R.id.tvCustomizeAction to if (expanded) "⚙   PERSONALIZAR" else "⚙",
-            R.id.tvSearchAction to if (expanded) "⌕   BUSCAR" else "⌕",
-            R.id.tvProfile to if (expanded) "T   PERFIL" else "T"
-        )
-        labels.forEach { (id, label) -> findViewById<TextView>(id).text = label }
-        val params = navigationRail.layoutParams
-        val startWidth = params.width
-        val endWidth = dp(if (expanded) 190 else 82)
-        val startInset = contentScroll.paddingStart
-        val endInset = dp(if (expanded) 230 else 118)
-        railAnimator?.cancel()
-        railAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = if (animated) 220L else 0L
-            addUpdateListener { animator ->
-                val fraction = animator.animatedValue as Float
-                params.width = (startWidth + (endWidth - startWidth) * fraction).toInt()
-                navigationRail.layoutParams = params
-                val inset = (startInset + (endInset - startInset) * fraction).toInt()
-                contentScroll.setPaddingRelative(inset, contentScroll.paddingTop, dp(64), contentScroll.paddingBottom)
-            }
-            start()
-        }
     }
 
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
@@ -656,9 +630,20 @@ class TvHomeActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }
 
-    private fun openMainTab(tab: String) {
+    private fun openMainTab(
+        tab: String,
+        cineType: String? = null,
+        cineMood: String? = null,
+        cineAction: String? = null,
+        query: String? = null
+    ) {
         clearPosterPreview()
-        startActivity(Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_TV_TAB, tab))
+        val intent = Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_TV_TAB, tab)
+        cineType?.let { intent.putExtra(MainActivity.EXTRA_CINE_TYPE, it) }
+        cineMood?.let { intent.putExtra(MainActivity.EXTRA_CINE_MOOD, it) }
+        cineAction?.let { intent.putExtra(MainActivity.EXTRA_CINE_ACTION, it) }
+        query?.takeIf { it.isNotBlank() }?.let { intent.putExtra(MainActivity.EXTRA_SEARCH_QUERY, it) }
+        startActivity(intent)
         overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }
 
@@ -681,7 +666,7 @@ class TvHomeActivity : AppCompatActivity() {
         loadingDismissed = true
         loadingOverlay.animate().alpha(0f).setDuration(320L).withEndAction {
             loadingOverlay.visibility = View.GONE
-            findViewById<View>(R.id.tvNavHome).requestFocus()
+            findViewById<View>(R.id.sideNavHome).requestFocus()
             startHomeEntranceIfReady()
         }.start()
     }
@@ -692,8 +677,6 @@ class TvHomeActivity : AppCompatActivity() {
         homeEntranceStarted = true
 
         val entranceViews = listOf(
-            R.id.tvBrand, R.id.tvNavHome, R.id.tvNavMovies, R.id.tvNavSeries, R.id.tvNavKids,
-            R.id.tvSearchAction, R.id.tvProfile,
             R.id.tvHeroEyebrow, R.id.tvHeroTitle, R.id.tvHeroMeta, R.id.tvHeroDescription,
             R.id.tvHeroPlay, R.id.tvHeroAdd, R.id.tvHeroPrev, R.id.tvHeroNext,
             R.id.tvPostersTitle, R.id.tvPostersHint,
