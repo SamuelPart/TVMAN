@@ -36,6 +36,7 @@ class TvHomeActivity : AppCompatActivity() {
     private lateinit var postersTitle: TextView
     private lateinit var loadingOverlay: View
     private var loadingDismissed = false
+    private var homeEntranceStarted = false
     private var catalog: List<CineMedia> = emptyList()
     private var featured: CineMedia? = null
 
@@ -109,6 +110,7 @@ class TvHomeActivity : AppCompatActivity() {
         fillPosterRow(posterRow, if (favorites.isNotEmpty()) favorites else recommendations.take(14))
         findViewById<TextView>(R.id.tvSecondRowTitle).text = "LO MÁS VISTO"
         fillPosterRow(popularRow, ranked.filter { it !== featured && tmdbImage(it.posterUrl) }.take(14))
+        startHomeEntranceIfReady()
     }
 
     private fun bindFeatured(media: CineMedia) {
@@ -216,7 +218,46 @@ class TvHomeActivity : AppCompatActivity() {
         loadingOverlay.animate().alpha(0f).setDuration(320L).withEndAction {
             loadingOverlay.visibility = View.GONE
             findViewById<View>(R.id.tvNavHome).requestFocus()
+            startHomeEntranceIfReady()
         }.start()
+    }
+
+    /** Stagger the home sections and individual controls in after the loading screen. */
+    private fun startHomeEntranceIfReady() {
+        if (homeEntranceStarted || !loadingDismissed || catalog.isEmpty()) return
+        homeEntranceStarted = true
+
+        val entranceViews = listOf(
+            R.id.tvBrand, R.id.tvNavHome, R.id.tvNavMovies, R.id.tvNavSeries, R.id.tvNavKids,
+            R.id.tvSearchAction, R.id.tvProfile,
+            R.id.tvHeroEyebrow, R.id.tvHeroTitle, R.id.tvHeroMeta, R.id.tvHeroDescription,
+            R.id.tvHeroPlay, R.id.tvHeroAdd, R.id.tvPostersTitle, R.id.tvPostersHint,
+            R.id.tvPosterScroll, R.id.tvSecondRowTitle, R.id.tvPopularRow
+        ).mapNotNull { findViewById<View>(it) }
+
+        var delay = 0L
+        entranceViews.forEach { view ->
+            animateEntrance(view, delay, 18f)
+            delay += 55L
+        }
+        listOf(posterRow, popularRow).forEach { row ->
+            for (index in 0 until row.childCount) {
+                animateEntrance(row.getChildAt(index), delay, 24f)
+                delay += 38L
+            }
+        }
+    }
+
+    private fun animateEntrance(view: View, delay: Long, distanceDp: Float) {
+        view.animate().cancel()
+        view.alpha = 0f
+        view.translationY = dp(distanceDp.toInt()).toFloat()
+        view.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setStartDelay(delay)
+            .setDuration(420L)
+            .start()
     }
 
     private fun tmdbImage(url: String?): Boolean = url?.startsWith("https://image.tmdb.org/") == true
