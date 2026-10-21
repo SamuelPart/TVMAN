@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.software.leanback" android:required="true" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <!-- Internet Permission is essential to load playlists and play streams -->
@@ -30,17 +30,12 @@
         android:theme="@style/Theme.TVMan"
         android:usesCleartextTraffic="true">
 
-        <!-- Phone/tablet launcher -->
+        <!-- Internal IPTV screens; the only public entry point is the TV home below. -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
 
-        <!-- TV launcher: dedicated landscape home built for DPAD navigation -->
+        <!-- Android TV-only launcher: landscape, remote-first interface. -->
         <activity
             android:name=".TvHomeActivity"
             android:exported="true"
@@ -48,6 +43,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
