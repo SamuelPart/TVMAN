@@ -17,12 +17,6 @@
         android:layout_marginBottom="18dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
-        <ImageView
-            android:id="@+id/sideBrandIcon"
-            android:layout_width="34dp"
-            android:layout_height="34dp"
-            android:contentDescription="TVMAN"
-            android:src="@drawable/ic_tvman" />
         <TextView
             android:id="@+id/sideBrand"
             android:layout_width="wrap_content"
@@ -47,85 +41,6 @@
             android:rotation="180"
             android:src="@drawable/ic_ios_arrow_right"
             android:tint="@color/tv_nav_accent" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/sideProfile"
-        android:layout_width="match_parent"
-        android:layout_height="58dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
-        <TextView
-            android:id="@+id/sideProfileInitial"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:background="@drawable/bg_profile_avatar"
-            android:gravity="center"
-            android:text="U"
-            android:textColor="#FF101421"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-        <LinearLayout
-            android:id="@+id/sideProfileDetails"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="11dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/sideProfileCaption"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Perfil"
-                android:textColor="@color/tv_text_muted"
-                android:textSize="11sp" />
-            <TextView
-                android:id="@+id/sideProfileName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Usuario"
-                android:textColor="@color/tv_text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/sideSearchContainer"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="15dp"
-        android:background="@drawable/bg_chip_ios"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="10dp"
-        android:paddingEnd="6dp">
-        <ImageButton
-            android:id="@+id/sideSearchAction"
-            android:layout_width="36dp"
-            android:layout_height="40dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Buscar"
-            android:src="@drawable/ic_ios_search"
-            android:tint="@color/tv_nav_accent" />
-        <EditText
-            android:id="@+id/sideSearchInput"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/bg_tv_sidebar_search_input"
-            android:hint="Buscar películas"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:maxLines="1"
-            android:paddingStart="5dp"
-            android:paddingEnd="2dp"
-            android:textColor="@color/tv_text_primary"
-            android:textColorHint="@color/tv_text_muted"
-            android:textSize="13sp" />
     </LinearLayout>
 
     <ScrollView

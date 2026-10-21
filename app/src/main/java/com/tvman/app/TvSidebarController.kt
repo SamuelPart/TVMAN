@@ -8,16 +8,15 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 
 /** DPAD-aware shared rail: full labels on focus, icon-only while browsing content. */
 object TvSidebarController {
-    private const val COLLAPSED_WIDTH_DP = 82
+    private const val COLLAPSED_WIDTH_DP = 64
     private const val EXPANDED_WIDTH_DP = 278
-    private const val COLLAPSED_CONTENT_INSET_DP = 106
+    private const val COLLAPSED_CONTENT_INSET_DP = 88
     private const val EXPANDED_CONTENT_INSET_DP = 302
     private const val ANIMATION_MS = 280L
     private const val LABEL_FADE_MS = 130L
@@ -37,7 +36,7 @@ object TvSidebarController {
         val labels = rowIds.asIterable().mapNotNull { id ->
             root.findViewById<TextView>(id)?.let { id to it.text.toString() }
         }.toMap()
-        val focusableIds = rowIds + intArrayOf(R.id.sideSearchAction, R.id.sideSearchInput, R.id.sideCollapseButton)
+        val focusableIds = rowIds + intArrayOf(R.id.sideCollapseButton)
         focusableIds.forEach { id ->
             root.findViewById<View>(id)?.setOnFocusChangeListener { view, hasFocus ->
                 view.animate().cancel()
@@ -52,25 +51,18 @@ object TvSidebarController {
         }
         val fadingDetails: List<View> = listOfNotNull(
             root.findViewById<View>(R.id.sideBrand),
-            root.findViewById<View>(R.id.sideProfileDetails),
             root.findViewById<View>(R.id.sideSectionMenu),
             root.findViewById<View>(R.id.sideSectionTrend),
-            root.findViewById<View>(R.id.sideSectionGeneral),
-            root.findViewById<View>(R.id.sideSearchInput)
+            root.findViewById<View>(R.id.sideSectionGeneral)
         )
         var animator: ValueAnimator? = null
         var expanded = false
 
         fun applyDetails(show: Boolean) {
-            root.findViewById<View>(R.id.sideProfileDetails)?.visibility = if (show) View.VISIBLE else View.GONE
-            root.findViewById<LinearLayout>(R.id.sideProfile)?.let { profile ->
-                profile.gravity = if (show) android.view.Gravity.CENTER_VERTICAL else android.view.Gravity.CENTER
-            }
             root.findViewById<View>(R.id.sideBrand)?.visibility = if (show) View.VISIBLE else View.GONE
             root.findViewById<View>(R.id.sideSectionMenu)?.visibility = if (show) View.VISIBLE else View.GONE
             root.findViewById<View>(R.id.sideSectionTrend)?.visibility = if (show) View.VISIBLE else View.GONE
             root.findViewById<View>(R.id.sideSectionGeneral)?.visibility = if (show) View.VISIBLE else View.GONE
-            root.findViewById<EditText>(R.id.sideSearchInput)?.visibility = if (show) View.VISIBLE else View.GONE
             root.findViewById<ImageButton>(R.id.sideCollapseButton)?.let { button ->
                 button.rotation = if (show) 180f else 0f
                 button.contentDescription = if (show) "Contraer navegación" else "Expandir navegación"
@@ -82,15 +74,6 @@ object TvSidebarController {
             }
             fadingDetails.forEach { it.alpha = 1f }
 
-            root.findViewById<View>(R.id.sideSearchContainer)?.let { search ->
-                search.setPaddingRelative(if (show) dp(context, 10) else 0, 0, if (show) dp(context, 6) else 0, 0)
-                (search as? LinearLayout)?.gravity = android.view.Gravity.CENTER_VERTICAL
-            }
-            root.findViewById<ImageButton>(R.id.sideSearchAction)?.let { button ->
-                button.layoutParams = button.layoutParams.apply {
-                    width = if (show) dp(context, 36) else ViewGroup.LayoutParams.MATCH_PARENT
-                }
-            }
             labels.forEach { (id, label) ->
                 root.findViewById<TextView>(id)?.let { item ->
                     item.text = if (show) label else ""

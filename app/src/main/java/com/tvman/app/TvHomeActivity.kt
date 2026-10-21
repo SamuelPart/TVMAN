@@ -84,15 +84,19 @@ class TvHomeActivity : AppCompatActivity() {
         previewMeta = findViewById(R.id.tvPosterPreviewMeta)
         previewGenres = findViewById(R.id.tvPosterPreviewGenres)
         previewOverview = findViewById(R.id.tvPosterPreviewOverview)
-        val profileName = getSharedPreferences("iptv_pref", MODE_PRIVATE)
-            .getString("profile_name", "Usuario")?.trim().takeUnless { it.isNullOrEmpty() } ?: "Usuario"
-        findViewById<TextView>(R.id.sideProfileName).text = profileName
-        findViewById<TextView>(R.id.sideProfileInitial).text = profileName.firstOrNull()?.uppercase() ?: "U"
         findViewById<View>(R.id.sideNavHome).isSelected = true
         TvSidebarController.install(
             this,
             findViewById(R.id.tvTopBar),
             findViewById(R.id.tvContentScroll)
+        )
+        TvStatusBarController.install(
+            this,
+            findViewById(R.id.tvStatusBar),
+            onSearch = { openMainTab(MainActivity.TAB_CINE, focusCineSearch = true) },
+            onFilters = { openMainTab(MainActivity.TAB_CINE, focusCineFilters = true) },
+            onSettings = { openMainTab(MainActivity.TAB_SETTINGS) },
+            onNotifications = { Toast.makeText(this, "No tienes notificaciones nuevas", Toast.LENGTH_SHORT).show() }
         )
 
         loadingOverlay.alpha = 1f
@@ -121,20 +125,6 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.sideNavSettings).setOnClickListener { openMainTab(MainActivity.TAB_SETTINGS) }
         findViewById<View>(R.id.sideNavExit).setOnClickListener { finishAffinity() }
 
-        val sidebarSearch = findViewById<android.widget.EditText>(R.id.sideSearchInput)
-        fun submitSidebarSearch() {
-            val query = sidebarSearch.text.toString().trim()
-            openMainTab(MainActivity.TAB_CINE, query = query)
-        }
-        findViewById<View>(R.id.sideSearchAction).setOnClickListener { submitSidebarSearch() }
-        sidebarSearch.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
-                actionId == android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
-                actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
-                submitSidebarSearch()
-                true
-            } else false
-        }
         findViewById<View>(R.id.tvHeroPlay).setOnClickListener { featured?.let(::openMedia) ?: openMainTab(MainActivity.TAB_CINE) }
         findViewById<View>(R.id.tvHeroPrev).setOnClickListener { moveFeatured(-1) }
         findViewById<View>(R.id.tvHeroNext).setOnClickListener { moveFeatured(1) }
@@ -650,7 +640,9 @@ class TvHomeActivity : AppCompatActivity() {
         cineType: String? = null,
         cineMood: String? = null,
         cineAction: String? = null,
-        query: String? = null
+        query: String? = null,
+        focusCineSearch: Boolean = false,
+        focusCineFilters: Boolean = false
     ) {
         clearPosterPreview()
         val intent = Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_TV_TAB, tab)
@@ -658,6 +650,8 @@ class TvHomeActivity : AppCompatActivity() {
         cineMood?.let { intent.putExtra(MainActivity.EXTRA_CINE_MOOD, it) }
         cineAction?.let { intent.putExtra(MainActivity.EXTRA_CINE_ACTION, it) }
         query?.takeIf { it.isNotBlank() }?.let { intent.putExtra(MainActivity.EXTRA_SEARCH_QUERY, it) }
+        if (focusCineSearch) intent.putExtra(MainActivity.EXTRA_FOCUS_CINE_SEARCH, true)
+        if (focusCineFilters) intent.putExtra(MainActivity.EXTRA_FOCUS_CINE_FILTERS, true)
         startActivity(intent)
         overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }

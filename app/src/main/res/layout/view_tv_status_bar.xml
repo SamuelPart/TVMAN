@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvStatusBar"
+    android:layout_width="wrap_content"
+    android:layout_height="48dp"
+    android:layout_gravity="top|end"
+    android:layout_marginTop="16dp"
+    android:layout_marginEnd="26dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:background="@drawable/bg_tv_status_bar"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:elevation="12dp">
+
+    <TextView
+        android:id="@+id/tvStatusTime"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:minWidth="66dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:text="12:00"
+        android:textColor="@color/tv_text_primary"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:contentDescription="Hora local del dispositivo" />
+
+    <ImageButton
+        android:id="@+id/tvStatusSearch"
+        style="@style/TvStatusAction"
+        android:contentDescription="Buscar películas y series"
+        android:src="@drawable/ic_ios_search" />
+
+    <ImageButton
+        android:id="@+id/tvStatusFilters"
+        style="@style/TvStatusAction"
+        android:contentDescription="Filtros de películas y series"
+        android:src="@drawable/ic_ios_filter" />
+
+    <ImageButton
+        android:id="@+id/tvStatusSettings"
+        style="@style/TvStatusAction"
+        android:contentDescription="Ajustes"
+        android:src="@drawable/ic_ios_gear" />
+
+    <ImageButton
+        android:id="@+id/tvStatusNotifications"
+        style="@style/TvStatusAction"
+        android:contentDescription="Notificaciones"
+        android:src="@drawable/ic_tv_notification" />
+
+    <ImageView
+        android:id="@+id/tvStatusWifi"
+        android:layout_width="30dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="2dp"
+        android:contentDescription="Estado de conexión Wi-Fi del dispositivo"
+        android:padding="6dp"
+        android:src="@drawable/ic_tv_wifi"
+        android:tint="@color/tv_text_primary" />
+</LinearLayout>

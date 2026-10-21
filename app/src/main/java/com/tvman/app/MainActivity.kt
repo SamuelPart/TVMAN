@@ -52,6 +52,8 @@ class MainActivity : AppCompatActivity() {
         const val EXTRA_CINE_MOOD = "tvman_cine_mood"
         const val EXTRA_CINE_ACTION = "tvman_cine_action"
         const val EXTRA_SEARCH_QUERY = "tvman_search_query"
+        const val EXTRA_FOCUS_CINE_SEARCH = "tvman_focus_cine_search"
+        const val EXTRA_FOCUS_CINE_FILTERS = "tvman_focus_cine_filters"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -133,6 +135,20 @@ class MainActivity : AppCompatActivity() {
             binding.edtCineSearch.setText(query)
             performCineSearch(query)
         }
+        if (intent.getBooleanExtra(EXTRA_FOCUS_CINE_SEARCH, false) ||
+            intent.getBooleanExtra(EXTRA_FOCUS_CINE_FILTERS, false)) {
+            selectedCineType = "all"
+            cineMood = null
+            binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+            binding.root.post {
+                val target = if (intent.getBooleanExtra(EXTRA_FOCUS_CINE_SEARCH, false)) {
+                    binding.edtCineSearch
+                } else {
+                    binding.btnCineFilterAll
+                }
+                target.requestFocus()
+            }
+        }
         when (intent.getStringExtra(EXTRA_CINE_ACTION)) {
             "continue" -> startActivity(Intent(this, WatchHistoryActivity::class.java))
             "favorites" -> openCineList("MI LISTA", "favorites")
@@ -197,14 +213,17 @@ class MainActivity : AppCompatActivity() {
         }
         setupSidebarNavigation()
         TvSidebarController.install(this, findViewById(R.id.tvSidebar))
+        TvStatusBarController.install(
+            this,
+            findViewById(R.id.tvStatusBar),
+            onSearch = { focusCineAction(search = true) },
+            onFilters = { focusCineAction(search = false) },
+            onSettings = { binding.bottomNavigation.selectedItemId = R.id.navigation_settings },
+            onNotifications = { Toast.makeText(this, "No tienes notificaciones nuevas", Toast.LENGTH_SHORT).show() }
+        )
     }
 
     private fun setupSidebarNavigation() {
-        val name = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-            .getString("profile_name", "Usuario")?.trim().takeUnless { it.isNullOrEmpty() } ?: "Usuario"
-        findViewById<TextView>(R.id.sideProfileName).text = name
-        findViewById<TextView>(R.id.sideProfileInitial).text = name.firstOrNull()?.uppercase() ?: "U"
-
         findViewById<View>(R.id.sideNavHome).setOnClickListener { returnToTvHome() }
         findViewById<View>(R.id.sideNavContinue).setOnClickListener {
             startActivity(Intent(this, WatchHistoryActivity::class.java))
@@ -224,25 +243,16 @@ class MainActivity : AppCompatActivity() {
             binding.bottomNavigation.selectedItemId = R.id.navigation_settings
         }
         findViewById<View>(R.id.sideNavExit).setOnClickListener { finishAffinity() }
+    }
 
-        val searchInput = findViewById<android.widget.EditText>(R.id.sideSearchInput)
-        fun runSearch() {
-            val query = searchInput.text.toString().trim()
-            selectedCineType = "all"
-            cineMood = null
-            binding.bottomNavigation.selectedItemId = R.id.navigation_cine
-            updateTVMANNav(R.id.navigation_cine)
-            if (query.isNotEmpty()) {
-                binding.edtCineSearch.setText(query)
-                performCineSearch(query)
-            }
-        }
-        findViewById<View>(R.id.sideSearchAction).setOnClickListener { runSearch() }
-        searchInput.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_DONE) {
-                runSearch()
-                true
-            } else false
+    private fun focusCineAction(search: Boolean) {
+        selectedCineType = "all"
+        cineMood = null
+        binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+        updateTVMANNav(R.id.navigation_cine)
+        binding.root.post {
+            val target = if (search) binding.edtCineSearch else binding.btnCineFilterAll
+            target.requestFocus()
         }
     }
 
@@ -2414,7 +2424,7 @@ class MainActivity : AppCompatActivity() {
         val selectedSidebarId = when (activeId) {
             R.id.navigation_home -> R.id.sideNavHome
             R.id.navigation_channels -> R.id.sideNavChannels
-            R.id.navigation_search -> R.id.sideSearchInput
+            R.id.navigation_search -> View.NO_ID
             R.id.navigation_cine -> when {
                 cineMood == "top" -> R.id.sideNavPopular
                 selectedCineType == "new" -> R.id.sideNavReleases
@@ -2427,7 +2437,7 @@ class MainActivity : AppCompatActivity() {
         }
         listOf(R.id.sideNavHome, R.id.sideNavContinue, R.id.sideNavMyList, R.id.sideNavChannels,
             R.id.sideNavSeries, R.id.sideNavMovies, R.id.sideNavGames, R.id.sideNavReleases,
-            R.id.sideNavPopular, R.id.sideNavSettings, R.id.sideNavExit, R.id.sideSearchInput).forEach { id ->
+            R.id.sideNavPopular, R.id.sideNavSettings, R.id.sideNavExit).forEach { id ->
             findViewById<View>(id)?.isSelected = id == selectedSidebarId
         }
     }
@@ -2934,7 +2944,7 @@ class MainActivity : AppCompatActivity() {
             view.setTextColor(textColor)
             view.setHintTextColor(if (isDark) android.graphics.Color.parseColor("#96A4B8") else android.graphics.Color.parseColor("#7D8797"))
             val transparentBackground = (view.background as? android.graphics.drawable.ColorDrawable)?.color == android.graphics.Color.TRANSPARENT
-            if (isDark && !transparentBackground && view.id != R.id.sideSearchInput) {
+            if (isDark && !transparentBackground) {
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_settings_card)?.let { view.background = it }
             } else if (!isDark) {
                 view.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
