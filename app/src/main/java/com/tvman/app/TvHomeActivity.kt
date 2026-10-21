@@ -42,7 +42,6 @@ class TvHomeActivity : AppCompatActivity() {
     private lateinit var postersTitle: TextView
     private lateinit var continueTitle: TextView
     private lateinit var continueRow: LinearLayout
-    private lateinit var loadingOverlay: View
     private lateinit var catalogErrorOverlay: View
     private lateinit var previewPanel: View
     private lateinit var previewTitle: TextView
@@ -52,7 +51,6 @@ class TvHomeActivity : AppCompatActivity() {
     private val previewHandler = Handler(Looper.getMainLooper())
     private var pendingPreviewBackdrop: Runnable? = null
     private var pendingPreviewDismiss: Runnable? = null
-    private var loadingDismissed = false
     private var homeEntranceStarted = false
     private var catalog: List<CineMedia> = emptyList()
     private var featured: CineMedia? = null
@@ -77,7 +75,6 @@ class TvHomeActivity : AppCompatActivity() {
         postersTitle = findViewById(R.id.tvPostersTitle)
         continueTitle = findViewById(R.id.tvContinueTitle)
         continueRow = findViewById(R.id.tvContinueRow)
-        loadingOverlay = findViewById(R.id.tvLoadingOverlay)
         catalogErrorOverlay = findViewById(R.id.tvCatalogErrorOverlay)
         previewPanel = findViewById(R.id.tvPosterPreview)
         previewTitle = findViewById(R.id.tvPosterPreviewTitle)
@@ -91,13 +88,8 @@ class TvHomeActivity : AppCompatActivity() {
             findViewById(R.id.tvContentScroll)
         )
 
-        loadingOverlay.alpha = 1f
         findViewById<View>(R.id.tvCatalogRetry).setOnClickListener {
             catalogErrorOverlay.visibility = View.GONE
-            loadingDismissed = false
-            loadingOverlay.visibility = View.VISIBLE
-            loadingOverlay.alpha = 1f
-            loadingOverlay.requestFocus()
             scheduleLoadingTimeout()
             loadCatalog()
         }
@@ -122,7 +114,6 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.tvHeroNext).setOnClickListener { moveFeatured(1) }
         addButton.setOnClickListener { toggleFeaturedFavorite() }
         findViewById<View>(R.id.tvPostersHint).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
-        loadingOverlay.requestFocus()
         loadCatalog()
     }
 
@@ -276,13 +267,11 @@ class TvHomeActivity : AppCompatActivity() {
     private fun scheduleLoadingTimeout() {
         Handler(Looper.getMainLooper()).postDelayed({
             if (!isFinishing && catalog.isEmpty()) showHomeCatalogError()
-            else if (!isFinishing) dismissLoadingOverlay()
         }, 12_000L)
     }
 
     private fun showHomeCatalogError() {
         if (catalogErrorOverlay.visibility == View.VISIBLE) return
-        dismissLoadingOverlay()
         catalogErrorOverlay.visibility = View.VISIBLE
         catalogErrorOverlay.postDelayed({ findViewById<View>(R.id.tvCatalogRetry).requestFocus() }, 360L)
     }
@@ -367,13 +356,11 @@ class TvHomeActivity : AppCompatActivity() {
         val selected = featuredCandidates[featuredIndex]
         featured = selected
         bindFeatured(selected)
-        if (loadingDismissed) {
-            listOf(titleView, metaView, descriptionView).forEach { view ->
-                view.animate().cancel()
-                view.alpha = 0f
-                view.translationY = dp(12).toFloat()
-                view.animate().alpha(1f).translationY(0f).setDuration(260L).start()
-            }
+        listOf(titleView, metaView, descriptionView).forEach { view ->
+            view.animate().cancel()
+            view.alpha = 0f
+            view.translationY = dp(12).toFloat()
+            view.animate().alpha(1f).translationY(0f).setDuration(260L).start()
         }
     }
 
@@ -403,10 +390,7 @@ class TvHomeActivity : AppCompatActivity() {
                         target: Target<Drawable>,
                         dataSource: DataSource,
                         isFirstResource: Boolean
-                    ): Boolean {
-                        dismissLoadingOverlay()
-                        return false
-                    }
+                    ): Boolean = false
                 })
                 .into(backdrop)
         }
@@ -632,9 +616,7 @@ class TvHomeActivity : AppCompatActivity() {
         cineType: String? = null,
         cineMood: String? = null,
         cineAction: String? = null,
-        query: String? = null,
-        focusCineSearch: Boolean = false,
-        focusCineFilters: Boolean = false
+        query: String? = null
     ) {
         clearPosterPreview()
         val intent = Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_TV_TAB, tab)
@@ -642,8 +624,6 @@ class TvHomeActivity : AppCompatActivity() {
         cineMood?.let { intent.putExtra(MainActivity.EXTRA_CINE_MOOD, it) }
         cineAction?.let { intent.putExtra(MainActivity.EXTRA_CINE_ACTION, it) }
         query?.takeIf { it.isNotBlank() }?.let { intent.putExtra(MainActivity.EXTRA_SEARCH_QUERY, it) }
-        if (focusCineSearch) intent.putExtra(MainActivity.EXTRA_FOCUS_CINE_SEARCH, true)
-        if (focusCineFilters) intent.putExtra(MainActivity.EXTRA_FOCUS_CINE_FILTERS, true)
         startActivity(intent)
         overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }
@@ -662,20 +642,11 @@ class TvHomeActivity : AppCompatActivity() {
         displayCatalog()
     }
 
-    private fun dismissLoadingOverlay() {
-        if (loadingDismissed || !::loadingOverlay.isInitialized) return
-        loadingDismissed = true
-        loadingOverlay.animate().alpha(0f).setDuration(320L).withEndAction {
-            loadingOverlay.visibility = View.GONE
-            findViewById<View>(R.id.sideNavHome).requestFocus()
-            startHomeEntranceIfReady()
-        }.start()
-    }
-
-    /** Stagger the home sections and individual controls in after the loading screen. */
+    /** Stagger the home sections and controls in when the pre-app catalog is ready. */
     private fun startHomeEntranceIfReady() {
-        if (homeEntranceStarted || !loadingDismissed || catalog.isEmpty()) return
+        if (homeEntranceStarted || catalog.isEmpty()) return
         homeEntranceStarted = true
+        findViewById<View>(R.id.sideNavHome).requestFocus()
 
         val entranceViews = listOf(
             R.id.tvHeroEyebrow, R.id.tvHeroTitle, R.id.tvHeroMeta, R.id.tvHeroDescription,

@@ -66,9 +66,7 @@ class TVManApplication : Application() {
                 if (savedId != View.NO_ID) {
                     root.postDelayed({
                         val saved = root.findViewById<View>(savedId)
-                        val homeLoading = activity is TvHomeActivity &&
-                            activity.findViewById<View>(R.id.tvLoadingOverlay)?.visibility != View.GONE
-                        if (homeLoading) return@postDelayed
+                        if (activity is TvStatusActivity) return@postDelayed
                         if (saved != null && saved.isShown && saved.isFocusable) {
                             saved.requestFocus()
                         } else if (root.findFocus() == null || root.findFocus() === root) {

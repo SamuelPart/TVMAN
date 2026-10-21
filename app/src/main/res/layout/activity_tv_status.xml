@@ -5,63 +5,26 @@
     android:background="@color/tv_background"
     android:focusableInTouchMode="true">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/tv_home_scrim" />
-
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="48dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:letterSpacing="0.12"
-            android:text="TVMAN"
-            android:textColor="@color/tv_text_primary"
-            android:textSize="48sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="Tu entretenimiento está listo"
-            android:textColor="@color/tv_text_muted"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/tvStatusEnter"
-            android:layout_width="260dp"
-            android:layout_height="58dp"
-            android:layout_marginTop="42dp"
-            android:background="@drawable/tv_play_button"
-            android:clickable="true"
-            android:contentDescription="Entrar a TVMAN"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="ENTRAR A TVMAN"
-            android:textColor="#FFFFFFFF"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="Presiona OK para continuar"
-            android:textColor="#A6AFBD"
-            android:textSize="14sp" />
-    </LinearLayout>
-
-    <include
-        android:id="@+id/tvStatusBar"
-        layout="@layout/view_tv_status_bar"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_gravity="top|end" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <com.tvman.app.LoadingHandView
+            android:layout_width="220dp"
+            android:layout_height="255dp"
+            android:contentDescription="Animación de una mano azul tocando con cuatro dedos" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="LOADING..."
+            android:textColor="@color/tv_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.2" />
+    </LinearLayout>
 </FrameLayout>

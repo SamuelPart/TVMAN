@@ -12,7 +12,7 @@ import android.view.animation.LinearInterpolator
 import kotlin.math.min
 import kotlin.math.sin
 
-/** Flat blue cartoon hand with four separately tapping fingers. */
+/** Flat foreshortened cartoon hand with four separately tapping fingers. */
 class LoadingHandView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -26,7 +26,7 @@ class LoadingHandView @JvmOverloads constructor(
         strokeJoin = Paint.Join.ROUND
     }
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF258BFF.toInt()
+        color = 0xFF218CFF.toInt()
         style = Paint.Style.FILL
     }
     private val shadow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -39,33 +39,51 @@ class LoadingHandView @JvmOverloads constructor(
         strokeWidth = 3.5f
         strokeCap = Paint.Cap.ROUND
     }
-    private val fingerPath = Path().apply {
-        moveTo(-13f, 2f)
-        cubicTo(-17f, 6f, -17f, 15f, -16f, 28f)
-        lineTo(-13f, 83f)
-        cubicTo(-12f, 98f, -7f, 104f, 0f, 104f)
-        cubicTo(8f, 104f, 13f, 98f, 14f, 83f)
-        lineTo(17f, 28f)
-        cubicTo(18f, 14f, 16f, 5f, 12f, 2f)
-        cubicTo(6f, -3f, -7f, -3f, -13f, 2f)
+
+    // A single rounded palm silhouette; its lower edge is hidden by the fingers.
+    private val palmFill = Path().apply {
+        moveTo(30f, 88f)
+        cubicTo(24f, 61f, 31f, 34f, 47f, 21f)
+        cubicTo(64f, 8f, 83f, 15f, 99f, 27f)
+        cubicTo(118f, 12f, 143f, 16f, 160f, 34f)
+        cubicTo(178f, 52f, 176f, 78f, 168f, 101f)
+        lineTo(161f, 118f)
+        cubicTo(154f, 132f, 139f, 138f, 119f, 138f)
+        lineTo(79f, 138f)
+        cubicTo(58f, 138f, 41f, 130f, 34f, 113f)
         close()
     }
-    private val palmPath = Path().apply {
-        moveTo(27f, 88f)
-        cubicTo(24f, 66f, 26f, 43f, 31f, 29f)
-        cubicTo(36f, 14f, 50f, 13f, 59f, 24f)
-        cubicTo(64f, 30f, 66f, 44f, 68f, 58f)
-        cubicTo(69f, 32f, 77f, 18f, 91f, 18f)
-        cubicTo(107f, 18f, 111f, 34f, 110f, 59f)
-        cubicTo(113f, 35f, 122f, 24f, 135f, 26f)
-        cubicTo(151f, 28f, 152f, 46f, 148f, 70f)
-        cubicTo(155f, 54f, 169f, 52f, 176f, 64f)
-        cubicTo(182f, 73f, 174f, 92f, 174f, 111f)
-        cubicTo(174f, 140f, 151f, 157f, 123f, 158f)
-        lineTo(73f, 158f)
-        cubicTo(49f, 156f, 34f, 140f, 30f, 120f)
+    private val palmOutline = Path().apply {
+        moveTo(30f, 88f)
+        cubicTo(24f, 61f, 31f, 34f, 47f, 21f)
+        cubicTo(64f, 8f, 83f, 15f, 99f, 27f)
+        cubicTo(118f, 12f, 143f, 16f, 160f, 34f)
+        cubicTo(178f, 52f, 176f, 78f, 168f, 101f)
+        lineTo(161f, 118f)
+        cubicTo(154f, 132f, 139f, 138f, 119f, 138f)
+    }
+    private val fingerFill = Path().apply {
+        moveTo(-12f, 0f)
+        cubicTo(-16f, 7f, -15f, 20f, -14f, 34f)
+        lineTo(-12f, 78f)
+        cubicTo(-11f, 98f, -7f, 109f, 0f, 110f)
+        cubicTo(9f, 109f, 13f, 98f, 14f, 78f)
+        lineTo(16f, 34f)
+        cubicTo(17f, 20f, 16f, 7f, 12f, 0f)
+        cubicTo(6f, -4f, -6f, -4f, -12f, 0f)
         close()
     }
+    // Open at the knuckle so the fingers emerge naturally from behind the palm.
+    private val fingerOutline = Path().apply {
+        moveTo(-12f, 0f)
+        cubicTo(-16f, 7f, -15f, 20f, -14f, 34f)
+        lineTo(-12f, 78f)
+        cubicTo(-11f, 98f, -7f, 109f, 0f, 110f)
+        cubicTo(9f, 109f, 13f, 98f, 14f, 78f)
+        lineTo(16f, 34f)
+        cubicTo(17f, 20f, 16f, 7f, 12f, 0f)
+    }
+
     private var progress = 0f
     private var animator: ValueAnimator? = null
 
@@ -110,28 +128,28 @@ class LoadingHandView @JvmOverloads constructor(
         canvas.save()
         canvas.translate((width - 200f * scale) / 2f, (height - 235f * scale) / 2f)
         canvas.scale(scale, scale)
+        canvas.drawOval(RectF(28f, 216f, 177f, 232f), shadow)
 
-        canvas.drawOval(RectF(30f, 208f, 177f, 226f), shadow)
-
-        // The palm sits behind the fingers so the four digits read as one hand.
-        canvas.drawPath(palmPath, fill)
-        canvas.drawPath(palmPath, outline)
-
-        val fingerCenters = floatArrayOf(46f, 82f, 118f, 154f)
+        // Draw the palm first, then four separated fingers pointing toward the viewer.
+        canvas.drawPath(palmFill, fill)
+        canvas.drawPath(palmOutline, outline)
+        val fingerCenters = floatArrayOf(42f, 81f, 120f, 159f)
         fingerCenters.forEachIndexed { index, centerX ->
             val offset = index / 4f
-            val phase = ((progress - offset + 1f) % 1f) / 0.2f
-            val lift = if (phase < 1f) sin(phase * Math.PI).toFloat() else 0f
+            val cyclePart = ((progress - offset + 1f) % 1f) / 0.2f
+            val lift = if (cyclePart < 1f) sin(cyclePart * Math.PI).toFloat() else 0f
             val liftY = -17f * lift
-            val rotation = -11f * lift
+            val rotation = -9f * lift
 
             canvas.save()
-            canvas.translate(centerX, 113f + liftY)
+            canvas.translate(centerX, 103f + liftY)
             canvas.rotate(rotation)
-            canvas.drawPath(fingerPath, fill)
-            canvas.drawPath(fingerPath, outline)
-            // A short crease adds cartoon detail without changing the solid blue fill.
-            canvas.drawLine(-7f, 26f, 7f, 26f, crease)
+            canvas.drawPath(fingerFill, fill)
+            canvas.save()
+            canvas.clipRect(-24f, 28f, 24f, 112f)
+            canvas.drawPath(fingerOutline, outline)
+            canvas.restore()
+            canvas.drawLine(-7f, 67f, 7f, 67f, crease)
             canvas.restore()
         }
         canvas.restore()

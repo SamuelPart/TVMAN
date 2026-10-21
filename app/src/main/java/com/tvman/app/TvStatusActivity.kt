@@ -2,41 +2,37 @@ package com.tvman.app
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
+import android.os.SystemClock
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-/** Standalone launch screen shown before the TV home. */
+/** Full-screen animated loading scene shown before the rest of the TV app. */
 class TvStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tv_status)
 
-        TvStatusBarController.install(
-            this,
-            findViewById(R.id.tvStatusBar),
-            onSearch = { openMain(MainActivity.TAB_CINE, focusSearch = true) },
-            onFilters = { openMain(MainActivity.TAB_CINE, focusFilters = true) },
-            onSettings = { openMain(MainActivity.TAB_SETTINGS) },
-            onNotifications = {
-                Toast.makeText(this, "No tienes notificaciones nuevas", Toast.LENGTH_SHORT).show()
+        val startedAt = SystemClock.elapsedRealtime()
+        lifecycleScope.launch {
+            // Prime the shared catalog cache before opening Home; remote failures fall back locally.
+            withContext(Dispatchers.IO) {
+                runCatching { CineRepository.getBundledQuickCatalog(this@TvStatusActivity) }
+                runCatching { CineRepository.getCineCatalog(this@TvStatusActivity) }
             }
-        )
-
-        findViewById<View>(R.id.tvStatusEnter).setOnClickListener {
-            startActivity(Intent(this, TvHomeActivity::class.java))
-            finish()
-        }
-        findViewById<View>(R.id.tvStatusEnter).post {
-            findViewById<View>(R.id.tvStatusEnter).requestFocus()
+            val remaining = MIN_SPLASH_MS - (SystemClock.elapsedRealtime() - startedAt)
+            if (remaining > 0L) delay(remaining)
+            if (!isFinishing) {
+                startActivity(Intent(this@TvStatusActivity, TvHomeActivity::class.java))
+                finish()
+            }
         }
     }
 
-    private fun openMain(tab: String, focusSearch: Boolean = false, focusFilters: Boolean = false) {
-        val intent = Intent(this, MainActivity::class.java)
-            .putExtra(MainActivity.EXTRA_TV_TAB, tab)
-        if (focusSearch) intent.putExtra(MainActivity.EXTRA_FOCUS_CINE_SEARCH, true)
-        if (focusFilters) intent.putExtra(MainActivity.EXTRA_FOCUS_CINE_FILTERS, true)
-        startActivity(intent)
+    private companion object {
+        const val MIN_SPLASH_MS = 2_400L
     }
 }

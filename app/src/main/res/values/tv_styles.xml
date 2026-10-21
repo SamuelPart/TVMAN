@@ -41,16 +41,4 @@
         <item name="android:textColor">@color/tv_sidebar_item_tint</item>
         <item name="android:textSize">14sp</item>
     </style>
-
-    <style name="TvStatusAction">
-        <item name="android:layout_width">38dp</item>
-        <item name="android:layout_height">38dp</item>
-        <item name="android:layout_marginStart">3dp</item>
-        <item name="android:background">@drawable/tv_top_action</item>
-        <item name="android:padding">9dp</item>
-        <item name="android:scaleType">centerInside</item>
-        <item name="android:tint">@color/tv_text_primary</item>
-        <item name="android:focusable">true</item>
-        <item name="android:clickable">true</item>
-    </style>
 </resources>

@@ -52,8 +52,6 @@ class MainActivity : AppCompatActivity() {
         const val EXTRA_CINE_MOOD = "tvman_cine_mood"
         const val EXTRA_CINE_ACTION = "tvman_cine_action"
         const val EXTRA_SEARCH_QUERY = "tvman_search_query"
-        const val EXTRA_FOCUS_CINE_SEARCH = "tvman_focus_cine_search"
-        const val EXTRA_FOCUS_CINE_FILTERS = "tvman_focus_cine_filters"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -134,20 +132,6 @@ class MainActivity : AppCompatActivity() {
             binding.bottomNavigation.selectedItemId = R.id.navigation_cine
             binding.edtCineSearch.setText(query)
             performCineSearch(query)
-        }
-        if (intent.getBooleanExtra(EXTRA_FOCUS_CINE_SEARCH, false) ||
-            intent.getBooleanExtra(EXTRA_FOCUS_CINE_FILTERS, false)) {
-            selectedCineType = "all"
-            cineMood = null
-            binding.bottomNavigation.selectedItemId = R.id.navigation_cine
-            binding.root.post {
-                val target = if (intent.getBooleanExtra(EXTRA_FOCUS_CINE_SEARCH, false)) {
-                    binding.edtCineSearch
-                } else {
-                    binding.btnCineFilterAll
-                }
-                target.requestFocus()
-            }
         }
         when (intent.getStringExtra(EXTRA_CINE_ACTION)) {
             "continue" -> startActivity(Intent(this, WatchHistoryActivity::class.java))
