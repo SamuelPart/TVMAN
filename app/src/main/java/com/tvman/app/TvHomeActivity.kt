@@ -2,6 +2,9 @@ package com.tvman.app
 
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -12,6 +15,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,6 +34,8 @@ class TvHomeActivity : AppCompatActivity() {
     private lateinit var descriptionView: TextView
     private lateinit var addButton: TextView
     private lateinit var postersTitle: TextView
+    private lateinit var loadingOverlay: View
+    private var loadingDismissed = false
     private var catalog: List<CineMedia> = emptyList()
     private var featured: CineMedia? = null
 
@@ -42,6 +51,11 @@ class TvHomeActivity : AppCompatActivity() {
         descriptionView = findViewById(R.id.tvHeroDescription)
         addButton = findViewById(R.id.tvHeroAdd)
         postersTitle = findViewById(R.id.tvPostersTitle)
+        loadingOverlay = findViewById(R.id.tvLoadingOverlay)
+        loadingOverlay.alpha = 1f
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (!isFinishing) dismissLoadingOverlay()
+        }, 12_000L)
 
         findViewById<View>(R.id.tvNavHome).setOnClickListener { findViewById<View>(R.id.tvNavHome).requestFocus() }
         findViewById<View>(R.id.tvNavMovies).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
@@ -52,8 +66,7 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.tvHeroPlay).setOnClickListener { featured?.let(::openMedia) ?: openMainTab(MainActivity.TAB_CINE) }
         addButton.setOnClickListener { toggleFeaturedFavorite() }
         findViewById<View>(R.id.tvPostersHint).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
-        findViewById<View>(R.id.tvNavHome).requestFocus()
-
+        loadingOverlay.requestFocus()
         loadCatalog()
     }
 
@@ -109,8 +122,26 @@ class TvHomeActivity : AppCompatActivity() {
             ?: "Descubre películas y series seleccionadas para disfrutar en pantalla grande."
         val backdropUrl = media.backdropUrl?.takeIf(::tmdbImage) ?: media.posterUrl?.takeIf(::tmdbImage)
         if (backdropUrl != null) {
-            Glide.with(this).load(backdropUrl.replace("/w780/", "/w1280/").replace("/w500/", "/w1280/"))
-                .centerCrop().into(backdrop)
+            Glide.with(this)
+                .load(backdropUrl.replace("/w780/", "/w1280/").replace("/w500/", "/w1280/"))
+                .centerCrop()
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean
+                    ): Boolean = false
+
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        dismissLoadingOverlay()
+                        return false
+                    }
+                })
+                .into(backdrop)
         }
         addButton.text = if (FavoritesManager.isFavorite(this, media.url)) "✓" else "+"
     }
@@ -177,6 +208,15 @@ class TvHomeActivity : AppCompatActivity() {
         addButton.text = if (added) "✓" else "+"
         Toast.makeText(this, if (added) "Añadido a Mi lista" else "Quitado de Mi lista", Toast.LENGTH_SHORT).show()
         displayCatalog()
+    }
+
+    private fun dismissLoadingOverlay() {
+        if (loadingDismissed || !::loadingOverlay.isInitialized) return
+        loadingDismissed = true
+        loadingOverlay.animate().alpha(0f).setDuration(320L).withEndAction {
+            loadingOverlay.visibility = View.GONE
+            findViewById<View>(R.id.tvNavHome).requestFocus()
+        }.start()
     }
 
     private fun tmdbImage(url: String?): Boolean = url?.startsWith("https://image.tmdb.org/") == true

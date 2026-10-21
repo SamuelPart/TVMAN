@@ -10,9 +10,9 @@
         android:id="@+id/tvPanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="22dp"
-        android:background="@drawable/tv_home_panel"
-        android:clipToOutline="true">
+        android:layout_margin="0dp"
+        android:background="@android:color/transparent"
+        android:clipToOutline="false">
 
         <ImageView
             android:id="@+id/tvBackdrop"
@@ -106,5 +106,48 @@
                 </HorizontalScrollView>
             </LinearLayout>
         </ScrollView>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/tvLoadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F2080B10"
+        android:clickable="false"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TVMAN"
+                android:textColor="#FFFFFFFF"
+                android:textSize="38sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.12" />
+
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="22dp"
+                android:indeterminateTint="#A341FF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="PREPARANDO TU INICIO"
+                android:textColor="#D9FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.16" />
+        </LinearLayout>
     </FrameLayout>
 </FrameLayout>

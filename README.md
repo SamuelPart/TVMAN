@@ -3,8 +3,8 @@
 TVMAN es una app exclusiva para Android TV basada funcionalmente en la rama [`arena/01a09a92-iptv`](https://github.com/SamuelPart/iptv/tree/arena/01a09a92-iptv) del proyecto IPTV (commit `bed9c31`). Conserva listas M3U, canales en vivo, reproducción, cine/series, búsqueda, favoritos, historial y ajustes.
 
 ## Interfaz TV
-- La entrada principal es una pantalla cinematográfica de streaming; no muestra un panel intermedio de resumen.
-- El título destacado y las filas de póster se alimentan del catálogo de TVMAN y de sus imágenes TMDB (`backdropUrl` / `posterUrl`).
+- Inicio a pantalla completa y de borde a borde: sin panel enmarcado ni resumen intermedio.
+- Muestra una pantalla de carga mientras prepara el catálogo y el arte TMDB; el título destacado y los pósteres usan `backdropUrl` / `posterUrl` del catálogo.
 - Todas las pantallas se fuerzan a horizontal y los controles interactivos reciben foco para mando/DPAD.
 - Android TV/Leanback es requisito; no se publica un lanzador para teléfonos.
 
