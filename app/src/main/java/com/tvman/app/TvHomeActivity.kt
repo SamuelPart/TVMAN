@@ -1,6 +1,7 @@
 package com.tvman.app
 
 import android.content.Intent
+import android.animation.ValueAnimator
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Handler
@@ -17,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import kotlinx.coroutines.Dispatchers
@@ -37,10 +39,16 @@ class TvHomeActivity : AppCompatActivity() {
     private lateinit var continueTitle: TextView
     private lateinit var continueRow: LinearLayout
     private lateinit var loadingOverlay: View
+    private lateinit var navigationRail: View
+    private lateinit var contentScroll: View
+    private var navigationExpanded = false
+    private var railAnimator: ValueAnimator? = null
     private var loadingDismissed = false
     private var homeEntranceStarted = false
     private var catalog: List<CineMedia> = emptyList()
     private var featured: CineMedia? = null
+    private var featuredCandidates: List<CineMedia> = emptyList()
+    private var featuredIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +65,18 @@ class TvHomeActivity : AppCompatActivity() {
         continueTitle = findViewById(R.id.tvContinueTitle)
         continueRow = findViewById(R.id.tvContinueRow)
         loadingOverlay = findViewById(R.id.tvLoadingOverlay)
+        navigationRail = findViewById(R.id.tvTopBar)
+        contentScroll = findViewById(R.id.tvContentScroll)
+        setNavigationExpanded(false, animated = false)
+        listOf(R.id.tvNavHome, R.id.tvNavMovies, R.id.tvNavSeries, R.id.tvNavKids,
+            R.id.tvSearchAction, R.id.tvProfile).forEach { id ->
+            findViewById<View>(id).setOnFocusChangeListener { _, focused ->
+                if (focused) setNavigationExpanded(true)
+                else navigationRail.postDelayed({
+                    if (!navigationRail.hasFocus()) setNavigationExpanded(false)
+                }, 100L)
+            }
+        }
         loadingOverlay.alpha = 1f
         Handler(Looper.getMainLooper()).postDelayed({
             if (!isFinishing) dismissLoadingOverlay()
@@ -69,10 +89,56 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.tvSearchAction).setOnClickListener { openMainTab(MainActivity.TAB_SEARCH) }
         findViewById<View>(R.id.tvProfile).setOnClickListener { openMainTab(MainActivity.TAB_SETTINGS) }
         findViewById<View>(R.id.tvHeroPlay).setOnClickListener { featured?.let(::openMedia) ?: openMainTab(MainActivity.TAB_CINE) }
+        findViewById<View>(R.id.tvHeroPrev).setOnClickListener { moveFeatured(-1) }
+        findViewById<View>(R.id.tvHeroNext).setOnClickListener { moveFeatured(1) }
         addButton.setOnClickListener { toggleFeaturedFavorite() }
         findViewById<View>(R.id.tvPostersHint).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
         loadingOverlay.requestFocus()
         loadCatalog()
+    }
+
+    private fun setNavigationExpanded(expanded: Boolean, animated: Boolean = true) {
+        if (navigationExpanded == expanded && animated) return
+        navigationExpanded = expanded
+        val labels = mapOf(
+            R.id.tvBrand to if (expanded) "TVMAN" else "TV",
+            R.id.tvNavHome to if (expanded) "⌂   INICIO" else "⌂",
+            R.id.tvNavMovies to if (expanded) "PELÍCULAS" else "▣",
+            R.id.tvNavSeries to if (expanded) "SERIES" else "▤",
+            R.id.tvNavKids to if (expanded) "INFANTIL" else "♧",
+            R.id.tvSearchAction to if (expanded) "⌕   BUSCAR" else "⌕",
+            R.id.tvProfile to if (expanded) "T   PERFIL" else "T"
+        )
+        labels.forEach { (id, label) -> findViewById<TextView>(id).text = label }
+        val params = navigationRail.layoutParams
+        val startWidth = params.width
+        val endWidth = dp(if (expanded) 190 else 82)
+        val startInset = contentScroll.paddingStart
+        val endInset = dp(if (expanded) 230 else 118)
+        railAnimator?.cancel()
+        railAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = if (animated) 220L else 0L
+            addUpdateListener { animator ->
+                val fraction = animator.animatedValue as Float
+                params.width = (startWidth + (endWidth - startWidth) * fraction).toInt()
+                navigationRail.layoutParams = params
+                val inset = (startInset + (endInset - startInset) * fraction).toInt()
+                contentScroll.setPaddingRelative(inset, contentScroll.paddingTop, dp(64), contentScroll.paddingBottom)
+            }
+            start()
+        }
+    }
+
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.action == android.view.KeyEvent.ACTION_DOWN &&
+            (event.keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT ||
+                event.keyCode == android.view.KeyEvent.KEYCODE_DPAD_RIGHT) &&
+            (currentFocus?.id == R.id.tvHeroPrev || currentFocus?.id == R.id.tvHeroNext) &&
+            featuredCandidates.size > 1) {
+            moveFeatured(if (event.keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1)
+            return true
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     private fun loadCatalog() {
@@ -100,10 +166,19 @@ class TvHomeActivity : AppCompatActivity() {
 
     private fun displayCatalog() {
         val ranked = catalog.sortedByDescending { it.rating ?: -1.0 }
-        val bestBackdrop = ranked.firstOrNull { tmdbImage(it.backdropUrl) }
-        val bestPoster = ranked.firstOrNull { tmdbImage(it.posterUrl) }
-        featured = bestBackdrop ?: bestPoster ?: ranked.firstOrNull()
+        val previousUrl = featured?.url
+        featuredCandidates = ranked
+            .filter { tmdbImage(it.backdropUrl) || tmdbImage(it.posterUrl) }
+            .distinctBy { it.url }
+            .take(12)
+            .ifEmpty { ranked.take(1) }
+        featuredIndex = featuredCandidates.indexOfFirst { it.url == previousUrl }
+            .takeIf { it >= 0 } ?: 0
+        featured = featuredCandidates.getOrNull(featuredIndex)
         featured?.let(::bindFeatured)
+        val canBrowseHero = featuredCandidates.size > 1
+        findViewById<View>(R.id.tvHeroPrev).visibility = if (canBrowseHero) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.tvHeroNext).visibility = if (canBrowseHero) View.VISIBLE else View.GONE
 
         val favorites = FavoritesManager.getAll(this)
             .filterNot { it.isChannel }
@@ -124,6 +199,22 @@ class TvHomeActivity : AppCompatActivity() {
         startHomeEntranceIfReady()
     }
 
+    private fun moveFeatured(direction: Int) {
+        if (featuredCandidates.size < 2) return
+        featuredIndex = (featuredIndex + direction + featuredCandidates.size) % featuredCandidates.size
+        val selected = featuredCandidates[featuredIndex]
+        featured = selected
+        bindFeatured(selected)
+        if (loadingDismissed) {
+            listOf(titleView, metaView, descriptionView).forEach { view ->
+                view.animate().cancel()
+                view.alpha = 0f
+                view.translationY = dp(12)
+                view.animate().alpha(1f).translationY(0f).setDuration(260L).start()
+            }
+        }
+    }
+
     private fun bindFeatured(media: CineMedia) {
         titleView.text = media.title.uppercase(Locale.getDefault())
         titleView.maxLines = if (media.title.length > 26) 2 else 1
@@ -138,6 +229,7 @@ class TvHomeActivity : AppCompatActivity() {
             Glide.with(this)
                 .load(backdropUrl.replace("/w780/", "/w1280/").replace("/w500/", "/w1280/"))
                 .centerCrop()
+                .transition(DrawableTransitionOptions.withCrossFade(320))
                 .listener(object : RequestListener<Drawable> {
                     override fun onLoadFailed(
                         e: GlideException?, model: Any?, target: Target<Drawable>, isFirstResource: Boolean
@@ -312,7 +404,8 @@ class TvHomeActivity : AppCompatActivity() {
             R.id.tvBrand, R.id.tvNavHome, R.id.tvNavMovies, R.id.tvNavSeries, R.id.tvNavKids,
             R.id.tvSearchAction, R.id.tvProfile,
             R.id.tvHeroEyebrow, R.id.tvHeroTitle, R.id.tvHeroMeta, R.id.tvHeroDescription,
-            R.id.tvHeroPlay, R.id.tvHeroAdd, R.id.tvPostersTitle, R.id.tvPostersHint,
+            R.id.tvHeroPlay, R.id.tvHeroAdd, R.id.tvHeroPrev, R.id.tvHeroNext,
+            R.id.tvPostersTitle, R.id.tvPostersHint,
             R.id.tvPosterScroll, R.id.tvSecondRowTitle, R.id.tvPopularRow,
             R.id.tvContinueTitle, R.id.tvContinueScroll
         ).mapNotNull { findViewById<View>(it) }
