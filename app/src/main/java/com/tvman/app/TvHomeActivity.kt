@@ -209,7 +209,7 @@ class TvHomeActivity : AppCompatActivity() {
             listOf(titleView, metaView, descriptionView).forEach { view ->
                 view.animate().cancel()
                 view.alpha = 0f
-                view.translationY = dp(12)
+                view.translationY = dp(12).toFloat()
                 view.animate().alpha(1f).translationY(0f).setDuration(260L).start()
             }
         }
