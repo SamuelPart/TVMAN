@@ -214,30 +214,20 @@
             android:gravity="center"
             android:orientation="vertical">
 
+            <com.tvman.app.LoadingHandView
+                android:layout_width="190dp"
+                android:layout_height="220dp"
+                android:contentDescription="Animación de una mano azul tocando con cuatro dedos" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TVMAN"
+                android:layout_marginTop="6dp"
+                android:text="LOADING..."
                 android:textColor="#FFFFFFFF"
-                android:textSize="38sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.12" />
-
-            <ProgressBar
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginTop="22dp"
-                android:indeterminateTint="#A341FF" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="PREPARANDO TU INICIO"
-                android:textColor="#D9FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.16" />
+                android:letterSpacing="0.2" />
         </LinearLayout>
     </FrameLayout>
 
