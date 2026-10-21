@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         updateTVMANNav(R.id.navigation_home)
         listOf(binding.navBtnHome, binding.navBtnChannels, binding.navBtnSearch,
             binding.navBtnCine, binding.navBtnSettings).forEach { it.springPress() }
-        binding.navBtnHome.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_home }
+        binding.navBtnHome.setOnClickListener { returnToTvHome() }
         binding.navBtnChannels.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_channels }
         binding.navBtnSearch.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_search }
         binding.navBtnCine.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_cine }
@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
             updateTVMANNav(item.itemId)
             when (item.itemId) {
                 R.id.navigation_home -> {
-                    showTab(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE)
+                    returnToTvHome()
                     true
                 }
                 R.id.navigation_channels -> {
@@ -191,6 +191,11 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    private fun returnToTvHome() {
+        startActivity(Intent(this, TvHomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        finish()
     }
 
     private fun showTab(homeVis: Int, channelsVis: Int, cineVis: Int, browserVis: Int, searchVis: Int) {

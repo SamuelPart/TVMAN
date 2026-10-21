@@ -61,8 +61,8 @@ class TVManApplication : Application() {
             if (view.visibility == View.GONE) return
             if (view.isClickable || view.isLongClickable) {
                 view.isFocusable = true
-                view.minimumWidth = maxOf(view.minimumWidth, (48 * density).toInt())
-                view.minimumHeight = maxOf(view.minimumHeight, (48 * density).toInt())
+                view.minimumWidth = maxOf(view.minimumWidth, (56 * density).toInt())
+                view.minimumHeight = maxOf(view.minimumHeight, (56 * density).toInt())
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                     view.foreground = getDrawable(R.drawable.tv_focus_ring)
                 }
