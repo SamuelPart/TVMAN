@@ -35,18 +35,27 @@ class NewtonCradleView @JvmOverloads constructor(
         strokeCap = Paint.Cap.ROUND
     }
     private val cablePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFA8B9CF.toInt()
-        strokeWidth = dp(1.15f)
+        color = 0xFFE2ECFA.toInt()
+        strokeWidth = dp(2.4f)
         strokeCap = Paint.Cap.ROUND
     }
     private val cableGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0x4468D9D5
-        strokeWidth = dp(4f)
+        strokeWidth = dp(6f)
         strokeCap = Paint.Cap.ROUND
     }
     private val framePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF8191A8.toInt()
+        color = 0xFFB9C8DA.toInt()
         strokeWidth = dp(3f)
+        strokeCap = Paint.Cap.ROUND
+    }
+    private val postPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFF8295B0.toInt()
+        style = Paint.Style.FILL
+    }
+    private val postHighlight = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xBFFFFFFF.toInt()
+        strokeWidth = dp(1.5f)
         strokeCap = Paint.Cap.ROUND
     }
     private val ballPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -173,13 +182,24 @@ class NewtonCradleView @JvmOverloads constructor(
         auraPaint.color = alphaColor(0xFF8E50F5.toInt(), (8 + 10 * impact).toInt())
         canvas.drawCircle(centerX, pivotY + cableLength, radius * 4.4f, auraPaint)
 
-        // Structural frame, bevelled rail, and feet.
-        framePaint.strokeWidth = dp(4f)
-        canvas.drawLine(leftEdge - radius * 0.7f, railTop, leftEdge - radius * 0.7f, groundY, framePaint)
-        canvas.drawLine(rightEdge + radius * 0.7f, railTop, rightEdge + radius * 0.7f, groundY, framePaint)
-        framePaint.strokeWidth = dp(6f)
-        canvas.drawLine(leftEdge - radius, groundY, leftEdge - radius * 0.42f, groundY, framePaint)
-        canvas.drawLine(rightEdge + radius * 0.42f, groundY, rightEdge + radius, groundY, framePaint)
+        // Clearly visible side uprights, crossbar, diagonal braces, and feet.
+        val postWidth = maxOf(dp(7f), radius * 0.20f)
+        val leftPostX = leftEdge - radius * 0.72f
+        val rightPostX = rightEdge + radius * 0.72f
+        val postTop = railTop - radius * 0.72f
+        val postBottom = groundY + radius * 0.55f
+        canvas.drawRoundRect(leftPostX - postWidth / 2f, postTop, leftPostX + postWidth / 2f, postBottom,
+            postWidth / 2f, postWidth / 2f, postPaint)
+        canvas.drawRoundRect(rightPostX - postWidth / 2f, postTop, rightPostX + postWidth / 2f, postBottom,
+            postWidth / 2f, postWidth / 2f, postPaint)
+        canvas.drawLine(leftPostX - postWidth * 0.18f, postTop + dp(4f), leftPostX - postWidth * 0.18f, postBottom - radius * 0.18f, postHighlight)
+        canvas.drawLine(rightPostX - postWidth * 0.18f, postTop + dp(4f), rightPostX - postWidth * 0.18f, postBottom - radius * 0.18f, postHighlight)
+        framePaint.strokeWidth = maxOf(dp(3f), radius * 0.075f)
+        canvas.drawLine(leftPostX, postBottom - radius * 0.9f, leftEdge + radius * 0.15f, groundY, framePaint)
+        canvas.drawLine(rightPostX, postBottom - radius * 0.9f, rightEdge - radius * 0.15f, groundY, framePaint)
+        framePaint.strokeWidth = maxOf(dp(7f), radius * 0.22f)
+        canvas.drawLine(leftPostX - radius * 0.35f, postBottom, leftPostX + radius * 0.48f, postBottom, framePaint)
+        canvas.drawLine(rightPostX - radius * 0.48f, postBottom, rightPostX + radius * 0.35f, postBottom, framePaint)
         beamBounds.set(leftEdge - radius * 1.1f, railTop, rightEdge + radius * 1.1f, railBottom)
         canvas.drawRoundRect(beamBounds, dp(5f), dp(5f), railPaint)
         canvas.drawLine(beamBounds.left + dp(5f), beamBounds.top + dp(1.5f), beamBounds.right - dp(5f), beamBounds.top + dp(1.5f), railHighlight)

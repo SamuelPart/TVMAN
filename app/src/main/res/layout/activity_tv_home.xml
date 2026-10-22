@@ -215,6 +215,7 @@
             android:orientation="vertical"
             android:padding="32dp">
             <TextView
+                android:id="@+id/tvCatalogErrorTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="NO SE PUDO CARGAR EL CATÁLOGO"
@@ -223,6 +224,7 @@
                 android:textStyle="bold"
                 android:gravity="center" />
             <TextView
+                android:id="@+id/tvCatalogErrorMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -246,4 +248,10 @@
                 android:contentDescription="Reintentar cargar el catálogo" />
         </LinearLayout>
     </FrameLayout>
+    <include
+        android:id="@+id/tvCradleLoadingOverlay"
+        layout="@layout/activity_tv_status"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible" />
 </FrameLayout>

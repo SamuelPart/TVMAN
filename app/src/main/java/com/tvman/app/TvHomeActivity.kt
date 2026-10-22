@@ -28,6 +28,11 @@ import java.util.Locale
 
 /** Cinematic Android TV home: hero and poster rows are populated from the TMDB-enriched catalog. */
 class TvHomeActivity : AppCompatActivity() {
+    private companion object {
+        const val MIN_POSTERS_BEFORE_ENTERING = 5
+        const val POSTER_LOAD_TIMEOUT_MS = 35_000L
+    }
+
     private lateinit var posterRow: LinearLayout
     private lateinit var popularRow: LinearLayout
     private lateinit var actionRow: LinearLayout
@@ -43,6 +48,13 @@ class TvHomeActivity : AppCompatActivity() {
     private lateinit var continueTitle: TextView
     private lateinit var continueRow: LinearLayout
     private lateinit var catalogErrorOverlay: View
+    private lateinit var cradleLoadingOverlay: View
+    private lateinit var catalogErrorTitle: TextView
+    private lateinit var catalogErrorMessage: TextView
+    private val splashPosterUrlsLoaded = LinkedHashSet<String>()
+    private var cradleLoadingDismissed = false
+    private var catalogLoadingTimeout: Runnable? = null
+    private val catalogLoadingHandler = Handler(Looper.getMainLooper())
     private lateinit var previewPanel: View
     private lateinit var previewTitle: TextView
     private lateinit var previewMeta: TextView
@@ -76,6 +88,10 @@ class TvHomeActivity : AppCompatActivity() {
         continueTitle = findViewById(R.id.tvContinueTitle)
         continueRow = findViewById(R.id.tvContinueRow)
         catalogErrorOverlay = findViewById(R.id.tvCatalogErrorOverlay)
+        cradleLoadingOverlay = findViewById(R.id.tvCradleLoadingOverlay)
+        catalogErrorTitle = findViewById(R.id.tvCatalogErrorTitle)
+        catalogErrorMessage = findViewById(R.id.tvCatalogErrorMessage)
+        cradleLoadingOverlay.visibility = View.VISIBLE
         previewPanel = findViewById(R.id.tvPosterPreview)
         previewTitle = findViewById(R.id.tvPosterPreviewTitle)
         previewMeta = findViewById(R.id.tvPosterPreviewMeta)
@@ -90,6 +106,11 @@ class TvHomeActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.tvCatalogRetry).setOnClickListener {
             catalogErrorOverlay.visibility = View.GONE
+            splashPosterUrlsLoaded.clear()
+            cradleLoadingDismissed = false
+            cradleLoadingOverlay.animate().cancel()
+            cradleLoadingOverlay.alpha = 1f
+            cradleLoadingOverlay.visibility = View.VISIBLE
             scheduleLoadingTimeout()
             loadCatalog()
         }
@@ -124,7 +145,14 @@ class TvHomeActivity : AppCompatActivity() {
         }
     }
 
+    override fun dispatchTouchEvent(event: android.view.MotionEvent): Boolean {
+        if (::cradleLoadingOverlay.isInitialized && cradleLoadingOverlay.visibility == View.VISIBLE) return true
+        return super.dispatchTouchEvent(event)
+    }
+
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (::cradleLoadingOverlay.isInitialized && cradleLoadingOverlay.visibility == View.VISIBLE &&
+            event.keyCode != android.view.KeyEvent.KEYCODE_BACK) return true
         if (event.action == android.view.KeyEvent.ACTION_DOWN &&
             (event.keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT ||
                 event.keyCode == android.view.KeyEvent.KEYCODE_DPAD_RIGHT) &&
@@ -265,15 +293,57 @@ class TvHomeActivity : AppCompatActivity() {
     }
 
     private fun scheduleLoadingTimeout() {
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (!isFinishing && catalog.isEmpty()) showHomeCatalogError()
-        }, 12_000L)
+        catalogLoadingTimeout?.let(catalogLoadingHandler::removeCallbacks)
+        val timeout = Runnable {
+            if (!isFinishing && !cradleLoadingDismissed) {
+                val hasCatalog = catalog.isNotEmpty()
+                showHomeCatalogError(
+                    if (hasCatalog) "NO SE PUDIERON CARGAR LOS PÓSTERS" else "NO SE PUDO CARGAR EL CATÁLOGO",
+                    if (hasCatalog) "Comprueba la conexión para mostrar las portadas e inténtalo otra vez."
+                    else "Comprueba la conexión e inténtalo otra vez."
+                )
+            }
+        }
+        catalogLoadingTimeout = timeout
+        catalogLoadingHandler.postDelayed(timeout, POSTER_LOAD_TIMEOUT_MS)
     }
 
-    private fun showHomeCatalogError() {
+    private fun showHomeCatalogError(
+        title: String = "NO SE PUDO CARGAR EL CATÁLOGO",
+        message: String = "Comprueba la conexión e inténtalo otra vez."
+    ) {
         if (catalogErrorOverlay.visibility == View.VISIBLE) return
+        catalogErrorTitle.text = title
+        catalogErrorMessage.text = message
+        dismissCradleLoading()
         catalogErrorOverlay.visibility = View.VISIBLE
         catalogErrorOverlay.postDelayed({ findViewById<View>(R.id.tvCatalogRetry).requestFocus() }, 360L)
+    }
+
+    private fun posterLoaded(url: String, success: Boolean) {
+        if (!success || cradleLoadingDismissed || isFinishing) return
+        splashPosterUrlsLoaded.add(url)
+        if (splashPosterUrlsLoaded.size >= MIN_POSTERS_BEFORE_ENTERING) dismissCradleLoading()
+    }
+
+    private fun dismissCradleLoading() {
+        if (cradleLoadingDismissed) return
+        cradleLoadingDismissed = true
+        catalogLoadingTimeout?.let(catalogLoadingHandler::removeCallbacks)
+        catalogLoadingTimeout = null
+        cradleLoadingOverlay.animate().cancel()
+        cradleLoadingOverlay.animate()
+            .alpha(0f)
+            .setDuration(320L)
+            .withEndAction {
+                if (cradleLoadingDismissed) {
+                    cradleLoadingOverlay.visibility = View.GONE
+                    if (catalogErrorOverlay.visibility != View.VISIBLE) {
+                        findViewById<View>(R.id.sideNavHome).requestFocus()
+                    }
+                }
+            }
+            .start()
     }
 
     private fun loadCatalog() {
@@ -328,9 +398,9 @@ class TvHomeActivity : AppCompatActivity() {
             .distinctBy { it.url }
         val recommendations = ranked.filter { it !== featured && tmdbImage(it.posterUrl) }
         postersTitle.text = if (favorites.isNotEmpty()) "MI LISTA" else "RECOMENDADOS PARA TI"
-        fillPosterRow(posterRow, if (favorites.isNotEmpty()) favorites else recommendations.take(14))
+        fillPosterRow(posterRow, if (favorites.isNotEmpty()) favorites else recommendations.take(14), trackPosterReadiness = true)
         findViewById<TextView>(R.id.tvSecondRowTitle).text = "LO MÁS VISTO"
-        fillPosterRow(popularRow, ranked.filter { it !== featured && tmdbImage(it.posterUrl) }.take(14))
+        fillPosterRow(popularRow, ranked.filter { it !== featured && tmdbImage(it.posterUrl) }.take(14), trackPosterReadiness = true)
         val editorialPool = ranked.asSequence()
             .filter { it.url != featured?.url && tmdbImage(it.posterUrl) }
             .take(500)
@@ -399,7 +469,11 @@ class TvHomeActivity : AppCompatActivity() {
         addButton.contentDescription = if (isSaved) "Quitar de Mi lista" else "Añadir a Mi lista"
     }
 
-    private fun fillPosterRow(row: LinearLayout, items: List<CineMedia>) {
+    private fun fillPosterRow(
+        row: LinearLayout,
+        items: List<CineMedia>,
+        trackPosterReadiness: Boolean = false
+    ) {
         row.removeAllViews()
         items.forEach { media ->
             val poster = media.posterUrl?.takeIf(::tmdbImage) ?: return@forEach
@@ -422,7 +496,31 @@ class TvHomeActivity : AppCompatActivity() {
                 contentDescription = media.title
                 layoutParams = LinearLayout.LayoutParams(dp(106), dp(151))
             }
-            Glide.with(this).load(poster).centerCrop().placeholder(R.drawable.tv_poster_placeholder).into(image)
+            val posterRequest = Glide.with(this).load(poster).centerCrop()
+                .placeholder(R.drawable.tv_poster_placeholder)
+            if (trackPosterReadiness) {
+                posterRequest.listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?, model: Any?, target: Target<Drawable>, isFirstResource: Boolean
+                    ): Boolean {
+                        posterLoaded(poster, success = false)
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any,
+                        target: Target<Drawable>,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        posterLoaded(poster, success = true)
+                        return false
+                    }
+                }).into(image)
+            } else {
+                posterRequest.into(image)
+            }
             val name = TextView(this).apply {
                 text = media.title
                 setTextColor(Color.WHITE)
@@ -590,6 +688,8 @@ class TvHomeActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         previewHandler.removeCallbacksAndMessages(null)
+        catalogLoadingTimeout?.let(catalogLoadingHandler::removeCallbacks)
+        catalogLoadingTimeout = null
         super.onDestroy()
     }
 
