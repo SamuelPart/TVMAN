@@ -67,6 +67,8 @@ class MainActivity : AppCompatActivity() {
     private val deckShown = HashSet<String>()
     
     private lateinit var channelsAdapter: ChannelAdapter
+    private lateinit var channelSectionsAdapter: TvChannelCategoryAdapter
+    private var channelSectionInitialized = false
     private lateinit var searchAdapter: ChannelAdapter
     private lateinit var countryAdapter: CategoryAdapter
     private lateinit var searchCountryAdapter: CategoryAdapter
@@ -82,7 +84,6 @@ class MainActivity : AppCompatActivity() {
     private var selectedLanguage: String = "Todos"
     private var selectedAlphabet: String = "Sin Ordenar" // "Sin Ordenar", "A-Z", "Z-A"
     private var selectedSearchCountry: String = "Todos"
-    private var isGridView = true
 
     // Cine & Series states
     private lateinit var cineAdapter: CineSearchResultAdapter
@@ -174,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_home -> { returnToTvHome(); true }
                 R.id.navigation_channels -> {
                     showTab(View.GONE, View.VISIBLE, View.GONE, View.GONE, View.GONE)
-                    SmartTips.showOnce(this, "channels", "💡 Toca el filtro para ordenar los canales por país o categoría")
+                    binding.root.post { enterTvChannelDirectory() }
                     true
                 }
                 R.id.navigation_search -> {
@@ -272,7 +273,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerViews() {
-        // 1. Setup Channels — Sintonizador (1 col, fila con foco central) por defecto
+        // Directorio de TV: secciones a la izquierda y lista de sintonización a la derecha.
+        binding.rvChannelCategories.layoutManager = LinearLayoutManager(this)
+        channelSectionsAdapter = TvChannelCategoryAdapter(emptyList()) { section ->
+            onTvChannelSectionSelected(section)
+        }
+        binding.rvChannelCategories.adapter = channelSectionsAdapter
+
         val channelsGridLayout = GridLayoutManager(this, 1)
         binding.rvChannelsGrid.layoutManager = channelsGridLayout
         channelsAdapter = ChannelAdapter(
@@ -281,18 +288,14 @@ class MainActivity : AppCompatActivity() {
             isFavorite = { FavoritesManager.isFavorite(this, it.url) },
             onFavoriteToggle = { channel ->
                 val added = FavoritesManager.toggleChannel(this, channel)
-                Toast.makeText(this, if (added) "Guardado en Favoritos ⭐" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
-                    }
+                Toast.makeText(this, if (added) "Añadido a Favoritos" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
+                refreshTvChannelDirectory()
+            },
+            showAds = false
         )
         binding.rvChannelsGrid.adapter = channelsAdapter
-        channelsAdapter.gridColumns = 1 // sintonizador: 1 columna → anuncio cada 4 filas (4 canales)
-        channelsGridLayout.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int =
-                if (channelsAdapter.isAdAt(position)) channelsGridLayout.spanCount else 1
-        }
-        channelsAdapter.attachTuner(binding.rvChannelsGrid)
+        channelsAdapter.gridColumns = 1
         channelsAdapter.tunerMode = true
-        binding.btnToggleLayout.setImageResource(R.drawable.ic_ios_list)
 
         // 2. Setup Search Grid in Buscador tab (3 columns)
         val searchGridLayout = GridLayoutManager(this, 3)
@@ -396,6 +399,9 @@ class MainActivity : AppCompatActivity() {
         resumeHomeBanner()
         applyAccentColor()
         handlePendingSettings()
+        if (::channelsAdapter.isInitialized && binding.containerChannels.visibility == View.VISIBLE) {
+            refreshTvChannelDirectory()
+        }
         syncCineCatalogIfNeeded()
     }
 
@@ -1106,11 +1112,10 @@ class MainActivity : AppCompatActivity() {
             showFilterDialog()
         }
 
-        // Layout Toggle (Grid/List) in Channels tab (Opens dialog options!)
-        binding.btnToggleLayout.setOnClickListener {
-            showLayoutToggleDialog()
+        // Search remains one action away from the channel directory.
+        binding.btnChannelSearch.setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_search
         }
-
         // Filter button in Search tab
         binding.btnSearchFilter.setOnClickListener {
             showSearchFilterDialog()
@@ -1302,51 +1307,7 @@ class MainActivity : AppCompatActivity() {
         updateParaTiChips()
     }
 
-    /** Modern iPhone-style view picker with animated popup + spring cards. */
-    private fun showLayoutToggleDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_view_options, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.window?.let { w ->
-            val attrs = w.attributes
-            attrs.windowAnimations = R.style.iOSPopupAnimation
-            w.attributes = attrs
-        }
-
-        val optionGrid = dialogView.findViewById<View>(R.id.optionViewGrid)
-        val optionList = dialogView.findViewById<View>(R.id.optionViewList)
-        optionGrid.springPress()
-        optionList.springPress()
-
-        optionGrid.setOnClickListener {
-            isGridView = true
-            val layoutManager = binding.rvChannelsGrid.layoutManager as GridLayoutManager
-            layoutManager.spanCount = 3
-            channelsAdapter.gridColumns = 3
-            binding.btnToggleLayout.setImageResource(R.drawable.ic_ios_grid)
-            channelsAdapter.tunerMode = false
-            layoutManager.requestLayout()
-            Toast.makeText(this, "Vista Cuadrícula activa", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-        }
-        optionList.setOnClickListener {
-            isGridView = false
-            val layoutManager = binding.rvChannelsGrid.layoutManager as GridLayoutManager
-            layoutManager.spanCount = 1
-            channelsAdapter.gridColumns = 1
-            binding.btnToggleLayout.setImageResource(R.drawable.ic_ios_list)
-            channelsAdapter.tunerMode = true
-            layoutManager.requestLayout()
-            Toast.makeText(this, "Vista Lista activa", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-        }
-        dialogView.findViewById<View>(R.id.btnViewOptionsClose).setOnClickListener { dialog.dismiss() }
-
-        dialog.show()
-    }
-
+    /** TV-friendly options dialog: each action is focusable with the remote. */
     private fun showIosOptionPopup(title: String, subtitle: String, options: List<Pair<Int, String>>, onPick: (Int) -> Unit) {
         val density = resources.displayMetrics.density
         fun Int.dp(): Int = (this * density).roundToInt()
@@ -1378,6 +1339,9 @@ class MainActivity : AppCompatActivity() {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
                 setBackgroundResource(R.drawable.bg_tile_glass)
+                foreground = androidx.core.content.ContextCompat.getDrawable(this@MainActivity, R.drawable.tv_focus_ring)
+                isFocusable = true
+                isClickable = true
                 setPadding(14.dp(), 10.dp(), 14.dp(), 10.dp())
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -1428,10 +1392,137 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun enterTvChannelDirectory() {
+        if (!::channelsAdapter.isInitialized || !::channelSectionsAdapter.isInitialized) return
+        refreshTvChannelDirectory()
+        binding.rvChannelCategories.post {
+            val position = channelSectionsAdapter.positionOf(channelSectionsAdapter.selectedKey)
+            if (position >= 0) {
+                binding.rvChannelCategories.scrollToPosition(position)
+                binding.rvChannelCategories.post {
+                    val selected = binding.rvChannelCategories.findViewHolderForAdapterPosition(position)?.itemView
+                    if (selected?.requestFocus() != true) binding.rvChannelCategories.requestFocus()
+                }
+            }
+        }
+    }
+
+    private fun refreshTvChannelDirectory() {
+        if (!::channelsAdapter.isInitialized || !::channelSectionsAdapter.isInitialized) return
+        val favorites = getFavoriteChannels()
+        val recents = getRecentChannels()
+        val sections = buildList {
+            add(TvChannelSection("favorites", "Favoritos", favorites.size))
+            add(TvChannelSection("recent", "Vistos recientemente", recents.size))
+            add(TvChannelSection("all", "Todos los canales", allChannels.size))
+            categories.filter { it.isNotBlank() && !it.equals("Todos", true) }
+                .distinct().sortedBy { it.lowercase() }.forEach { group ->
+                    add(TvChannelSection("group:$group", group, allChannels.count { it.group == group }))
+                }
+        }
+        val isFirstEntry = !channelSectionInitialized
+        channelSectionsAdapter.submitSections(sections, preserveSelection = true)
+        if (isFirstEntry) {
+            val initial = when {
+                recents.isNotEmpty() -> "recent"
+                favorites.isNotEmpty() -> "favorites"
+                else -> "all"
+            }
+            channelSectionsAdapter.selectKey(initial)
+            channelSectionInitialized = true
+        } else if (sections.none { it.key == channelSectionsAdapter.selectedKey }) {
+            channelSectionsAdapter.selectKey("all")
+        }
+        applyChannelDirectoryFilter()
+    }
+
+    private fun getFavoriteChannels(): List<Channel> {
+        val loadedByUrl = allChannels.associateBy { it.url }
+        return FavoritesManager.getAll(this).asSequence()
+            .filter { it.isChannel }
+            .mapNotNull { item -> loadedByUrl[item.url] ?: item.channel }
+            .distinctBy { it.url }
+            .toList()
+    }
+
+    private fun getRecentChannels(): List<Channel> {
+        val loadedByUrl = allChannels.associateBy { it.url }
+        return ContinueWatchingManager.getAll(this).asSequence()
+            .filter { it.isChannel }
+            .mapNotNull { entry -> loadedByUrl[entry.url] }
+            .distinctBy { it.url }
+            .take(30)
+            .toList()
+    }
+
+    private fun channelsForSection(key: String): List<Channel> = when {
+        key == "favorites" -> getFavoriteChannels()
+        key == "recent" -> getRecentChannels()
+        key == "all" -> allChannels
+        key.startsWith("group:") -> allChannels.filter { it.group == key.removePrefix("group:") }
+        else -> allChannels
+    }
+
+    private fun onTvChannelSectionSelected(section: TvChannelSection) {
+        selectedCategory = if (section.key.startsWith("group:")) section.key.removePrefix("group:") else "Todos"
+        applyChannelDirectoryFilter()
+    }
+
+    private fun applyChannelDirectoryFilter() {
+        if (!::channelsAdapter.isInitialized || !::channelSectionsAdapter.isInitialized) return
+        val section = channelSectionsAdapter.selectedKey
+        val sectionItems = channelsForSection(section)
+        val parentalActive = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
+            .getBoolean("parental_active", false)
+        var filtered = sectionItems.filter { channel ->
+            (selectedCategory == "Todos" || channel.group == selectedCategory) &&
+                (selectedCountry == "Todos" || channel.country == selectedCountry) &&
+                (selectedLanguage == "Todos" || channel.language == selectedLanguage)
+        }
+        if (parentalActive) {
+            val hiddenCategories = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
+                .getStringSet("parental_hidden_categories", emptySet()) ?: emptySet()
+            filtered = filtered.filter { !isAdultChannel(it) && (it.group == null || it.group !in hiddenCategories) }
+        }
+        filtered = when (selectedAlphabet) {
+            "A-Z" -> filtered.sortedBy { it.name.lowercase() }
+            "Z-A" -> filtered.sortedByDescending { it.name.lowercase() }
+            else -> filtered
+        }
+        channelsAdapter.updateList(filtered)
+        binding.rvChannelsGrid.visibility = if (filtered.isEmpty()) View.GONE else View.VISIBLE
+        binding.tvChannelsNoResults.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+        val title = when {
+            section == "favorites" -> "Favoritos"
+            section == "recent" -> "Vistos recientemente"
+            section == "all" -> "Todos los canales"
+            section.startsWith("group:") -> section.removePrefix("group:")
+            else -> "Canales"
+        }
+        binding.txtTvChannelListTitle.text = title
+        val activeFilters = listOfNotNull(
+            selectedCountry.takeUnless { it == "Todos" }?.let { "País: $it" },
+            selectedLanguage.takeUnless { it == "Todos" }?.let { "Idioma: $it" },
+            selectedAlphabet.takeUnless { it == "Sin Ordenar" }?.let { "Orden: $it" },
+            if (parentalActive) "Control parental" else null
+        )
+        binding.txtSelectedFilterInfo.text = buildString {
+            append(if (filtered.size == 1) "1 canal" else "${filtered.size} canales")
+            if (activeFilters.isNotEmpty()) append(" · ${activeFilters.joinToString(" · ")}")
+        }
+        if (filtered.isEmpty()) {
+            binding.txtTvChannelsNoResultsTitle.text = when (section) {
+                "favorites" -> "Aún no tienes favoritos"
+                "recent" -> "Todavía no has visto canales"
+                else -> "No hay canales en esta sección"
+            }
+        }
+    }
+
     private fun showFilterDialog() {
         showIosOptionPopup(
             "Filtrar y ordenar",
-            "Toca una opcion para aplicarla",
+            "Elige una opción con la cruceta y confirma con OK.",
             listOf(
                 R.drawable.ic_ios_globe to "Filtrar por pais",
                 R.drawable.ic_ios_message to "Filtrar por idioma",
@@ -1508,6 +1599,9 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Seleccionar Categoría")
             .setItems(items) { _, which ->
                 selectedCategory = items[which]
+                if (selectedCategory == "Todos" && ::channelSectionsAdapter.isInitialized) {
+                    channelSectionsAdapter.selectKey("all")
+                }
                 applyFiltersAndSorting()
             }
             .show()
@@ -1539,41 +1633,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyFiltersAndSorting() {
         refreshHomeSections()
-        val sharedPref = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-        val isParentalActive = sharedPref.getBoolean("parental_active", false)
-
-        // 1. Filter dynamically by category AND country AND language concurrently!
-        var filtered = allChannels.filter {
-            (selectedCategory == "Todos" || it.group == selectedCategory) &&
-            (selectedCountry == "Todos" || it.country == selectedCountry) &&
-            (selectedLanguage == "Todos" || it.language == selectedLanguage)
+        if (selectedCategory != "Todos") {
+            val groupKey = "group:$selectedCategory"
+            if (::channelSectionsAdapter.isInitialized && channelSectionsAdapter.positionOf(groupKey) >= 0) {
+                channelSectionsAdapter.selectKey(groupKey)
+            }
         }
-
-        // 2. Filter out adult channels if parental control is active!
-        if (isParentalActive) {
-            val hiddenCategories = sharedPref.getStringSet("parental_hidden_categories", emptySet()) ?: emptySet()
-            filtered = filtered.filter { !isAdultChannel(it) && (it.group == null || it.group !in hiddenCategories) }
-        }
-
-        // 3. Sort dynamically alphabetically
-        filtered = when (selectedAlphabet) {
-            "A-Z" -> filtered.sortedBy { it.name }
-            "Z-A" -> filtered.sortedByDescending { it.name }
-            else -> filtered
-        }
-
-        // 4. Update adapter list
-        channelsAdapter.updateList(filtered)
-
-        // 5. Formulate clean filter status text in header
-        val countText = "Canales: ${filtered.size}"
-        val categoryText = if (selectedCategory == "Todos") "" else " | Cat: $selectedCategory"
-        val countryText = if (selectedCountry == "Todos") "" else " | País: $selectedCountry"
-        val languageText = if (selectedLanguage == "Todos") "" else " | Idioma: $selectedLanguage"
-        val sortText = if (selectedAlphabet == "Sin Ordenar") "" else " | Orden: $selectedAlphabet"
-        val parentalText = if (isParentalActive) " | 🔒 Parental Activo" else ""
-        
-        binding.txtSelectedFilterInfo.text = "$countText$categoryText$countryText$languageText$sortText$parentalText"
+        refreshTvChannelDirectory()
     }
 
     /** Parental control: select whole channel categories to hide when active. */
@@ -1703,10 +1769,9 @@ class MainActivity : AppCompatActivity() {
                         selectedSearchCountry = "Todos"
                         selectedAlphabet = "Sin Ordenar"
                         
-                        channelsAdapter.updateList(allChannels)
+                        channelSectionInitialized = false
+                        refreshTvChannelDirectory()
                         searchAdapter.updateList(allChannels)
-                        
-                        binding.txtSelectedFilterInfo.text = "Canales: ${allChannels.size} (Cargados al Instante ⚡)"
                         binding.edtSearchTab.setText("")
                         binding.txtSearchCount.text = "Ingresa el nombre de un canal para buscar entre los ${allChannels.size} cargados"
                         
@@ -1730,6 +1795,8 @@ class MainActivity : AppCompatActivity() {
         categories = emptyList()
         countries = emptyList()
         languages = emptyList()
+        channelSectionInitialized = false
+        refreshTvChannelDirectory()
         updateEmptyStates()
         Toast.makeText(this, "Lista eliminada del historial", Toast.LENGTH_SHORT).show()
     }
@@ -1795,12 +1862,10 @@ class MainActivity : AppCompatActivity() {
                     selectedSearchCountry = "Todos"
                     selectedAlphabet = "Sin Ordenar"
                     
-                    // 5. Update the grids
-                    channelsAdapter.updateList(allChannels)
+                    // Refresh the TV directory and the separate search grid.
+                    channelSectionInitialized = false
+                    refreshTvChannelDirectory()
                     searchAdapter.updateList(allChannels)
-                    
-                    // Update header text in categories/countries tab
-                    binding.txtSelectedFilterInfo.text = "Canales: ${allChannels.size} (Filtros listos 🔄)"
 
                     // Clear search input on tab 3
                     binding.edtSearchTab.setText("")
@@ -1865,40 +1930,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun filterChannelsByCategoryAndCountry() {
-        val sharedPref = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-        val isParentalActive = sharedPref.getBoolean("parental_active", false)
-
-        // 1. Filter dynamically by category AND country AND language concurrently!
-        var filtered = allChannels.filter {
-            (selectedCategory == "Todos" || it.group == selectedCategory) &&
-            (selectedCountry == "Todos" || it.country == selectedCountry) &&
-            (selectedLanguage == "Todos" || it.language == selectedLanguage)
+        if (selectedCategory != "Todos") {
+            val groupKey = "group:$selectedCategory"
+            if (::channelSectionsAdapter.isInitialized && channelSectionsAdapter.positionOf(groupKey) >= 0) {
+                channelSectionsAdapter.selectKey(groupKey)
+            }
         }
-
-        // 2. Filter out adult channels if parental control is active!
-        if (isParentalActive) {
-            filtered = filtered.filter { !isAdultChannel(it) }
-        }
-
-        // 3. Sort dynamically alphabetically
-        filtered = when (selectedAlphabet) {
-            "A-Z" -> filtered.sortedBy { it.name }
-            "Z-A" -> filtered.sortedByDescending { it.name }
-            else -> filtered
-        }
-
-        // 4. Update adapter list
-        channelsAdapter.updateList(filtered)
-
-        // 5. Formulate clean filter status text in header
-        val countText = "Canales: ${filtered.size}"
-        val categoryText = if (selectedCategory == "Todos") "" else " | Cat: $selectedCategory"
-        val countryText = if (selectedCountry == "Todos") "" else " | País: $selectedCountry"
-        val languageText = if (selectedLanguage == "Todos") "" else " | Idioma: $selectedLanguage"
-        val sortText = if (selectedAlphabet == "Sin Ordenar") "" else " | Orden: $selectedAlphabet"
-        val parentalText = if (isParentalActive) " | 🔒 Parental Activo" else ""
-        
-        binding.txtSelectedFilterInfo.text = "$countText$categoryText$countryText$languageText$sortText$parentalText"
+        refreshTvChannelDirectory()
     }
 
     private fun onCategorySelected(category: String) {
@@ -1965,7 +2003,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openPlayer(channel: Channel) {
-        // Anuncio recompensado obligatorio: solo se reproduce si se ve completo.
+        val visibleQueue = if (::channelsAdapter.isInitialized) channelsAdapter.channelsSnapshot() else emptyList()
+        val zapQueue = when {
+            visibleQueue.any { it.url == channel.url } -> visibleQueue
+            allChannels.any { it.url == channel.url } -> allChannels
+            else -> listOf(channel)
+        }
+        LiveChannelSession.setQueue(zapQueue, channel.url)
         launchPlayerActivity(channel)
     }
 
@@ -2733,8 +2777,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNativeAds() {
         // Inicio: tarjeta inline (ya está en el layout)
-        // Canales y Buscador: bloque compacto
-        binding.adSlotChannels.visibility = View.GONE
+        // El directorio de canales mantiene navegación limpia, sin anuncios.
         binding.adSlotSearch.visibility = View.GONE
         binding.adSlotSettings.visibility = View.GONE
         binding.adSlotCine.visibility = View.GONE

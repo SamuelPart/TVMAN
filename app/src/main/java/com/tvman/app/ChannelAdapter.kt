@@ -14,17 +14,16 @@ class ChannelAdapter(
     private var channels: List<Channel>,
     private val onChannelClick: (Channel) -> Unit,
     private val isFavorite: ((Channel) -> Boolean)? = null,
-    private val onFavoriteToggle: ((Channel) -> Unit)? = null
+    private val onFavoriteToggle: ((Channel) -> Unit)? = null,
+    private val showAds: Boolean = true
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    /** true = el modo lista (1 columna) se vuelve "Sintonizador": fila central con zoom + anillo champagne. */
+    /** true = renderiza filas horizontales, con foco ampliado para navegación en TV. */
     var tunerMode: Boolean = false
         set(value) {
             field = value
             notifyDataSetChanged()
         }
-
-    private var pulsingDot: View? = null
 
     /** Lista real + marcadores de anuncio (null → no; objeto AD_MARKER → sí). */
     private var displayList: List<Any?> = emptyList()
@@ -47,8 +46,10 @@ class ChannelAdapter(
     init { rebuildDisplayList() }
 
     private fun rebuildDisplayList() {
-        displayList = NativeAds.interleaveWithAds(channels, gridColumns)
+        displayList = if (showAds) NativeAds.interleaveWithAds(channels, gridColumns) else channels
     }
+
+    fun channelsSnapshot(): List<Channel> = channels.toList()
 
     fun isAdAt(position: Int): Boolean = NativeAds.isAdMarker(displayList.getOrNull(position))
 
@@ -79,12 +80,13 @@ class ChannelAdapter(
                 channel.country?.takeIf { it.isNotBlank() }
             ).joinToString(" · ")
             binding.txtChannelMeta.text =
-                if (meta.isNotBlank()) meta else "Toca para ver en vivo"
+                if (meta.isNotBlank()) meta else "OK para sintonizar"
             loadLogo(binding.imgLogo, channel)
             bindStar(binding.imgChannelFav, channel)
-            binding.viewChannelFocusRing.visibility = View.GONE
             binding.viewChannelLiveDot.alpha = 1f
             binding.root.enableTVFocus()
+            binding.root.contentDescription = "Canal ${position + 1}: ${channel.name}. ${meta.ifBlank { "Canal en vivo" }}. Pulsa OK para sintonizar."
+            binding.root.nextFocusLeftId = R.id.rvChannelCategories
             binding.root.setOnClickListener { onChannelClick(channel) }
         }
     }
@@ -102,10 +104,15 @@ class ChannelAdapter(
     private fun bindStar(star: android.widget.ImageView, channel: Channel) {
         if (isFavorite != null) {
             star.visibility = View.VISIBLE
+            star.isFocusable = true
+            star.isClickable = true
+            star.foreground = androidx.core.content.ContextCompat.getDrawable(star.context, R.drawable.tv_focus_ring)
+            star.contentDescription = if (isFavorite?.invoke(channel) == true) "Quitar de favoritos" else "Añadir a favoritos"
             updateFavIcon(star, isFavorite?.invoke(channel) == true)
             star.setOnClickListener {
                 onFavoriteToggle?.invoke(channel)
                 val nowFav = isFavorite?.invoke(channel) == true
+                star.contentDescription = if (nowFav) "Quitar de favoritos" else "Añadir a favoritos"
                 updateFavIcon(star, nowFav)
                 android.animation.ObjectAnimator.ofFloat(it, "scaleX", 0.6f, 1f)
                     .apply { duration = 280; start() }
@@ -114,6 +121,8 @@ class ChannelAdapter(
             }
         } else {
             star.visibility = View.GONE
+            star.isFocusable = false
+            star.isClickable = false
         }
     }
 
@@ -209,63 +218,5 @@ class ChannelAdapter(
         notifyDataSetChanged()
     }
 
-    // ================= SINTONIZADOR (foco central vertical) =================
 
-    /** Instala el zoom de la fila cerca del centro de pantalla cuando tunerMode esta activo. */
-    fun attachTuner(rv: RecyclerView) {
-        rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (tunerMode) applyTunerTransforms(recyclerView) else resetTunerTransforms(recyclerView)
-            }
-        })
-    }
-
-    private fun applyTunerTransforms(rv: RecyclerView) {
-        val cy = rv.height / 2f
-        val radius = rv.height * 0.55f
-        var best: View? = null
-        var bestT = 0f
-        for (i in 0 until rv.childCount) {
-            val v = rv.getChildAt(i)
-            if (v.tag == "grid_ad") continue // no tocar los anuncios nativos
-            val vcy = v.top + v.height / 2f
-            val t = (1f - kotlin.math.abs(vcy - cy) / radius).coerceIn(0f, 1f)
-            val e = 1f - (1f - t) * (1f - t)
-            val s = 0.92f + 0.10f * e
-            v.scaleX = s
-            v.scaleY = s
-            v.alpha = 0.55f + 0.45f * e
-            v.translationZ = 10f * e
-            val ring = v.findViewById<View>(R.id.viewChannelFocusRing)
-            ring?.visibility = if (t > 0.80f) View.VISIBLE else View.GONE
-            if (t > bestT) { bestT = t; best = v }
-        }
-        val dot = best?.findViewById<View>(R.id.viewChannelLiveDot)
-        if (dot != null && dot != pulsingDot) {
-            pulsingDot?.animate()?.cancel()
-            pulsingDot?.alpha = 1f
-            dot.alpha = 0.25f
-            dot.animate()
-                .alpha(1f)
-                .setDuration(420)
-                .setInterpolator(android.view.animation.AccelerateDecelerateInterpolator())
-                .start()
-            pulsingDot = dot
-        }
-    }
-
-    private fun resetTunerTransforms(rv: RecyclerView) {
-        for (i in 0 until rv.childCount) {
-            val v = rv.getChildAt(i)
-            if (v.tag == "grid_ad") continue // no tocar los anuncios nativos
-            v.scaleX = 1f
-            v.scaleY = 1f
-            v.alpha = 1f
-            v.translationZ = 0f
-            v.findViewById<View>(R.id.viewChannelFocusRing)?.visibility = View.GONE
-        }
-        pulsingDot?.animate()?.cancel()
-        pulsingDot?.alpha = 1f
-        pulsingDot = null
-    }
 }

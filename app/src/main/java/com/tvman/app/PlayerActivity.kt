@@ -240,7 +240,7 @@ class PlayerActivity : AppCompatActivity() {
         val savedPos = getSharedPreferences("iptv_pref", android.content.Context.MODE_PRIVATE)
             .getLong("pos_$channelName", 0L)
         // freshStream: recien extraido por el BOT -> NUNCA reanuda
-        pendingSeekPosition = if (startPosition > 0L) startPosition else if (freshStream) 0L else savedPos
+        pendingSeekPosition = if (isLiveTv) 0L else if (startPosition > 0L) startPosition else if (freshStream) 0L else savedPos
 
         try {
             // Optimized VLC arguments for peak Android IPTV performance
@@ -275,7 +275,8 @@ class PlayerActivity : AppCompatActivity() {
                             binding.playerProgress.visibility = View.GONE
                             tvPlaybackOverlay.notifyPlayingStateChanged()
                             SmartTips.showOnce(this@PlayerActivity, "player",
-                                "Pulsa OK para controles · izquierda/derecha = ±10 segundos",
+                                if (isLiveTv) "Pulsa OK para controles · CH+/CH− cambia de canal"
+                                else "Pulsa OK para controles · izquierda/derecha = ±10 segundos",
                                 bottomDp = 64)
                             
                             if (pendingSeekPosition > 0L) {
@@ -655,7 +656,7 @@ class PlayerActivity : AppCompatActivity() {
         
         mediaPlayer?.let {
             val currentMs = it.time
-            if (currentMs > 0L) {
+            if (!isLiveTv && currentMs > 0L) {
                 getSharedPreferences("iptv_pref", android.content.Context.MODE_PRIVATE)
                     .edit()
                     .putLong("pos_$channelName", currentMs)
@@ -760,7 +761,42 @@ class PlayerActivity : AppCompatActivity() {
         releasePlayer()
     }
 
+    private fun zapLiveChannel(direction: Int) {
+        if (!isLiveTv) return
+        if (activeCastDevice != null) {
+            Toast.makeText(this, "Detén la transmisión para cambiar de canal desde este reproductor", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val next = LiveChannelSession.step(channelUrl, direction) ?: return
+        if (next.url == channelUrl) return
+
+        releasePlayer()
+        channelName = next.name
+        channelUrl = next.url
+        channelLogo = next.logoUrl
+        streamReferer = null
+        streamUserAgent = null
+        startPosition = 0L
+        pendingSeekPosition = 0L
+        failedSources.clear()
+        val info = TvPlaybackOverlay.splitTitleInfo(next.name)
+        tvPlaybackOverlay.setTitleInfo(info.first, info.second.ifBlank {
+            listOfNotNull(next.group, next.country).joinToString(" · ").ifBlank { "Canal en vivo" }
+        })
+        tvPlaybackOverlay.showRemoteMessage(next.name)
+        binding.playerProgress.visibility = View.VISIBLE
+        initializePlayer()
+    }
+
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.action == android.view.KeyEvent.ACTION_DOWN && event.repeatCount == 0 && isLiveTv) {
+            when (event.keyCode) {
+                android.view.KeyEvent.KEYCODE_CHANNEL_UP,
+                android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> { zapLiveChannel(1); return true }
+                android.view.KeyEvent.KEYCODE_CHANNEL_DOWN,
+                android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> { zapLiveChannel(-1); return true }
+            }
+        }
         if (event.action == android.view.KeyEvent.ACTION_DOWN &&
             ::tvPlaybackOverlay.isInitialized && tvPlaybackOverlay.handleRemoteKey(event.keyCode)) return true
         return super.dispatchKeyEvent(event)

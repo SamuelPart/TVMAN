@@ -169,6 +169,11 @@ class TvPlaybackOverlay @JvmOverloads constructor(
         playPauseButton.requestFocus()
     }
 
+    fun showRemoteMessage(message: String) {
+        showTransientControls()
+        showSeekFeedback(message)
+    }
+
     fun revealForRemote(): Boolean {
         if (controlsVisible && findFocus() != null && findFocus() !== this) return false
         focusForRemote()

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="58dp"
+    android:layout_marginHorizontal="10dp"
+    android:layout_marginVertical="3dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="@drawable/tv_focus_ring"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp">
+
+    <View
+        android:id="@+id/viewTvChannelSectionMarker"
+        android:layout_width="3dp"
+        android:layout_height="24dp"
+        android:layout_gravity="start|center_vertical"
+        android:background="@color/tv_accent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp">
+
+        <TextView
+            android:id="@+id/txtTvChannelSectionTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Favoritos"
+            android:textColor="#FFB5C2D3"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtTvChannelSectionCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="12"
+            android:textColor="#FF7D8EA4"
+            android:textSize="12sp" />
+    </LinearLayout>
+</FrameLayout>
