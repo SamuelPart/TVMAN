@@ -73,8 +73,8 @@ class WebVideoPlayerActivity : AppCompatActivity() {
     private var pageBroken = false
     private var rescueTried = false
 
-    // ══════════ Skin Apple ══════════
-    private lateinit var appleOverlay: ApplePlayerOverlay
+    // ══════════ Reproducción controlada con mando de TV ══════════
+    private lateinit var tvPlaybackOverlay: TvPlaybackOverlay
     private val appleUiHandler = Handler(Looper.getMainLooper())
     private var bridgeSnap: BridgeSnap? = null
     private var appleRevealed = false
@@ -108,7 +108,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
                         appleRevealed = true
                         isVideoRolling = true
                         revealBootLayer()
-                        try { appleOverlay.showControls() } catch (_: Exception) {}
+                        try { tvPlaybackOverlay.showControls() } catch (_: Exception) {}
                         showPlayerTip()
                     }
                     if (!resumeDone && resumePendingMs > 0 && snap.d > 0 && snap.t < 30_000) {
@@ -123,7 +123,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
     /** Tip contextual del reproductor (una sola vez por instalacion). */
     private fun showPlayerTip() {
         SmartTips.showOnce(this, "player",
-            "💡 Toca la pantalla para ver los controles · doble toque = ±10s", bottomDp = 64)
+                        "💡 Con el mando: OK muestra controles · izquierda/derecha salta 10 s", bottomDp = 64)
     }
 
     /** Orden del overlay nativo -> video del embed (reparte a los iframes). */
@@ -527,7 +527,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
             try {
                 if (isVideoRolling) {
                     // CORRIENDO: el usuario ya no toca el iframe — el overlay
-                    // Apple manda. Solo mantenemos el ADKILLER y el puente vivo.
+                    // El overlay remoto nativo manda; mantenemos el limpiador y el puente activos.
                     binding.webFramePlayer.evaluateJavascript(AD_OVERLAY_JS, null)
                     binding.webFramePlayer.evaluateJavascript(BLACK_BG_JS, null)
                     binding.webFramePlayer.evaluateJavascript(APPLE_INJECT_JS, null)
@@ -583,7 +583,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
             // toque fisico al centro del reproductor oculto (gates de play).
             if (!isVideoRolling && botTicks == 10) botPlayFallback()
             // Si aun asi no pudo confirmar el play (iframe cross-origin),
-            // destapa el reproductor: el overlay Apple ya manda sobre el video.
+            // revela el reproductor: la capa nativa de TV gestiona los controles.
             if (!isVideoRolling && botTicks >= 16) {
                 revealBootLayer()
             }
@@ -617,10 +617,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
         // Servidores de la ficha (mismos enlaces de la película, agrupados en el catálogo)
         catalogSources = intent.getStringArrayListExtra("allSources")?.distinct() ?: emptyList()
 
-        // ══════════ Skin Apple: UNICA interfaz ══════════
-        // Los botones sueltos de la era anterior fueron ELIMINADOS del layout:
-        // todo vive en el overlay de vidrio (X, PiP, cast, compartir, votvman,
-        // -10/play/+10, titulo, CC/audio/velocidad, barra, Info y Continue).
+        // La interfaz de reproducción es la capa TV: transporte, línea de tiempo y opciones remotas.
 
         // Reanudar desde Continue Watching si hay posicion guardada
         resumePendingMs = ContinueWatchingManager.getAll(this)
@@ -630,18 +627,18 @@ class WebVideoPlayerActivity : AppCompatActivity() {
                     (it.durationMs <= 0 || it.positionMs < it.durationMs - 30_000)
             }?.positionMs ?: 0L
 
-        appleOverlay = ApplePlayerOverlay(this).apply {
-            delegate = appleDelegate
-            val info = ApplePlayerOverlay.splitTitleInfo(mediaTitle)
+        tvPlaybackOverlay = TvPlaybackOverlay(this).apply {
+            delegate = tvWebDelegate
+            val info = TvPlaybackOverlay.splitTitleInfo(mediaTitle)
             setTitleInfo(info.first, info.second.ifBlank { Uri.parse(pageUrl).host ?: "" })
         }
         binding.root.addView(
-            appleOverlay,
+            tvPlaybackOverlay,
             FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         )
         // Visible desde el primer segundo, mientras el BOT prepara el video.
-        appleOverlay.showControls()
-        appleOverlay.post { appleOverlay.focusForRemote() }
+        tvPlaybackOverlay.showControls()
+        tvPlaybackOverlay.post { tvPlaybackOverlay.focusForRemote() }
 
         val web = binding.webFramePlayer
         web.setBackgroundColor(0xFF000000.toInt())
@@ -993,8 +990,8 @@ class WebVideoPlayerActivity : AppCompatActivity() {
 
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
         if (event.action == android.view.KeyEvent.ACTION_DOWN &&
-            ::appleOverlay.isInitialized && appleOverlay.visibility == View.VISIBLE &&
-            appleOverlay.handleRemoteKey(event.keyCode)) return true
+            ::tvPlaybackOverlay.isInitialized && tvPlaybackOverlay.visibility == View.VISIBLE &&
+            tvPlaybackOverlay.handleRemoteKey(event.keyCode)) return true
         return super.dispatchKeyEvent(event)
     }
 
@@ -1051,14 +1048,14 @@ class WebVideoPlayerActivity : AppCompatActivity() {
         } catch (_: Exception) {}
     }
 
-    private val appleDelegate = object : ApplePlayerOverlay.Delegate {
+    private val tvWebDelegate = object : TvPlaybackOverlay.Delegate {
 
-        override fun snapshot(): ApplePlayerOverlay.Snapshot {
+        override fun snapshot(): TvPlaybackOverlay.Snapshot {
             val s = bridgeSnap
             return if (s == null)
-                ApplePlayerOverlay.Snapshot(playing = isVideoRolling, positionMs = 0, durationMs = 0)
+                TvPlaybackOverlay.Snapshot(playing = isVideoRolling, positionMs = 0, durationMs = 0)
             else
-                ApplePlayerOverlay.Snapshot(s.p, s.t, s.d, s.b, s.r)
+                TvPlaybackOverlay.Snapshot(s.p, s.t, s.d, s.b, s.r)
         }
 
         override fun isLive(): Boolean = bridgeSnap?.let { it.d <= 0 } ?: true
@@ -1074,7 +1071,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
             } else {
                 sendCmd("play")
             }
-            appleOverlay.notifyPlayingStateChanged()
+            tvPlaybackOverlay.notifyPlayingStateChanged()
         }
 
         override fun onSeekBy(deltaSec: Int) {
@@ -1111,7 +1108,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
          *  toque. Sin poster disponible comparte texto simple. */
         private fun shareWithCard() {
             val ctx = this@WebVideoPlayerActivity
-            val raw = ApplePlayerOverlay.splitTitleInfo(mediaTitle)
+            val raw = TvPlaybackOverlay.splitTitleInfo(mediaTitle)
             val meta = buildString {
                 val sub = raw.second
                 if (sub.isNotBlank()) append(sub) else append(Uri.parse(pageUrl).host ?: "")
@@ -1215,7 +1212,7 @@ class WebVideoPlayerActivity : AppCompatActivity() {
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         try {
-            appleOverlay.visibility = if (isInPictureInPictureMode) View.GONE else View.VISIBLE
+            tvPlaybackOverlay.visibility = if (isInPictureInPictureMode) View.GONE else View.VISIBLE
         } catch (_: Exception) {}
     }
 
