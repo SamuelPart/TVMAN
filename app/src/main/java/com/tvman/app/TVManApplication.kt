@@ -2,7 +2,6 @@ package com.tvman.app
 
 import android.app.Activity
 import android.app.Application
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -42,17 +41,7 @@ class TVManApplication : Application() {
         override fun onActivityResumed(activity: Activity) {
             val videoScreen = activity is PlayerActivity || activity is WebVideoPlayerActivity
             if (videoScreen) return
-            if (activity is TvHomeActivity) {
-                activity.window.statusBarColor = Color.TRANSPARENT
-                activity.window.navigationBarColor = Color.TRANSPARENT
-                activity.window.decorView.systemUiVisibility =
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            } else {
-                // Keep system chrome visually integrated with the TV canvas.
-                activity.window.statusBarColor = Color.rgb(5, 10, 16)
-                activity.window.navigationBarColor = Color.rgb(5, 10, 16)
-                activity.window.decorView.systemUiVisibility = 0
-            }
+            activity.enterTvFullscreen()
             activity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
             val content = activity.findViewById<ViewGroup>(android.R.id.content)
@@ -65,7 +54,6 @@ class TVManApplication : Application() {
                 if (savedId != View.NO_ID) {
                     root.postDelayed({
                         val saved = root.findViewById<View>(savedId)
-                        if (activity is TvStatusActivity) return@postDelayed
                         if (saved != null && saved.isShown && saved.isFocusable) {
                             saved.requestFocus()
                         } else if (root.findFocus() == null || root.findFocus() === root) {
