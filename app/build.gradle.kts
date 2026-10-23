@@ -73,9 +73,6 @@ dependencies {
     // WorkManager: bot de actualización del catálogo en segundo plano
     implementation("androidx.work:work-runtime-ktx:2.8.1")
     
-    // Lifecycle Process for App Open Ads
-    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
-
     // QR: generacion (core) + escaneo con camara (embedded)
     implementation("com.google.zxing:core:3.5.3")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")

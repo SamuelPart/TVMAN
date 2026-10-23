@@ -62,12 +62,9 @@ class PlayerActivity : AppCompatActivity() {
     private var channelLogo: String? = null
     private var cineMedia: CineMedia? = null
     private var currentSpeed: Float = 1f
-    private lateinit var appleOverlay: ApplePlayerOverlay
+    private lateinit var tvPlaybackOverlay: TvPlaybackOverlay
     private var subtitleFilePath: String? = null
     private val failedSources = mutableSetOf<String>()
-    private var volumeGestureAccum = 0f
-    private val gestureHideRunnable = Runnable { binding.txtGestureIndicator.visibility = View.GONE }
-    private val audioManager by lazy { getSystemService(AUDIO_SERVICE) as android.media.AudioManager }
     private val subtitlePicker = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.GetContent()
     ) { uri ->
@@ -187,91 +184,8 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
 
-        // ══════════ Skin Apple para VLC (enlaces directos y canales) ══════════
-        // UNICA interfaz: el overlay de vidrio estilo Apple TV. El diseño de la
-        // era anterior fue eliminado por completo (lienzo limpio).
-        mountAppleSkin()
-
-        // Initialize Double-Tap Gesture Detector for 10s skip (disabled for Live TV)
-        val gestureDetector = android.view.GestureDetector(this, object : android.view.GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: android.view.MotionEvent): Boolean {
-                if (isLiveTv) return false
-                val width = binding.viewTouchTarget.width
-                val x = e.x
-                if (x < width / 2) {
-                    // Left double-tap -> Rewind 10s
-                    mediaPlayer?.let { player ->
-                        val target = (player.time - 10000).coerceAtLeast(0)
-                        player.time = target
-                        animateDoubleTapIndicator(true)
-                    }
-                } else {
-                    // Right double-tap -> Forward 10s
-                    mediaPlayer?.let { player ->
-                        val total = player.length
-                        val target = player.time + 10000
-                        if (total > 0) {
-                            player.time = target.coerceAtMost(total)
-                        } else {
-                            player.time = target
-                        }
-                        animateDoubleTapIndicator(false)
-                    }
-                }
-                return true
-            }
-
-            override fun onSingleTapConfirmed(e: android.view.MotionEvent): Boolean {
-                appleOverlay.showControls()
-                return true
-            }
-
-            override fun onDown(e: android.view.MotionEvent): Boolean {
-                volumeGestureAccum = 0f
-                return true
-            }
-
-            /** Vertical drag: LEFT half = brightness, RIGHT half = volume. */
-            override fun onScroll(
-                e1: android.view.MotionEvent?,
-                e2: android.view.MotionEvent,
-                distanceX: Float,
-                distanceY: Float
-            ): Boolean {
-                val height = binding.viewTouchTarget.height
-                if (height <= 0 || e1 == null) return true
-                if (e1.x < binding.viewTouchTarget.width / 2f) {
-                    val attrs = window.attributes
-                    val current = if (attrs.screenBrightness < 0f) 0.55f else attrs.screenBrightness
-                    val target = (current + (-distanceY / height) * 1.6f).coerceIn(0.05f, 1f)
-                    attrs.screenBrightness = target
-                    window.attributes = attrs
-                    showGestureIndicator("BRIGHTNESS:${(target * 100).toInt()}%")
-                } else {
-                    volumeGestureAccum += -distanceY
-                    if (Math.abs(volumeGestureAccum) > 24f) {
-                        val max = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).coerceAtLeast(1)
-                        val cur = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
-                        var target = cur
-                        if (volumeGestureAccum > 0 && cur < max) target = cur + 1
-                        if (volumeGestureAccum < 0 && cur > 0) target = cur - 1
-                        if (target != cur) {
-                            audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, target, 0)
-                            showGestureIndicator("VOLUME:${target * 100 / max}%")
-                        }
-                        volumeGestureAccum = 0f
-                    }
-                }
-                return true
-            }
-
-        })
-
-        // Feed touch events from touch target to gesture detector
-        binding.viewTouchTarget.setOnTouchListener { _, event ->
-            gestureDetector.onTouchEvent(event)
-            true
-        }
+        // Monta el transporte de TV: toda la navegación se hace con la cruceta y OK.
+        mountTvPlaybackControls()
 
         // Remote control panel click listeners
         binding.btnCastPlayPause.setOnClickListener {
@@ -326,7 +240,7 @@ class PlayerActivity : AppCompatActivity() {
         val savedPos = getSharedPreferences("iptv_pref", android.content.Context.MODE_PRIVATE)
             .getLong("pos_$channelName", 0L)
         // freshStream: recien extraido por el BOT -> NUNCA reanuda
-        pendingSeekPosition = if (startPosition > 0L) startPosition else if (freshStream) 0L else savedPos
+        pendingSeekPosition = if (isLiveTv) 0L else if (startPosition > 0L) startPosition else if (freshStream) 0L else savedPos
 
         try {
             // Optimized VLC arguments for peak Android IPTV performance
@@ -359,11 +273,7 @@ class PlayerActivity : AppCompatActivity() {
                         }
                         MediaPlayer.Event.Playing -> {
                             binding.playerProgress.visibility = View.GONE
-                            appleOverlay.notifyPlayingStateChanged()
-                            SmartTips.showOnce(this@PlayerActivity, "player",
-                                "💡 Toca la pantalla para ver los controles · doble toque = ±10s",
-                                bottomDp = 64)
-                            
+                            tvPlaybackOverlay.notifyPlayingStateChanged()
                             if (pendingSeekPosition > 0L) {
                                 val len = mediaPlayer?.length ?: 0L
                                 // CLAMP: posicion guardada > final real = se cerraba solo
@@ -379,7 +289,7 @@ class PlayerActivity : AppCompatActivity() {
                             startTimelineUpdates()
                         }
                         MediaPlayer.Event.Paused -> {
-                            appleOverlay.notifyPlayingStateChanged()
+                            tvPlaybackOverlay.notifyPlayingStateChanged()
                         }
                         MediaPlayer.Event.Stopped -> {
                             binding.playerProgress.visibility = View.GONE
@@ -400,7 +310,16 @@ class PlayerActivity : AppCompatActivity() {
                                 ).show()
                                 switchSource(nextSource)
                             } else {
-                                Toast.makeText(this@PlayerActivity, "Error de reproducción con VLC", Toast.LENGTH_SHORT).show()
+                                runOnUiThread {
+                                    TvDialogs.showRetry(
+                                        this@PlayerActivity,
+                                        "No se pudo reproducir",
+                                        "Comprueba la conexión o intenta cargar este servidor otra vez.",
+                                        onRetry = {
+                                            channelUrl?.let { failedSources.remove(it); switchSource(it) }
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -496,13 +415,6 @@ class PlayerActivity : AppCompatActivity() {
             e.printStackTrace()
             Toast.makeText(this, "No se pudo cargar el archivo .srt", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun showGestureIndicator(text: String) {
-        binding.txtGestureIndicator.text = text
-        binding.txtGestureIndicator.visibility = View.VISIBLE
-        binding.txtGestureIndicator.removeCallbacks(gestureHideRunnable)
-        binding.txtGestureIndicator.postDelayed(gestureHideRunnable, 900)
     }
 
     /** Re-tints the player dock with the user-chosen accent color. */
@@ -739,7 +651,7 @@ class PlayerActivity : AppCompatActivity() {
         
         mediaPlayer?.let {
             val currentMs = it.time
-            if (currentMs > 0L) {
+            if (!isLiveTv && currentMs > 0L) {
                 getSharedPreferences("iptv_pref", android.content.Context.MODE_PRIVATE)
                     .edit()
                     .putLong("pos_$channelName", currentMs)
@@ -832,7 +744,6 @@ class PlayerActivity : AppCompatActivity() {
                         durationMs = len
                     )
                 )
-                cineMedia?.let { TasteProfile.recordWatch(this, it) }
             }
         }
     }
@@ -842,6 +753,47 @@ class PlayerActivity : AppCompatActivity() {
         castPollingJob?.cancel()
         castPollingJob = null
         releasePlayer()
+    }
+
+    private fun zapLiveChannel(direction: Int) {
+        if (!isLiveTv) return
+        if (activeCastDevice != null) {
+            Toast.makeText(this, "Detén la transmisión para cambiar de canal desde este reproductor", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val next = LiveChannelSession.step(channelUrl, direction) ?: return
+        if (next.url == channelUrl) return
+
+        releasePlayer()
+        channelName = next.name
+        channelUrl = next.url
+        channelLogo = next.logoUrl
+        streamReferer = null
+        streamUserAgent = null
+        startPosition = 0L
+        pendingSeekPosition = 0L
+        failedSources.clear()
+        val info = TvPlaybackOverlay.splitTitleInfo(next.name)
+        tvPlaybackOverlay.setTitleInfo(info.first, info.second.ifBlank {
+            listOfNotNull(next.group, next.country).joinToString(" · ").ifBlank { "Canal en vivo" }
+        })
+        tvPlaybackOverlay.showRemoteMessage(next.name)
+        binding.playerProgress.visibility = View.VISIBLE
+        initializePlayer()
+    }
+
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.action == android.view.KeyEvent.ACTION_DOWN && event.repeatCount == 0 && isLiveTv) {
+            when (event.keyCode) {
+                android.view.KeyEvent.KEYCODE_CHANNEL_UP,
+                android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> { zapLiveChannel(1); return true }
+                android.view.KeyEvent.KEYCODE_CHANNEL_DOWN,
+                android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> { zapLiveChannel(-1); return true }
+            }
+        }
+        if (event.action == android.view.KeyEvent.ACTION_DOWN &&
+            ::tvPlaybackOverlay.isInitialized && tvPlaybackOverlay.handleRemoteKey(event.keyCode)) return true
+        return super.dispatchKeyEvent(event)
     }
 
     private fun hideSystemUI() {
@@ -1094,44 +1046,44 @@ class PlayerActivity : AppCompatActivity() {
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
-            try { appleOverlay.visibility = View.GONE } catch (_: Exception) {}
+            try { tvPlaybackOverlay.visibility = View.GONE } catch (_: Exception) {}
         } else {
-            try { appleOverlay.visibility = View.VISIBLE } catch (_: Exception) {}
+            try { tvPlaybackOverlay.visibility = View.VISIBLE } catch (_: Exception) {}
         }
     }
 
-    // ═══════════════════ SKIN APPLE (VLC): overlay + delegado ═══════════════════
+    // ═══════════════════ CONTROL DE TV (VLC): overlay + delegado ═══════════════════
 
-    /** Monta el reproductor estilo Apple sobre libVLC. Los controles viejos
-     *  quedan ocultos: el usuario solo ve y toca el overlay. */
-    private fun mountAppleSkin() {
-        appleOverlay = ApplePlayerOverlay(this).apply {
-            delegate = appleVlcDelegate
-            val info = ApplePlayerOverlay.splitTitleInfo(channelName)
+    /** Instala el control remoto de TV sobre libVLC. */
+    private fun mountTvPlaybackControls() {
+        tvPlaybackOverlay = TvPlaybackOverlay(this).apply {
+            delegate = tvVlcDelegate
+            val info = TvPlaybackOverlay.splitTitleInfo(channelName)
             val sub = info.second.ifBlank {
                 if (isLiveTv) "Canal en vivo" else "Película · reproducción directa"
             }
             setTitleInfo(info.first, sub)
         }
         binding.root.addView(
-            appleOverlay,
+            tvPlaybackOverlay,
             androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(
                 androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT,
                 androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
             )
         )
         // Se ve desde el primer segundo: el cambio es inconfundible.
-        appleOverlay.showControls()
+        tvPlaybackOverlay.showControls()
+        tvPlaybackOverlay.post { tvPlaybackOverlay.focusForRemote() }
     }
 
-    private val appleVlcDelegate = object : ApplePlayerOverlay.Delegate {
+    private val tvVlcDelegate = object : TvPlaybackOverlay.Delegate {
 
-        override fun snapshot(): ApplePlayerOverlay.Snapshot {
+        override fun snapshot(): TvPlaybackOverlay.Snapshot {
             val p = mediaPlayer
             val dur = p?.length ?: 0L
             val pos = p?.time ?: 0L
-            return ApplePlayerOverlay.Snapshot(
-                playing = p?.isPlaying == true,
+            return TvPlaybackOverlay.Snapshot(
+                playing = if (activeCastDevice != null) isCastPlaying else p?.isPlaying == true,
                 positionMs = pos,
                 durationMs = dur,
                 bufferedMs = dur,
@@ -1142,9 +1094,13 @@ class PlayerActivity : AppCompatActivity() {
         override fun isLive(): Boolean = isLiveTv || (mediaPlayer?.length ?: 0L) <= 0L
 
         override fun onPlayPause() {
-            val p = mediaPlayer ?: return
-            if (p.isPlaying) p.pause() else p.play()
-            appleOverlay.notifyPlayingStateChanged()
+            if (activeCastDevice != null) {
+                toggleCastPlayPause()
+            } else {
+                val p = mediaPlayer ?: return
+                if (p.isPlaying) p.pause() else p.play()
+            }
+            tvPlaybackOverlay.notifyPlayingStateChanged()
         }
 
         override fun onSeekBy(deltaSec: Int) {
@@ -1225,34 +1181,6 @@ class PlayerActivity : AppCompatActivity() {
                 enterPipMode()
             }
         }
-    }
-
-    private fun animateDoubleTapIndicator(isLeft: Boolean) {
-        val indicator = if (isLeft) binding.imgDoubleTapLeft else binding.imgDoubleTapRight
-        indicator.visibility = View.VISIBLE
-        indicator.alpha = 0f
-        indicator.scaleX = 0.8f
-        indicator.scaleY = 0.8f
-        
-        indicator.animate()
-            .alpha(1f)
-            .scaleX(1.05f)
-            .scaleY(1.05f)
-            .setDuration(300)
-            .withEndAction {
-                indicator.animate()
-                    .alpha(0f)
-                    .scaleX(0.85f)
-                    .scaleY(0.85f)
-                    .setStartDelay(400) // Hold on screen for 400ms before fading out!
-                    .setDuration(350)
-                    .withEndAction {
-                        indicator.visibility = View.GONE
-                        indicator.animate().startDelay = 0 // reset start delay for next animation!
-                    }
-                    .start()
-            }
-            .start()
     }
 
     private fun returnToSmallScreen() {

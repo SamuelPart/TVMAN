@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_cradle_splash"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <com.tvman.app.NewtonCradleView
+        android:id="@+id/newtonCradle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="Cuna de Newton metálica: las esferas oscilan y transmiten el impulso" />
+</FrameLayout>

@@ -40,14 +40,6 @@ class CinePopularAllActivity : AppCompatActivity() {
         binding.btnPopularBack.setOnClickListener { finish() }
         val popularLayout = GridLayoutManager(this, 3)
         binding.rvPopularAll.layoutManager = popularLayout
-        popularLayout.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int {
-                val adapter = binding.rvPopularAll.adapter as? CineSearchResultAdapter
-                return if (adapter?.isAdAt(position) == true) popularLayout.spanCount else 1
-            }
-        }
-
-        NativeAds.attach(this, binding.adSlotNative, NativeAds.VARIANT_COMPACT)
         binding.rvPopularAll.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
                 if (dy > 0) maybeLoadMore()

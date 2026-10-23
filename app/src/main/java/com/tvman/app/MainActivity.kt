@@ -41,19 +41,22 @@ import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_TV_TAB = "tvman_tv_tab"
+        const val TAB_CHANNELS = "channels"
+        const val TAB_CINE = "cine"
+        const val TAB_SEARCH = "search"
+        const val TAB_SETTINGS = "settings"
+        const val EXTRA_CINE_TYPE = "tvman_cine_type"
+        const val EXTRA_CINE_ACTION = "tvman_cine_action"
+    }
+
     private lateinit var binding: ActivityMainBinding
 
-    private var cineMood: String? = null
-    private lateinit var cineRecoAdapter: CineRecoAdapter
-    private var deckMode = true
-    private var deckBusy = false
-    private var deckDownX = 0f
-    private var deckFront: CineMedia? = null
-    private var cineDeckWired = false
-    private val deckQueue = java.util.ArrayDeque<CineMedia>()
-    private val deckShown = HashSet<String>()
     
     private lateinit var channelsAdapter: ChannelAdapter
+    private lateinit var channelSectionsAdapter: TvChannelCategoryAdapter
+    private var channelSectionInitialized = false
     private lateinit var searchAdapter: ChannelAdapter
     private lateinit var countryAdapter: CategoryAdapter
     private lateinit var searchCountryAdapter: CategoryAdapter
@@ -69,20 +72,28 @@ class MainActivity : AppCompatActivity() {
     private var selectedLanguage: String = "Todos"
     private var selectedAlphabet: String = "Sin Ordenar" // "Sin Ordenar", "A-Z", "Z-A"
     private var selectedSearchCountry: String = "Todos"
-    private var isGridView = true
+    private var selectedSearchGroup: String = "Todos"
+    private var selectedSearchLanguage: String = "Todos"
 
     // Cine & Series states
     private lateinit var cineAdapter: CineSearchResultAdapter
 
     private var allCineMedia: List<CineMedia> = emptyList()
     private var selectedCineType: String = "all" // "all", "movie", "series"
+    private var selectedCineGenre: String? = null
+    private var selectedCineYear: String? = null
 
     // Public test lists (legal & free streams)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val hasSharedTitle = !intent.getStringExtra("deeplink_title").isNullOrBlank()
+        if (intent.getStringExtra(EXTRA_TV_TAB) == null && !hasSharedTitle) {
+            startActivity(Intent(this, TvHomeActivity::class.java))
+            finish()
+            return
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         applyAppTheme()
 
         // La barra de estado (hora, red, notificaciones) siempre visible,
@@ -90,6 +101,13 @@ class MainActivity : AppCompatActivity() {
 
 
         setupBottomNavigation()
+        selectedCineType = intent.getStringExtra(EXTRA_CINE_TYPE) ?: "all"
+        when (intent.getStringExtra(EXTRA_TV_TAB)) {
+            TAB_CHANNELS -> binding.bottomNavigation.selectedItemId = R.id.navigation_channels
+            TAB_CINE -> binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+            TAB_SEARCH -> binding.bottomNavigation.selectedItemId = R.id.navigation_search
+            TAB_SETTINGS -> binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
         setupRecyclerViews()
         incrementOpenCounter()
         setupHomeBanner()
@@ -97,14 +115,16 @@ class MainActivity : AppCompatActivity() {
         setupHomeSections()
         setupSearchHistories()
         setupListeners()
-        if (android.os.Build.VERSION.SDK_INT >= 33 &&
-            androidx.core.app.ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            androidx.core.app.ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 77)
+        updateCineFilterButtons()
+        renderCineGenres()
+        if (binding.bottomNavigation.selectedItemId == R.id.navigation_cine) {
+            binding.root.post { showCinePage() }
+        }
+        when (intent.getStringExtra(EXTRA_CINE_ACTION)) {
+            "continue" -> startActivity(Intent(this, WatchHistoryActivity::class.java))
+            "favorites" -> openCineList("MI LISTA", "favorites")
         }
         updateEmptyStates() // Initial state shows instructions everywhere
-        
-        // Initialize Google AdMob SDK and load ads
-        // Monetization intentionally disabled in the TVMAN preview.
         
         // Auto-restore last successfully loaded playlist on app startup!
         restoreSavedPlaylist()
@@ -115,52 +135,32 @@ class MainActivity : AppCompatActivity() {
 
         // ¿Llegamos desde un enlace compartido (tvman://ver?d=...)? Entra
         // directo al Cine; en cuanto el catalogo cargue, se abre la ficha.
-        pendingDeepLink = DeepLink.fromIntent(intent)
+        pendingDeepLink = intent.getStringExtra("deeplink_title") ?: DeepLink.fromIntent(intent)
 
-        // Tip contextual de bienvenida (solo la primera vez que se abre la app)
-        binding.root.postDelayed({
-            if (!isFinishing) SmartTips.showOnce(this, "home",
-                "💡 Bienvenido: carga tu lista M3U en Inicio o toca Cine para +9.000 películas")
-        }, 3200)
     }
 
     private fun setupBottomNavigation() {
-        // iOS look: system blue when selected, iOS gray otherwise
-        val navTint = androidx.core.content.ContextCompat.getColorStateList(this, R.color.nav_item_tint)
-        binding.bottomNavigation.itemIconTintList = navTint
-        binding.bottomNavigation.itemTextColor = navTint
+        // TV navigation is used on every supported screen, including phones running the TV interface.
+        binding.bottomNavigation.visibility = View.GONE
+        binding.tvmanNavBar.visibility = View.GONE
         updateTVMANNav(R.id.navigation_home)
-        listOf(binding.navBtnHome, binding.navBtnChannels, binding.navBtnSearch,
-            binding.navBtnCine, binding.navBtnSettings).forEach { it.springPress() }
-        binding.navBtnHome.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_home }
-        binding.navBtnChannels.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_channels }
-        binding.navBtnSearch.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_search }
-        binding.navBtnCine.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_cine }
-        binding.navBtnSettings.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_settings }
-
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             updateTVMANNav(item.itemId)
             when (item.itemId) {
-                R.id.navigation_home -> {
-                    showTab(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE)
-                    true
-                }
+                R.id.navigation_home -> { returnToTvHome(); true }
                 R.id.navigation_channels -> {
                     showTab(View.GONE, View.VISIBLE, View.GONE, View.GONE, View.GONE)
-                    SmartTips.showOnce(this, "channels",
-                        "💡 Toca el filtro para ordenar los canales por país o categoría")
+                    binding.root.post { enterTvChannelDirectory() }
                     true
                 }
                 R.id.navigation_search -> {
                     showTab(View.GONE, View.GONE, View.GONE, View.GONE, View.VISIBLE)
-                    SmartTips.showOnce(this, "search",
-                        "💡 Busca canales y películas al instante, con historial incluido")
+                    binding.root.post { binding.tvChannelKeyboard.focusFirstKey() }
                     true
                 }
                 R.id.navigation_cine -> {
                     showTab(View.GONE, View.GONE, View.VISIBLE, View.GONE, View.GONE)
-                    SmartTips.showOnce(this, "cine",
-                        "💡 El BOT busca los mejores servidores por ti: toca una película y solo disfruta")
+                    binding.root.post { showCinePage() }
                     true
                 }
                 R.id.navigation_settings -> {
@@ -170,6 +170,50 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+        binding.navBtnHome.setOnClickListener { returnToTvHome() }
+        binding.navBtnChannels.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_channels }
+        binding.navBtnSearch.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_search }
+        binding.navBtnCine.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_cine }
+        binding.navBtnSettings.setOnClickListener { binding.bottomNavigation.selectedItemId = R.id.navigation_settings }
+
+        setupSidebarNavigation()
+        TvSidebarController.install(this, findViewById(R.id.tvSidebar))
+    }
+
+    private fun setupSidebarNavigation() {
+        findViewById<View>(R.id.sideNavHome).setOnClickListener { returnToTvHome() }
+        findViewById<View>(R.id.sideNavMyList).setOnClickListener { openCineList("MI LISTA", "favorites") }
+        findViewById<View>(R.id.sideNavChannels).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_channels
+        }
+        findViewById<View>(R.id.sideNavMovies).setOnClickListener { showSidebarCine("movie") }
+        findViewById<View>(R.id.sideNavSeries).setOnClickListener { showSidebarCine("series") }
+        findViewById<View>(R.id.sideNavSettings).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
+    }
+
+    private fun showSidebarCine(type: String) {
+        selectedCineType = type
+        selectedCineGenre = null
+        selectedCineYear = null
+        binding.bottomNavigation.selectedItemId = R.id.navigation_cine
+        updateTVMANNav(R.id.navigation_cine)
+        binding.root.post { showCinePage() }
+    }
+
+    private fun showCinePage() {
+        // Cine inicia directamente en su catálogo de títulos.
+        binding.cineCatalogScreen.visibility = View.VISIBLE
+        updateCineFilterButtons()
+        renderCineGenres()
+        applyCineFilters()
+        binding.rvCineGrid.requestFocus()
+    }
+
+    private fun returnToTvHome() {
+        startActivity(Intent(this, TvHomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        finish()
     }
 
     private fun showTab(homeVis: Int, channelsVis: Int, cineVis: Int, browserVis: Int, searchVis: Int) {
@@ -179,8 +223,6 @@ class MainActivity : AppCompatActivity() {
         showTabAnimated(binding.containerBrowser, browserVis)
         showTabAnimated(binding.containerSearch, searchVis)
 
-        // El anuncio nativo va ahora insertado dentro del contenido de Inicio
-        // (se muestra solo cuando ya cargó), y el banner queda fijo abajo.
     }
 
 
@@ -201,7 +243,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerViews() {
-        // 1. Setup Channels — Sintonizador (1 col, fila con foco central) por defecto
+        // Directorio de TV: secciones a la izquierda y lista de sintonización a la derecha.
+        binding.rvChannelCategories.layoutManager = LinearLayoutManager(this)
+        channelSectionsAdapter = TvChannelCategoryAdapter(emptyList()) { section ->
+            onTvChannelSectionSelected(section)
+        }
+        binding.rvChannelCategories.adapter = channelSectionsAdapter
+
         val channelsGridLayout = GridLayoutManager(this, 1)
         binding.rvChannelsGrid.layoutManager = channelsGridLayout
         channelsAdapter = ChannelAdapter(
@@ -210,21 +258,15 @@ class MainActivity : AppCompatActivity() {
             isFavorite = { FavoritesManager.isFavorite(this, it.url) },
             onFavoriteToggle = { channel ->
                 val added = FavoritesManager.toggleChannel(this, channel)
-                Toast.makeText(this, if (added) "Guardado en Favoritos ⭐" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
-                    }
+                Toast.makeText(this, if (added) "Añadido a Favoritos" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
+                refreshTvChannelDirectory()
+            },
         )
         binding.rvChannelsGrid.adapter = channelsAdapter
-        channelsAdapter.gridColumns = 1 // sintonizador: 1 columna → anuncio cada 4 filas (4 canales)
-        channelsGridLayout.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int =
-                if (channelsAdapter.isAdAt(position)) channelsGridLayout.spanCount else 1
-        }
-        channelsAdapter.attachTuner(binding.rvChannelsGrid)
         channelsAdapter.tunerMode = true
-        binding.btnToggleLayout.setImageResource(R.drawable.ic_ios_list)
 
-        // 2. Setup Search Grid in Buscador tab (3 columns)
-        val searchGridLayout = GridLayoutManager(this, 3)
+        // Channel search has its own TV screen and a single-focus channel list.
+        val searchGridLayout = GridLayoutManager(this, 1)
         binding.rvSearchGrid.layoutManager = searchGridLayout
         searchAdapter = ChannelAdapter(
             emptyList(),
@@ -232,18 +274,15 @@ class MainActivity : AppCompatActivity() {
             isFavorite = { FavoritesManager.isFavorite(this, it.url) },
             onFavoriteToggle = { channel ->
                 val added = FavoritesManager.toggleChannel(this, channel)
-                Toast.makeText(this, if (added) "Guardado en Favoritos ⭐" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
-                    }
+                Toast.makeText(this, if (added) "Añadido a Favoritos" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
+                refreshTvChannelDirectory()
+            },
         )
         binding.rvSearchGrid.adapter = searchAdapter
-        searchAdapter.gridColumns = 3 // 3 columnas → anuncio cada 4 filas (12 canales)
-        searchGridLayout.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int =
-                if (searchAdapter.isAdAt(position)) searchGridLayout.spanCount else 1
-        }
+        searchAdapter.tunerMode = true
 
-        // 3. Setup Cine Grid in Cine tab (2 columns for high-end poster aspect ratio)
-        val cineGridLayout = GridLayoutManager(this, 2)
+        // Catálogo Cine: una cuadrícula amplia junto al rail vertical de géneros.
+        val cineGridLayout = GridLayoutManager(this, 5)
         binding.rvCineGrid.layoutManager = cineGridLayout
         cineAdapter = CineSearchResultAdapter(
             emptyList(),
@@ -251,70 +290,27 @@ class MainActivity : AppCompatActivity() {
             isFavorite = { FavoritesManager.isFavorite(this, it.url) },
             onFavoriteToggle = { media ->
                 val added = FavoritesManager.toggleMedia(this, media)
-                Toast.makeText(this, if (added) "Guardado en Favoritos ⭐" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
-                    }
+                Toast.makeText(this, if (added) "Añadido a Mi lista" else "Quitado de Mi lista", Toast.LENGTH_SHORT).show()
+            }
         )
         binding.rvCineGrid.adapter = cineAdapter
-        cineAdapter.gridColumns = 2 // 2 columnas → anuncio cada 4 filas (8 títulos)
         binding.rvCineGrid.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
                 if (dy <= 0) return
-                val lm = recyclerView.layoutManager as? androidx.recyclerview.widget.GridLayoutManager ?: return
+                val lm = recyclerView.layoutManager as? GridLayoutManager ?: return
                 val total = recyclerView.adapter?.itemCount ?: return
-                if (lm.findLastVisibleItemPosition() >= total - 4) cineLoadMore()
+                if (lm.findLastVisibleItemPosition() >= total - 8) cineLoadMore()
             }
         })
-        cineGridLayout.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int =
-                if (cineAdapter.isAdAt(position)) cineGridLayout.spanCount else 1
-        }
 
-        // Rail "Porque viste X" (Cine v2)
-        cineRecoAdapter = CineRecoAdapter { media -> openCineDetail(media) }
-        binding.rvCineReco.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        binding.rvCineCoverflow.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        binding.rvCineCoverflow.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
-                transformCoverflow(binding.rvCineCoverflow)
-            }
+        binding.cineCatalogScreen.visibility = View.GONE
 
-            override fun onScrollStateChanged(recyclerView: androidx.recyclerview.widget.RecyclerView, newState: Int) {
-                if (newState == androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE) {
-                    val snap = coverflowSnap?.findSnapView(recyclerView.layoutManager)
-                    val pos = if (snap != null) recyclerView.getChildAdapterPosition(snap) else -1
-                    if (pos >= 0) {
-                        currentCoverflowPos = pos
-                        updatePlatformLogoFor(pos)
-                    }
-                }
-            }
-        })
-        coverflowSnap = androidx.recyclerview.widget.LinearSnapHelper()
-        coverflowSnap?.attachToRecyclerView(binding.rvCineCoverflow)
-        binding.rvCineCoverflow.post { transformCoverflow(binding.rvCineCoverflow) }
-        binding.rvCinePopular.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        binding.rvCineReco.adapter = cineRecoAdapter
-
-        setupCineDeck()
-
-        // PANTALLA PREMIER COMPLETA (los 5 bloques aprobados de una vez):
-        // 1 top bar + 2 carrusel 3D + 3 Popular + 4 New Episode (+ 5 nav pro
-        // ya activo globalmente). El mobiliario anterior permanece apagado.
-        for (i in 0 until binding.containerCine.childCount) {
-            val v = binding.containerCine.getChildAt(i)
-            v.visibility = if (v.id == R.id.premierScroll) View.VISIBLE else View.GONE
-        }
-
-        binding.txtSeeAllPopular.setOnClickListener {
-            startActivity(Intent(this, CinePopularAllActivity::class.java))
-        }
-
-        setupCineMenu()
 
     }
 
     override fun onResume() {
         super.onResume()
+        TvSidebarController.updateMyListCount(findViewById(R.id.tvSidebar), FavoritesManager.getAll(this).count { !it.isChannel })
         // Al volver a la app: aplica los posters horneados y repinta
         if (allCineMedia.isNotEmpty()) {
             allCineMedia.forEach { CineRepository.applyPosterCache(it) }
@@ -324,6 +320,9 @@ class MainActivity : AppCompatActivity() {
         resumeHomeBanner()
         applyAccentColor()
         handlePendingSettings()
+        if (::channelsAdapter.isInitialized && binding.containerChannels.visibility == View.VISIBLE) {
+            refreshTvChannelDirectory()
+        }
         syncCineCatalogIfNeeded()
     }
 
@@ -336,7 +335,6 @@ class MainActivity : AppCompatActivity() {
             allCineMedia = sync.catalog
             applyCineFilters()
             refreshHomeSections()
-            setupCineFeatured()
             if (sync.addedTitles > 0) {
                 Toast.makeText(
                     this@MainActivity,
@@ -449,7 +447,6 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
             val adapter = CineSearchResultAdapter(pool.shuffled().take(9), onMediaClick = { openCineDetail(it) })
-            adapter.gridColumns = 3
             rv.adapter = adapter
             // botones
             fun pill(label: String, icon: Int, action: () -> Unit): android.widget.LinearLayout =
@@ -505,14 +502,12 @@ class MainActivity : AppCompatActivity() {
      *  Cambiar, fila de logos y anuncio en bloque). */
     private fun setupHomeSections() {
         homeStreamingAdapter = CineSearchResultAdapter(emptyList(), onMediaClick = { openCineDetail(it) })
-        homeStreamingAdapter.gridColumns = 3
         homeStreamingAdapter.platformBadgeResolver = { m -> PlatformCatalog.logoOf(m) }
         binding.rvHomeStreaming.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 3)
         binding.rvHomeStreaming.adapter = homeStreamingAdapter
         binding.rvHomeStreaming.isNestedScrollingEnabled = false
 
         homeEstrenosAdapter = CineSearchResultAdapter(emptyList(), onMediaClick = { openCineDetail(it) })
-        homeEstrenosAdapter.gridColumns = 3
         binding.rvHomeEstrenos.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 3)
         binding.rvHomeEstrenos.adapter = homeEstrenosAdapter
         binding.rvHomeEstrenos.isNestedScrollingEnabled = false
@@ -562,9 +557,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
-        // Anuncio en bloque permanente bajo los botones de Ultimamente Nuevo
-        binding.adSlotHomeSections.visibility = View.GONE
 
         // BOT de secciones aleatorias: al llegar cerca del final, crea la
         // siguiente (con su loading) para bajar sin limite
@@ -626,7 +618,6 @@ class MainActivity : AppCompatActivity() {
     private var bannerIdx = 0
     private var bannerSize = 0
     private var homeNewPool: List<CineMedia> = emptyList()
-    private var homeRandomAdAttached = false
     private lateinit var homeNewAdapter: CineSearchResultAdapter
     private val bannerSlides = mutableListOf<CineMedia>()
     private lateinit var homeStreamingAdapter: CineSearchResultAdapter
@@ -750,17 +741,12 @@ class MainActivity : AppCompatActivity() {
             bannerRandom = true
             refreshHomeBanner()
             if (::homeNewAdapter.isInitialized) homeNewAdapter.updateList(homeNewPool.shuffled().take(9))
-            if (!homeRandomAdAttached) {
-                homeRandomAdAttached = true
-                binding.adSlotHomeRandom.visibility = View.GONE
-            }
         }
     }
 
     /** Seccion Ultimamente Nuevo: cuadricula 3x3 con lo ultimo del catalogo. */
     private fun setupHomeNewSection() {
         homeNewAdapter = CineSearchResultAdapter(emptyList(), onMediaClick = { openCineDetail(it) })
-        homeNewAdapter.gridColumns = 3
         binding.rvHomeNew.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 3)
         binding.rvHomeNew.adapter = homeNewAdapter
         binding.rvHomeNew.isNestedScrollingEnabled = false
@@ -947,6 +933,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        findViewById<View>(R.id.btnChannelsEmptySettings).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
+        findViewById<View>(R.id.btnSearchEmptySettings).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_settings
+        }
+
         // Search Tab Input Listener
         binding.edtSearchTab.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -980,15 +973,17 @@ class MainActivity : AppCompatActivity() {
         binding.edtSearchTab.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
                 val query = binding.edtSearchTab.text.toString().trim()
-                if (query.isNotEmpty()) {
-                    addSearchQuery(CHANNELS_HISTORY_KEY, query)
-                }
+                if (query.isNotEmpty()) addSearchQuery(CHANNELS_HISTORY_KEY, query)
                 binding.layoutChannelsSearchHistory.visibility = View.GONE
                 hideKeyboard()
                 true
-            } else {
-                false
-            }
+            } else false
+        }
+        binding.edtSearchTab.showSoftInputOnFocus = false
+        binding.tvChannelKeyboard.bindInput(binding.edtSearchTab) {
+            val query = binding.edtSearchTab.text.toString().trim()
+            if (query.isNotEmpty()) addSearchQuery(CHANNELS_HISTORY_KEY, query)
+            binding.layoutChannelsSearchHistory.visibility = View.GONE
         }
 
         // Settings: cada opción abre su propia pantalla
@@ -1027,11 +1022,10 @@ class MainActivity : AppCompatActivity() {
             showFilterDialog()
         }
 
-        // Layout Toggle (Grid/List) in Channels tab (Opens dialog options!)
-        binding.btnToggleLayout.setOnClickListener {
-            showLayoutToggleDialog()
+        // Search remains one action away from the channel directory.
+        binding.btnChannelSearch.setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_search
         }
-
         // Filter button in Search tab
         binding.btnSearchFilter.setOnClickListener {
             showSearchFilterDialog()
@@ -1084,190 +1078,17 @@ class MainActivity : AppCompatActivity() {
         startHomeSearchRotator()
 
 
-        // Toggle Cine Search History Click Listener
-        binding.btnCineSearchHistory.setOnClickListener {
-            val isVisible = binding.layoutCineSearchHistory.visibility == View.VISIBLE
-            if (isVisible) {
-                binding.layoutCineSearchHistory.visibility = View.GONE
-            } else {
-                val current = getSearchHistory(CINE_HISTORY_KEY)
-                if (current.isNotEmpty()) {
-                    cineHistoryAdapter.updateList(current)
-                    binding.layoutCineSearchHistory.visibility = View.VISIBLE
-                } else {
-                    Toast.makeText(this, "El historial de búsqueda está vacío", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-
-        // Real-time search in Cine tab
-        binding.edtCineSearch.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (!s.isNullOrBlank()) setDeckMode(false)
-                applyCineFilters()
-                if (s.isNullOrEmpty()) {
-                    val current = getSearchHistory(CINE_HISTORY_KEY)
-                    if (current.isNotEmpty()) {
-                        cineHistoryAdapter.updateList(current)
-                        binding.layoutCineSearchHistory.visibility = View.VISIBLE
-                    }
-                } else {
-                    binding.layoutCineSearchHistory.visibility = View.GONE
-                }
-            }
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
-
-        binding.edtCineSearch.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus && binding.edtCineSearch.text.isEmpty()) {
-                val current = getSearchHistory(CINE_HISTORY_KEY)
-                if (current.isNotEmpty()) {
-                    cineHistoryAdapter.updateList(current)
-                    binding.layoutCineSearchHistory.visibility = View.VISIBLE
-                }
-            } else {
-                binding.layoutCineSearchHistory.visibility = View.GONE
-            }
-        }
-
-        binding.edtCineSearch.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
-                val query = binding.edtCineSearch.text.toString().trim()
-                if (query.isNotEmpty()) {
-                    addSearchQuery(CINE_HISTORY_KEY, query)
-                }
-                binding.layoutCineSearchHistory.visibility = View.GONE
-                hideKeyboard()
-                true
-            } else {
-                false
-            }
-        }
-
-        // Cine Filter buttons
-        binding.btnCineFilterAll.setOnClickListener {
-            selectedCineType = "all"
-            updateCineFilterButtons()
-            applyCineFilters()
-        }
-        binding.btnCineFilterMovies.setOnClickListener {
-            selectedCineType = "movie"
-            updateCineFilterButtons()
-            applyCineFilters()
-        }
-        binding.btnCineFilterSeries.setOnClickListener {
-            selectedCineType = "series"
-            updateCineFilterButtons()
-            applyCineFilters()
-        }
-        binding.btnCineFilterNews.setOnClickListener {
-            selectedCineType = "new"
-            updateCineFilterButtons()
-            applyCineFilters()
-        }
-
-        // Lupa: muestra/oculta la pildora de busqueda del cine
+        // La búsqueda de películas y series vive en su pantalla independiente.
         binding.btnCineSearchToggle.setOnClickListener {
-            val card = binding.cardCineSearch
-            if (card.visibility == View.VISIBLE) {
-                card.visibility = View.GONE
-            } else {
-                card.visibility = View.VISIBLE
-                binding.edtCineSearch.requestFocus()
-            }
+            startActivity(Intent(this, CineSearchActivity::class.java))
         }
         binding.btnCineSearchToggle.springPress()
 
-        // Mood chips (mismo tap para desactivar)
-        binding.btnMoodEstrenos.setOnClickListener {
-            cineMood = if (cineMood == "estrenos") null else "estrenos"
-            updateCineMoodButtons()
-            applyCineFilters()
-        }
-        binding.btnMoodTop.setOnClickListener {
-            cineMood = if (cineMood == "top") null else "top"
-            updateCineMoodButtons()
-            applyCineFilters()
-        }
+        binding.btnCineFilters.setOnClickListener { showCineFilterDialog() }
 
-        // ====== Chips del boceto "Para ti" (orden EXACTO) ======
-        binding.chipMoodTodos.setOnClickListener {
-            selectedCineType = "all"; cineMood = null
-            updateCineFilterButtons(); updateParaTiChips(); applyCineFilters()
-        }
-        binding.chipMoodAccion.setOnClickListener {
-            selectedCineType = "all"; cineMood = "accion"
-            updateCineFilterButtons(); updateParaTiChips(); applyCineFilters()
-        }
-        binding.chipMoodFeel.setOnClickListener {
-            selectedCineType = "all"; cineMood = "feelgood"
-            updateCineFilterButtons(); updateParaTiChips(); applyCineFilters()
-        }
-        binding.chipMoodSerie.setOnClickListener {
-            selectedCineType = "series"; cineMood = null
-            updateCineFilterButtons(); updateParaTiChips(); applyCineFilters()
-        }
-        binding.chipMoodCorta.setOnClickListener {
-            selectedCineType = "movie"; cineMood = null
-            updateCineFilterButtons(); updateParaTiChips(); applyCineFilters()
-        }
-        binding.chipMoodTop2.setOnClickListener {
-            cineMood = if (cineMood == "top") null else "top"
-            updateParaTiChips(); applyCineFilters()
-        }
-        binding.chipMoodEstrenos2.setOnClickListener {
-            cineMood = if (cineMood == "estrenos") null else "estrenos"
-            updateParaTiChips(); applyCineFilters()
-        }
-        updateParaTiChips()
     }
 
-    /** Modern iPhone-style view picker with animated popup + spring cards. */
-    private fun showLayoutToggleDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_view_options, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.window?.let { w ->
-            val attrs = w.attributes
-            attrs.windowAnimations = R.style.iOSPopupAnimation
-            w.attributes = attrs
-        }
-
-        val optionGrid = dialogView.findViewById<View>(R.id.optionViewGrid)
-        val optionList = dialogView.findViewById<View>(R.id.optionViewList)
-        optionGrid.springPress()
-        optionList.springPress()
-
-        optionGrid.setOnClickListener {
-            isGridView = true
-            val layoutManager = binding.rvChannelsGrid.layoutManager as GridLayoutManager
-            layoutManager.spanCount = 3
-            channelsAdapter.gridColumns = 3
-            binding.btnToggleLayout.setImageResource(R.drawable.ic_ios_grid)
-            channelsAdapter.tunerMode = false
-            layoutManager.requestLayout()
-            Toast.makeText(this, "Vista Cuadrícula activa", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-        }
-        optionList.setOnClickListener {
-            isGridView = false
-            val layoutManager = binding.rvChannelsGrid.layoutManager as GridLayoutManager
-            layoutManager.spanCount = 1
-            channelsAdapter.gridColumns = 1
-            binding.btnToggleLayout.setImageResource(R.drawable.ic_ios_list)
-            channelsAdapter.tunerMode = true
-            layoutManager.requestLayout()
-            Toast.makeText(this, "Vista Lista activa", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-        }
-        dialogView.findViewById<View>(R.id.btnViewOptionsClose).setOnClickListener { dialog.dismiss() }
-
-        dialog.show()
-    }
-
+    /** TV-friendly options dialog: each action is focusable with the remote. */
     private fun showIosOptionPopup(title: String, subtitle: String, options: List<Pair<Int, String>>, onPick: (Int) -> Unit) {
         val density = resources.displayMetrics.density
         fun Int.dp(): Int = (this * density).roundToInt()
@@ -1299,6 +1120,9 @@ class MainActivity : AppCompatActivity() {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
                 setBackgroundResource(R.drawable.bg_tile_glass)
+                foreground = androidx.core.content.ContextCompat.getDrawable(this@MainActivity, R.drawable.tv_focus_ring)
+                isFocusable = true
+                isClickable = true
                 setPadding(14.dp(), 10.dp(), 14.dp(), 10.dp())
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -1349,10 +1173,137 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun enterTvChannelDirectory() {
+        if (!::channelsAdapter.isInitialized || !::channelSectionsAdapter.isInitialized) return
+        refreshTvChannelDirectory()
+        binding.rvChannelCategories.post {
+            val position = channelSectionsAdapter.positionOf(channelSectionsAdapter.selectedKey)
+            if (position >= 0) {
+                binding.rvChannelCategories.scrollToPosition(position)
+                binding.rvChannelCategories.post {
+                    val selected = binding.rvChannelCategories.findViewHolderForAdapterPosition(position)?.itemView
+                    if (selected?.requestFocus() != true) binding.rvChannelCategories.requestFocus()
+                }
+            }
+        }
+    }
+
+    private fun refreshTvChannelDirectory() {
+        if (!::channelsAdapter.isInitialized || !::channelSectionsAdapter.isInitialized) return
+        val favorites = getFavoriteChannels()
+        val recents = getRecentChannels()
+        val sections = buildList {
+            add(TvChannelSection("favorites", "Favoritos", favorites.size))
+            add(TvChannelSection("recent", "Vistos recientemente", recents.size))
+            add(TvChannelSection("all", "Todos los canales", allChannels.size))
+            categories.filter { it.isNotBlank() && !it.equals("Todos", true) }
+                .distinct().sortedBy { it.lowercase() }.forEach { group ->
+                    add(TvChannelSection("group:$group", group, allChannels.count { it.group == group }))
+                }
+        }
+        val isFirstEntry = !channelSectionInitialized
+        channelSectionsAdapter.submitSections(sections, preserveSelection = true)
+        if (isFirstEntry) {
+            val initial = when {
+                recents.isNotEmpty() -> "recent"
+                favorites.isNotEmpty() -> "favorites"
+                else -> "all"
+            }
+            channelSectionsAdapter.selectKey(initial)
+            channelSectionInitialized = true
+        } else if (sections.none { it.key == channelSectionsAdapter.selectedKey }) {
+            channelSectionsAdapter.selectKey("all")
+        }
+        applyChannelDirectoryFilter()
+    }
+
+    private fun getFavoriteChannels(): List<Channel> {
+        val loadedByUrl = allChannels.associateBy { it.url }
+        return FavoritesManager.getAll(this).asSequence()
+            .filter { it.isChannel }
+            .mapNotNull { item -> loadedByUrl[item.url] ?: item.channel }
+            .distinctBy { it.url }
+            .toList()
+    }
+
+    private fun getRecentChannels(): List<Channel> {
+        val loadedByUrl = allChannels.associateBy { it.url }
+        return ContinueWatchingManager.getAll(this).asSequence()
+            .filter { it.isChannel }
+            .mapNotNull { entry -> loadedByUrl[entry.url] }
+            .distinctBy { it.url }
+            .take(30)
+            .toList()
+    }
+
+    private fun channelsForSection(key: String): List<Channel> = when {
+        key == "favorites" -> getFavoriteChannels()
+        key == "recent" -> getRecentChannels()
+        key == "all" -> allChannels
+        key.startsWith("group:") -> allChannels.filter { it.group == key.removePrefix("group:") }
+        else -> allChannels
+    }
+
+    private fun onTvChannelSectionSelected(section: TvChannelSection) {
+        selectedCategory = if (section.key.startsWith("group:")) section.key.removePrefix("group:") else "Todos"
+        applyChannelDirectoryFilter()
+    }
+
+    private fun applyChannelDirectoryFilter() {
+        if (!::channelsAdapter.isInitialized || !::channelSectionsAdapter.isInitialized) return
+        val section = channelSectionsAdapter.selectedKey
+        val sectionItems = channelsForSection(section)
+        val parentalActive = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
+            .getBoolean("parental_active", false)
+        var filtered = sectionItems.filter { channel ->
+            (selectedCategory == "Todos" || channel.group == selectedCategory) &&
+                (selectedCountry == "Todos" || channel.country == selectedCountry) &&
+                (selectedLanguage == "Todos" || channel.language == selectedLanguage)
+        }
+        if (parentalActive) {
+            val hiddenCategories = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
+                .getStringSet("parental_hidden_categories", emptySet()) ?: emptySet()
+            filtered = filtered.filter { !isAdultChannel(it) && (it.group == null || it.group !in hiddenCategories) }
+        }
+        filtered = when (selectedAlphabet) {
+            "A-Z" -> filtered.sortedBy { it.name.lowercase() }
+            "Z-A" -> filtered.sortedByDescending { it.name.lowercase() }
+            else -> filtered
+        }
+        channelsAdapter.updateList(filtered)
+        binding.rvChannelsGrid.visibility = if (filtered.isEmpty()) View.GONE else View.VISIBLE
+        binding.tvChannelsNoResults.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+        val title = when {
+            section == "favorites" -> "Favoritos"
+            section == "recent" -> "Vistos recientemente"
+            section == "all" -> "Todos los canales"
+            section.startsWith("group:") -> section.removePrefix("group:")
+            else -> "Canales"
+        }
+        binding.txtTvChannelListTitle.text = title
+        val activeFilters = listOfNotNull(
+            selectedCountry.takeUnless { it == "Todos" }?.let { "País: $it" },
+            selectedLanguage.takeUnless { it == "Todos" }?.let { "Idioma: $it" },
+            selectedAlphabet.takeUnless { it == "Sin Ordenar" }?.let { "Orden: $it" },
+            if (parentalActive) "Control parental" else null
+        )
+        binding.txtSelectedFilterInfo.text = buildString {
+            append(if (filtered.size == 1) "1 canal" else "${filtered.size} canales")
+            if (activeFilters.isNotEmpty()) append(" · ${activeFilters.joinToString(" · ")}")
+        }
+        if (filtered.isEmpty()) {
+            binding.txtTvChannelsNoResultsTitle.text = when (section) {
+                "favorites" -> "Aún no tienes favoritos"
+                "recent" -> "Todavía no has visto canales"
+                else -> "No hay canales en esta sección"
+            }
+        }
+    }
+
     private fun showFilterDialog() {
         showIosOptionPopup(
             "Filtrar y ordenar",
-            "Toca una opcion para aplicarla",
+            "Elige una opción con la cruceta y confirma con OK.",
             listOf(
                 R.drawable.ic_ios_globe to "Filtrar por pais",
                 R.drawable.ic_ios_message to "Filtrar por idioma",
@@ -1429,6 +1380,9 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Seleccionar Categoría")
             .setItems(items) { _, which ->
                 selectedCategory = items[which]
+                if (selectedCategory == "Todos" && ::channelSectionsAdapter.isInitialized) {
+                    channelSectionsAdapter.selectKey("all")
+                }
                 applyFiltersAndSorting()
             }
             .show()
@@ -1460,62 +1414,73 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyFiltersAndSorting() {
         refreshHomeSections()
-        val sharedPref = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-        val isParentalActive = sharedPref.getBoolean("parental_active", false)
-
-        // 1. Filter dynamically by category AND country AND language concurrently!
-        var filtered = allChannels.filter {
-            (selectedCategory == "Todos" || it.group == selectedCategory) &&
-            (selectedCountry == "Todos" || it.country == selectedCountry) &&
-            (selectedLanguage == "Todos" || it.language == selectedLanguage)
+        if (selectedCategory != "Todos") {
+            val groupKey = "group:$selectedCategory"
+            if (::channelSectionsAdapter.isInitialized && channelSectionsAdapter.positionOf(groupKey) >= 0) {
+                channelSectionsAdapter.selectKey(groupKey)
+            }
         }
-
-        // 2. Filter out adult channels if parental control is active!
-        if (isParentalActive) {
-            val hiddenCategories = sharedPref.getStringSet("parental_hidden_categories", emptySet()) ?: emptySet()
-            filtered = filtered.filter { !isAdultChannel(it) && (it.group == null || it.group !in hiddenCategories) }
-        }
-
-        // 3. Sort dynamically alphabetically
-        filtered = when (selectedAlphabet) {
-            "A-Z" -> filtered.sortedBy { it.name }
-            "Z-A" -> filtered.sortedByDescending { it.name }
-            else -> filtered
-        }
-
-        // 4. Update adapter list
-        channelsAdapter.updateList(filtered)
-
-        // 5. Formulate clean filter status text in header
-        val countText = "Canales: ${filtered.size}"
-        val categoryText = if (selectedCategory == "Todos") "" else " | Cat: $selectedCategory"
-        val countryText = if (selectedCountry == "Todos") "" else " | País: $selectedCountry"
-        val languageText = if (selectedLanguage == "Todos") "" else " | Idioma: $selectedLanguage"
-        val sortText = if (selectedAlphabet == "Sin Ordenar") "" else " | Orden: $selectedAlphabet"
-        val parentalText = if (isParentalActive) " | 🔒 Parental Activo" else ""
-        
-        binding.txtSelectedFilterInfo.text = "$countText$categoryText$countryText$languageText$sortText$parentalText"
+        refreshTvChannelDirectory()
     }
 
     /** Parental control: select whole channel categories to hide when active. */
     private fun showSearchFilterDialog() {
         showIosOptionPopup(
-            "Opciones de busqueda",
-            "Filtra los resultados por pais",
+            "Filtros de canales",
+            "Elige una opción con la cruceta y confirma con OK.",
             listOf(
-                R.drawable.ic_ios_globe to "Filtrar por pais",
-                R.drawable.ic_ios_refresh to "Restablecer filtro de pais"
+                R.drawable.ic_ios_tv to "Grupo o categoría",
+                R.drawable.ic_ios_globe to "País",
+                R.drawable.ic_ios_message to "Idioma",
+                R.drawable.ic_ios_refresh to "Restablecer filtros"
             )
         ) { which ->
             when (which) {
-                0 -> showSearchCountryFilterSelector()
-                1 -> {
+                0 -> showSearchGroupFilterSelector()
+                1 -> showSearchCountryFilterSelector()
+                2 -> showSearchLanguageFilterSelector()
+                3 -> {
+                    selectedSearchGroup = "Todos"
                     selectedSearchCountry = "Todos"
+                    selectedSearchLanguage = "Todos"
                     filterSearchTabUnified()
-                    Toast.makeText(this, "Filtro de búsqueda restablecido", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    private fun showSearchGroupFilterSelector() {
+        val options = categories.filter { it.isNotBlank() }.distinct().toTypedArray()
+        if (options.isEmpty()) {
+            Toast.makeText(this, "No hay grupos de canales cargados.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Grupo de canales")
+            .setSingleChoiceItems(options, options.indexOf(selectedSearchGroup).coerceAtLeast(0)) { dialog, which ->
+                selectedSearchGroup = options[which]
+                dialog.dismiss()
+                filterSearchTabUnified()
+            }
+            .setNegativeButton("Cerrar", null)
+            .show()
+    }
+
+    private fun showSearchLanguageFilterSelector() {
+        val options = languages.filter { it.isNotBlank() }.distinct().toTypedArray()
+        if (options.isEmpty()) {
+            Toast.makeText(this, "No hay idiomas cargados.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Idioma del canal")
+            .setSingleChoiceItems(options, options.indexOf(selectedSearchLanguage).coerceAtLeast(0)) { dialog, which ->
+                selectedSearchLanguage = options[which]
+                dialog.dismiss()
+                filterSearchTabUnified()
+            }
+            .setNegativeButton("Cerrar", null)
+            .show()
     }
 
     private fun showSearchCountryFilterSelector() {
@@ -1622,12 +1587,13 @@ class MainActivity : AppCompatActivity() {
                         selectedCountry = "Todos"
                         selectedLanguage = "Todos"
                         selectedSearchCountry = "Todos"
+                        selectedSearchGroup = "Todos"
+                        selectedSearchLanguage = "Todos"
                         selectedAlphabet = "Sin Ordenar"
                         
-                        channelsAdapter.updateList(allChannels)
+                        channelSectionInitialized = false
+                        refreshTvChannelDirectory()
                         searchAdapter.updateList(allChannels)
-                        
-                        binding.txtSelectedFilterInfo.text = "Canales: ${allChannels.size} (Cargados al Instante ⚡)"
                         binding.edtSearchTab.setText("")
                         binding.txtSearchCount.text = "Ingresa el nombre de un canal para buscar entre los ${allChannels.size} cargados"
                         
@@ -1651,6 +1617,8 @@ class MainActivity : AppCompatActivity() {
         categories = emptyList()
         countries = emptyList()
         languages = emptyList()
+        channelSectionInitialized = false
+        refreshTvChannelDirectory()
         updateEmptyStates()
         Toast.makeText(this, "Lista eliminada del historial", Toast.LENGTH_SHORT).show()
     }
@@ -1714,14 +1682,14 @@ class MainActivity : AppCompatActivity() {
                     selectedCountry = "Todos"
                     selectedLanguage = "Todos"
                     selectedSearchCountry = "Todos"
+                    selectedSearchGroup = "Todos"
+                    selectedSearchLanguage = "Todos"
                     selectedAlphabet = "Sin Ordenar"
                     
-                    // 5. Update the grids
-                    channelsAdapter.updateList(allChannels)
+                    // Refresh the TV directory and the separate search grid.
+                    channelSectionInitialized = false
+                    refreshTvChannelDirectory()
                     searchAdapter.updateList(allChannels)
-                    
-                    // Update header text in categories/countries tab
-                    binding.txtSelectedFilterInfo.text = "Canales: ${allChannels.size} (Filtros listos 🔄)"
 
                     // Clear search input on tab 3
                     binding.edtSearchTab.setText("")
@@ -1786,40 +1754,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun filterChannelsByCategoryAndCountry() {
-        val sharedPref = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-        val isParentalActive = sharedPref.getBoolean("parental_active", false)
-
-        // 1. Filter dynamically by category AND country AND language concurrently!
-        var filtered = allChannels.filter {
-            (selectedCategory == "Todos" || it.group == selectedCategory) &&
-            (selectedCountry == "Todos" || it.country == selectedCountry) &&
-            (selectedLanguage == "Todos" || it.language == selectedLanguage)
+        if (selectedCategory != "Todos") {
+            val groupKey = "group:$selectedCategory"
+            if (::channelSectionsAdapter.isInitialized && channelSectionsAdapter.positionOf(groupKey) >= 0) {
+                channelSectionsAdapter.selectKey(groupKey)
+            }
         }
-
-        // 2. Filter out adult channels if parental control is active!
-        if (isParentalActive) {
-            filtered = filtered.filter { !isAdultChannel(it) }
-        }
-
-        // 3. Sort dynamically alphabetically
-        filtered = when (selectedAlphabet) {
-            "A-Z" -> filtered.sortedBy { it.name }
-            "Z-A" -> filtered.sortedByDescending { it.name }
-            else -> filtered
-        }
-
-        // 4. Update adapter list
-        channelsAdapter.updateList(filtered)
-
-        // 5. Formulate clean filter status text in header
-        val countText = "Canales: ${filtered.size}"
-        val categoryText = if (selectedCategory == "Todos") "" else " | Cat: $selectedCategory"
-        val countryText = if (selectedCountry == "Todos") "" else " | País: $selectedCountry"
-        val languageText = if (selectedLanguage == "Todos") "" else " | Idioma: $selectedLanguage"
-        val sortText = if (selectedAlphabet == "Sin Ordenar") "" else " | Orden: $selectedAlphabet"
-        val parentalText = if (isParentalActive) " | 🔒 Parental Activo" else ""
-        
-        binding.txtSelectedFilterInfo.text = "$countText$categoryText$countryText$languageText$sortText$parentalText"
+        refreshTvChannelDirectory()
     }
 
     private fun onCategorySelected(category: String) {
@@ -1839,8 +1780,10 @@ class MainActivity : AppCompatActivity() {
         val query = binding.edtSearchTab.text.toString().trim()
         var filtered = allChannels.filter {
             val matchesQuery = query.isEmpty() || it.name.contains(query, ignoreCase = true) || (it.group != null && it.group.contains(query, ignoreCase = true))
+            val matchesGroup = selectedSearchGroup == "Todos" || it.group == selectedSearchGroup
             val matchesCountry = selectedSearchCountry == "Todos" || it.country == selectedSearchCountry
-            matchesQuery && matchesCountry
+            val matchesLanguage = selectedSearchLanguage == "Todos" || it.language == selectedSearchLanguage
+            matchesQuery && matchesGroup && matchesCountry && matchesLanguage
         }
 
         if (isParentalActive) {
@@ -1848,14 +1791,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         searchAdapter.updateList(filtered)
-        if (query.isEmpty() && selectedSearchCountry == "Todos") {
-            binding.txtSearchCount.text = "Mostrando todos: ${allChannels.size} canales"
-        } else {
-            binding.txtSearchCount.text = "Encontrados: ${filtered.size} de ${allChannels.size} (Filtro: $selectedSearchCountry)"
+        val activeSearchFilters = listOfNotNull(
+            selectedSearchGroup.takeUnless { it == "Todos" },
+            selectedSearchCountry.takeUnless { it == "Todos" },
+            selectedSearchLanguage.takeUnless { it == "Todos" }
+        )
+        binding.txtSearchCount.text = when {
+            query.isEmpty() && activeSearchFilters.isEmpty() -> "${allChannels.size} canales · escribe para filtrar"
+            activeSearchFilters.isEmpty() -> "${filtered.size} canales encontrados"
+            else -> "${filtered.size} resultados · ${activeSearchFilters.joinToString(" · ")}"
         }
         
-        // Trigger the Spiderman overlay if they search for Spiderman
-        checkAndShowSpidermanEasterEgg(query)
     }
 
     private fun onSearchCountrySelected(country: String) {
@@ -1886,7 +1832,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openPlayer(channel: Channel) {
-        // Anuncio recompensado obligatorio: solo se reproduce si se ve completo.
+        val visibleQueue = if (::channelsAdapter.isInitialized) channelsAdapter.channelsSnapshot() else emptyList()
+        val zapQueue = when {
+            visibleQueue.any { it.url == channel.url } -> visibleQueue
+            allChannels.any { it.url == channel.url } -> allChannels
+            else -> listOf(channel)
+        }
+        LiveChannelSession.setQueue(zapQueue, channel.url)
         launchPlayerActivity(channel)
     }
 
@@ -1928,6 +1880,10 @@ class MainActivity : AppCompatActivity() {
             }
             if (allCineMedia.isEmpty() && quick.isNotEmpty()) {
                 allCineMedia = quick
+                withContext(Dispatchers.Default) {
+                    quick.forEach { TasteProfile.genreKeysOf(it) }
+                }
+                renderCineGenres()
                 quick.forEach { CineRepository.applyPosterCache(it) }
                 applyCineFilters()
                 refreshHomeSections()
@@ -1935,6 +1891,7 @@ class MainActivity : AppCompatActivity() {
 
             val catalog = CineRepository.getCineCatalog(this@MainActivity)
             allCineMedia = catalog
+            renderCineGenres()
             // Pre-calienta el cache de generos (fuera del hilo de UI) ANTES de
             // armar secciones: asi ni el primer toque en PELICULAS/SERIES congela.
             withContext(Dispatchers.Default) {
@@ -1955,315 +1912,164 @@ class MainActivity : AppCompatActivity() {
                 if (::cineAdapter.isInitialized) cineAdapter.notifyDataSetChanged()
             }
             refreshHomeSections()
-            setupCineFeatured()
-            CineNewNotifier.onCatalogLoaded(this@MainActivity, catalog)
             consumePendingDeepLink()
             
-            binding.layoutCineLoading.visibility = View.GONE
-            binding.rvCineGrid.visibility = View.VISIBLE
-            
-            // PAGINADO (60 + loading): jamas volcar 9.5k de golpe en el grid
-            cinePagingFull = catalog.sortedByDescending { it.rating ?: -1.0 }
-            cineShown = minOf(CINE_PAGE, cinePagingFull.size)
-            cineLoadingMore = false
-            cineAdapter.updateList(cinePagingFull.take(cineShown))
-            binding.txtCineCount.text = "Total: ${cinePagingFull.size}"
-            buildCineReco()
+            applyCineFilters()
+        }
+    }
+
+    private val cineGenreOptions = listOf(
+        "Acción" to "acción",
+        "Comedia" to "comedia",
+        "Drama" to "drama",
+        "Terror" to "terror",
+        "Ciencia ficción" to "ciencia ficción",
+        "Animación" to "animación",
+        "Documentales" to "documental"
+    )
+
+    private fun renderCineGenres() {
+        binding.cineGenreRail.removeAllViews()
+        val source = allCineMedia.filter { media ->
+            selectedCineType == "all" || media.type == selectedCineType
+        }
+        fun addGenre(label: String, key: String?, count: Int) {
+            val row = android.widget.TextView(this).apply {
+                text = "$label ($count)"
+                textSize = 14f
+                maxLines = 1
+                setPadding(dp(12), dp(10), dp(8), dp(10))
+                isFocusable = true
+                isClickable = true
+                contentDescription = "$label, $count títulos"
+                setBackgroundResource(
+                    if (selectedCineGenre == key) R.drawable.bg_tv_sidebar_item else android.R.color.transparent
+                )
+                setTextColor(android.graphics.Color.parseColor(
+                    if (selectedCineGenre == key) "#FFFFFFFF" else "#FFB7C0CE"
+                ))
+                setOnClickListener {
+                    selectedCineGenre = key
+                    renderCineGenres()
+                    applyCineFilters()
+                }
+            }
+            binding.cineGenreRail.addView(row, android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dp(42)
+            ))
+        }
+        addGenre("Todas", null, source.size)
+        cineGenreOptions.forEach { (label, key) ->
+            val count = source.count { media -> TasteProfile.genreKeysOf(media).contains(key) }
+            if (count > 0) addGenre(label, key, count)
         }
     }
 
     private fun applyCineFilters() {
-        val query = binding.edtCineSearch.text.toString().trim().lowercase()
+        val type = selectedCineType
+        val genre = selectedCineGenre
+        val year = selectedCineYear
         cineFilterJob?.cancel()
         cineFilterJob = lifecycleScope.launch {
-        val finalCineList = withContext(Dispatchers.Default) {
-        val filtered = allCineMedia.filter {
-            val matchesType = when (selectedCineType) {
-                "movie" -> it.type == "movie"
-                "series" -> it.type == "series"
-                "new" -> !it.releaseDate.isNullOrEmpty()
-                else -> true
+            val filtered = withContext(Dispatchers.Default) {
+                allCineMedia.asSequence()
+                    .filter { type == "all" || it.type == type }
+                    .filter { genre == null || TasteProfile.genreKeysOf(it).contains(genre) }
+                    .filter { year == null || it.releaseDate?.take(4) == year }
+                    .sortedByDescending { it.rating ?: -1.0 }
+                    .toList()
             }
-            val matchesQuery = query.isEmpty() || it.title.lowercase().contains(query)
-            val matchesMood = when (cineMood) {
-                "estrenos" -> (it.releaseDate?.take(4)?.toIntOrNull() ?: 0) >= 2024
-                "top" -> (it.rating ?: 0.0) >= 7.5
-                "accion" -> listOf("accion", "acción", "action", "aventura", "guerra", "combate", "pelea", "espionaje", "ninja", "superhéroe", "superheroe").any { k ->
-                    (it.title + " " + (it.overview ?: "") + " " + it.group).lowercase().contains(k)
-                }
-                "feelgood" -> listOf("comedia", "romance", "familia", "animaci", "navidad", "musica", "adolescente", "feel").any { k ->
-                    (it.title + " " + (it.overview ?: "") + " " + it.group).lowercase().contains(k)
-                }
-                else -> true
-            }
-            matchesType && matchesQuery && matchesMood
-        }
-            val ordered = if (selectedCineType == "new") {
-                filtered.sortedByDescending { it.releaseDate ?: "" }
-            } else if (selectedCineType == "all" && cineMood == null && query.isEmpty()) {
-                // orden casa: lo mejor segun TMDB primero, sin tocar el resto
-                filtered.sortedByDescending { it.rating ?: -1.0 }
-            } else filtered
-            ordered
-        }
-        cinePagingFull = finalCineList
-        cineShown = minOf(CINE_PAGE, cinePagingFull.size)
-        cineLoadingMore = false
-        cineAdapter.updateList(cinePagingFull.take(cineShown))
-        binding.txtCineCount.text = if (selectedCineType == "new") "Novedades: ${cinePagingFull.size}" else "Total: ${cinePagingFull.size}"
-
-        // Trigger the Spiderman overlay if they search for Spiderman
-        checkAndShowSpidermanEasterEgg(query)
+            cinePagingFull = filtered
+            cineShown = minOf(CINE_PAGE, cinePagingFull.size)
+            cineLoadingMore = false
+            cineAdapter.updateList(cinePagingFull.take(cineShown))
+            binding.txtCineCount.text = "Total: ${cinePagingFull.size}"
+            binding.layoutCineLoading.visibility = View.GONE
+            binding.rvCineGrid.visibility = View.VISIBLE
         }
     }
 
     private fun updateCineFilterButtons() {
-        val orangeColor = AccentManager.color(this)
-        val grayColor = android.graphics.Color.parseColor("#0F2144")
-        
-        binding.btnCineFilterAll.setBackgroundColor(if (selectedCineType == "all") orangeColor else grayColor)
-        binding.btnCineFilterAll.setTextColor(if (selectedCineType == "all") android.graphics.Color.WHITE else android.graphics.Color.parseColor("#98989F"))
-        
-        binding.btnCineFilterMovies.setBackgroundColor(if (selectedCineType == "movie") orangeColor else grayColor)
-        binding.btnCineFilterMovies.setTextColor(if (selectedCineType == "movie") android.graphics.Color.WHITE else android.graphics.Color.parseColor("#98989F"))
-        
-        binding.btnCineFilterSeries.setBackgroundColor(if (selectedCineType == "series") orangeColor else grayColor)
-        binding.btnCineFilterSeries.setTextColor(if (selectedCineType == "series") android.graphics.Color.WHITE else android.graphics.Color.parseColor("#98989F"))
-        binding.btnCineFilterNews.setBackgroundColor(if (selectedCineType == "new") orangeColor else grayColor)
-        binding.btnCineFilterNews.setTextColor(if (selectedCineType == "new") android.graphics.Color.WHITE else android.graphics.Color.parseColor("#98989F"))
-    }
-
-    private fun updateCineMoodButtons() {
-        val activeTint = android.graphics.Color.parseColor("#3E2E1F")
-        val activeText = android.graphics.Color.parseColor("#C9A96E")
-        val grayTint = android.graphics.Color.parseColor("#33404048")
-        val grayText = android.graphics.Color.parseColor("#98989F")
-        binding.btnMoodEstrenos.setBackgroundResource(if (cineMood == "estrenos") R.drawable.bg_chip_active else R.drawable.bg_chip_idle)
-        binding.btnMoodEstrenos.setTextColor(if (cineMood == "estrenos") activeText else grayText)
-        binding.btnMoodTop.setBackgroundResource(if (cineMood == "top") R.drawable.bg_chip_active else R.drawable.bg_chip_idle)
-        binding.btnMoodTop.setTextColor(if (cineMood == "top") activeText else grayText)
-    }
-
-    private fun updateParaTiChips() {
-        val activeText = android.graphics.Color.parseColor("#0F2144")
-        val grayText = android.graphics.Color.parseColor("#98989F")
-        fun paint(b: android.widget.TextView, active: Boolean) {
-            b.setBackgroundResource(if (active) R.drawable.bg_chip_active else R.drawable.bg_chip_idle)
-            b.setTextColor(if (active) activeText else grayText)
-        }
-        paint(binding.chipMoodTodos, selectedCineType == "all" && cineMood == null)
-        paint(binding.chipMoodAccion, cineMood == "accion")
-        paint(binding.chipMoodFeel, cineMood == "feelgood")
-        paint(binding.chipMoodSerie, selectedCineType == "series")
-        paint(binding.chipMoodCorta, selectedCineType == "movie")
-        paint(binding.chipMoodTop2, cineMood == "top")
-        paint(binding.chipMoodEstrenos2, cineMood == "estrenos")
-    }
-
-    /** Rail "PORQUE VISTE X": semilla = lo ultimo visto de cine; sin historial -> top valoradas. */
-    private fun buildCineReco() {
-        val seed = ContinueWatchingManager.getAll(this)
-            .filter { !it.isChannel && it.media != null }
-            .maxByOrNull { it.savedAt }
-        val reco: List<CineMedia>
-        if (seed?.media != null) {
-            reco = premierSource()
-                .filter { it.group == seed.media.group && it.title != seed.title }
-                .filter { !it.posterUrl.isNullOrBlank() }
-                .sortedByDescending { it.rating ?: 0.0 }
-                .take(12)
-            binding.txtCineRecoLabel.text = "PORQUE VISTE ${seed.title.uppercase()}"
-        } else {
-            reco = premierSource()
-                .filter { !it.posterUrl.isNullOrBlank() && (it.rating ?: 0.0) > 0.0 }
-                .sortedByDescending { it.rating ?: 0.0 }
-                .take(12)
-            binding.txtCineRecoLabel.text = "LAS MEJOR VALORADAS"
-        }
-        if (::cineRecoAdapter.isInitialized) cineRecoAdapter.submitAll(reco)
-        val vis = if (reco.isEmpty()) View.GONE else View.VISIBLE
-        binding.txtCineRecoLabel.visibility = vis
-        binding.rvCineReco.visibility = vis
-    }
-
-    // ================= CINE V3 · DESCUBRE (deck + learning) =================
-
-    private fun setupCineDeck() {
-        if (cineDeckWired) return
-        cineDeckWired = true
-        binding.deckCardFront.root.setOnTouchListener { v, ev -> onDeckTouch(v, ev) }
-        binding.btnDeckSkip.setOnClickListener { it.springPress(); flyOutAndAdvance(-1) }
-        binding.btnDeckPlay.setOnClickListener {
-            it.springPress()
-            deckFront?.let { m -> openCineDetail(m) }
-        }
-        binding.btnDeckFav.setOnClickListener {
-            it.springPress()
-            val m = deckFront ?: return@setOnClickListener
-            val added = FavoritesManager.toggleMedia(this, m)
-            if (added) TasteProfile.recordFavorite(this, m)
-            Toast.makeText(this, if (added) "Guardado en Favoritos ⭐ tu mazo se afina" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
-                if (added) flyOutAndAdvance(1)
-        }
-        binding.txtCineCatalogToggle.setOnClickListener { setDeckMode(!deckMode) }
-        binding.catSegAll.setOnClickListener { selectedCineType = "all"; updateCatalogSegments(); applyCineFilters() }
-        binding.catSegMovies.setOnClickListener { selectedCineType = "movie"; updateCatalogSegments(); applyCineFilters() }
-        binding.catSegSeries.setOnClickListener { selectedCineType = "series"; updateCatalogSegments(); applyCineFilters() }
-        renderDeck()
-    }
-
-    private fun updateCatalogSegments() {
-        val activeText = android.graphics.Color.parseColor("#0F2144")
-        val grayText = android.graphics.Color.parseColor("#98989F")
-        fun seg(v: android.widget.TextView, active: Boolean) {
-            v.setBackgroundResource(if (active) R.drawable.bg_chip_active else android.R.color.transparent)
-            v.setTextColor(if (active) activeText else grayText)
-        }
-        seg(binding.catSegAll, selectedCineType == "all")
-        seg(binding.catSegMovies, selectedCineType == "movie")
-        seg(binding.catSegSeries, selectedCineType == "series")
-    }
-
-    private fun transformCoverflow(rv: androidx.recyclerview.widget.RecyclerView) {
-        val mid = rv.width / 2f
-        if (mid <= 0) return
-        for (i in 0 until rv.childCount) {
-            val v = rv.getChildAt(i)
-            val c = (v.left + v.right) / 2f
-            val d = ((mid - c) / mid).coerceIn(-1f, 1f)
-            val a = kotlin.math.abs(d)
-            v.scaleX = 1f - 0.18f * a
-            v.scaleY = 1f - 0.18f * a
-            v.rotationY = if (d < 0) 14f * a else -14f * a
-            v.alpha = 1f - 0.35f * a
-            v.translationZ = (1f - a) * 10f
-            v.findViewById<View>(R.id.coverInfo)?.alpha = (1f - 1.7f * a).coerceIn(0f, 1f)
+        binding.txtCineCatalogTitle.text = when (selectedCineType) {
+            "movie" -> "Películas"
+            "series" -> "Series"
+            else -> "Películas y series"
         }
     }
 
-    private fun runCineHeadline(container: android.widget.LinearLayout) {
-        container.removeAllViews()
-        val text = "GRANDES ESTRENOS"
-        text.forEachIndexed { i, ch ->
-            val tv = android.widget.TextView(this).apply {
-                this.text = if (ch == ' ') "\u00A0" else ch.toString()
-                textSize = 26f
-                typeface = android.graphics.Typeface.DEFAULT_BOLD
-                setTextColor(android.graphics.Color.WHITE)
-                letterSpacing = 0.05f
-                alpha = 0f
-                translationX = 18f
+    private fun showCineFilterDialog() {
+        val options = arrayOf("Tipo", "Género", "Año", "Restablecer filtros")
+        AlertDialog.Builder(this)
+            .setTitle("Filtros del catálogo")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showCineTypeSelector()
+                    1 -> showCineGenreSelector()
+                    2 -> showCineYearSelector()
+                    3 -> {
+                        selectedCineType = "all"
+                        selectedCineGenre = null
+                        selectedCineYear = null
+                        updateCineFilterButtons()
+                        renderCineGenres()
+                        applyCineFilters()
+                    }
+                }
             }
-            container.addView(tv)
-            tv.post {
-                tv.animate().alpha(1f).translationX(0f)
-                    .setStartDelay(55L * i)
-                    .setDuration(300)
-                    .start()
+            .setNegativeButton("Cerrar", null)
+            .show()
+    }
+
+    private fun showCineTypeSelector() {
+        val labels = arrayOf("Todas", "Películas", "Series")
+        val values = arrayOf("all", "movie", "series")
+        val selected = values.indexOf(selectedCineType).coerceAtLeast(0)
+        AlertDialog.Builder(this)
+            .setTitle("Tipo")
+            .setSingleChoiceItems(labels, selected) { dialog, which ->
+                selectedCineType = values[which]
+                dialog.dismiss()
+                updateCineFilterButtons()
+                renderCineGenres()
+                applyCineFilters()
             }
-        }
+            .setNegativeButton("Cerrar", null)
+            .show()
     }
 
-    private fun setupCineFeatured() {
-        if (allCineMedia.isEmpty()) return
-        val posters = premierSource()
-        if (posters.isEmpty()) return
-        binding.rvCineCoverflow.adapter = CineCoverAdapter(
-            posters.sortedByDescending { it.rating ?: 0.0 }.take(10)
-        ) { openCineDetail(it) }
-        binding.rvCinePopular.adapter = CinePopularAdapter(
-            posters.sortedBy { kotlin.math.abs(it.title.hashCode()) }.take(15)
-        ) { openCineDetail(it) }
-        runCineHeadline(binding.cineHeadlineLtrs)
-        binding.rvCineCoverflow.setItemViewCacheSize(20)
-        binding.rvCinePopular.setItemViewCacheSize(20)
-        binding.rvCineReco.setItemViewCacheSize(12)
-        binding.rvCineCoverflow.post {
-            transformCoverflow(binding.rvCineCoverflow)
-            updatePlatformLogoFor(0)
-        }
-        buildCineSections()
+    private fun showCineGenreSelector() {
+        val labels = arrayOf("Todos") + cineGenreOptions.map { it.first }
+        val keys = listOf<String?>(null) + cineGenreOptions.map { it.second }
+        val selected = keys.indexOf(selectedCineGenre).coerceAtLeast(0)
+        AlertDialog.Builder(this)
+            .setTitle("Género")
+            .setSingleChoiceItems(labels, selected) { dialog, which ->
+                selectedCineGenre = keys[which]
+                dialog.dismiss()
+                renderCineGenres()
+                applyCineFilters()
+            }
+            .setNegativeButton("Cerrar", null)
+            .show()
     }
 
-    private fun setDeckMode(on: Boolean) {
-        deckMode = on
-        binding.layoutCineDeck.visibility = if (on) View.VISIBLE else View.GONE
-        binding.cineDeckActions.visibility = if (on && deckFront != null) View.VISIBLE else View.GONE
-        binding.txtCineCatalogToggle.visibility = View.VISIBLE
-        binding.txtCineCatalogToggle.text = if (on) "▦  Ver catálogo completo  ›" else "✨  Volver a Descubre  ›"
-        val cat = if (on) View.GONE else View.VISIBLE
-        binding.rvCineGrid.visibility = cat
-        binding.cineChipsScroll.visibility = cat
-        binding.txtCineCount.visibility = cat
-        binding.cineCatalogDock.visibility = if (on) View.GONE else View.VISIBLE
-        binding.cineFeaturedBlock.visibility = if (on) View.VISIBLE else View.GONE
-        binding.layoutCinePopular.visibility = if (on) View.VISIBLE else View.GONE
-        binding.layoutCineLoading.visibility = if (on) View.GONE else binding.layoutCineLoading.visibility
-        if (on) {
-            binding.rvCineReco.visibility = View.GONE
-            binding.txtCineRecoLabel.visibility = View.GONE
-            refreshDeck()
-        } else {
-            updateCatalogSegments()
-            binding.rvCineReco.visibility = if (binding.rvCineReco.adapter?.itemCount ?: 0 > 0) View.VISIBLE else View.GONE
-            binding.txtCineRecoLabel.visibility = if (binding.rvCineReco.adapter?.itemCount ?: 0 > 0) View.VISIBLE else View.GONE
-        }
+    private fun showCineYearSelector() {
+        val years = allCineMedia.mapNotNull { it.releaseDate?.take(4) }
+            .filter { it.length == 4 && it.all(Char::isDigit) }
+            .distinct().sortedDescending()
+        val labels = arrayOf("Todos") + years.toTypedArray()
+        val values = listOf<String?>(null) + years.map { it }
+        val selected = values.indexOf(selectedCineYear).coerceAtLeast(0)
+        AlertDialog.Builder(this)
+            .setTitle("Año")
+            .setSingleChoiceItems(labels, selected) { dialog, which ->
+                selectedCineYear = values[which]
+                dialog.dismiss()
+                applyCineFilters()
+            }
+            .setNegativeButton("Cerrar", null)
+            .show()
     }
-
-    private fun refreshDeck() {
-        if (allCineMedia.isEmpty()) { renderDeck(); return }
-        val watched = ContinueWatchingManager.getAll(this)
-            .filter { !it.isChannel }.map { it.title }.toHashSet()
-        val candidates = allCineMedia.filter { !it.posterUrl.isNullOrBlank() && it.title !in watched && it.title !in deckShown }
-        deckQueue.clear()
-        if (candidates.isNotEmpty()) {
-            val scored = candidates.map { it to TasteProfile.score(this, it) }
-            val learned = scored.filter { it.second >= 2.0 }.sortedByDescending { it.second }
-            val queue = if (learned.isNotEmpty()) learned.take(40).map { it.first }
-                        else candidates.sortedByDescending { it.rating ?: 0.0 }.take(40)
-            deckQueue.addAll(queue)
-        }
-        renderDeck()
-    }
-
-    private fun renderDeck() {
-        val front = deckQueue.firstOrNull()
-        deckFront = front
-        fillDeckCard(binding.deckCardFront.root, front)
-        fillDeckCard(binding.deckCardBack.root, deckQueue.elementAtOrNull(1))
-        binding.cineDeckActions.visibility = if (front != null && deckMode) View.VISIBLE else View.GONE
-        if (front != null) deckShown.add(front.title)
-    }
-
-    private fun fillDeckCard(card: View, media: CineMedia?) {
-        if (media == null) { card.visibility = View.GONE; return }
-        card.visibility = View.VISIBLE
-        Glide.with(card.context).load(media.posterUrl)
-            .transition(DrawableTransitionOptions.withCrossFade(250))
-            .centerCrop()
-            .into(card.findViewById(R.id.imgDeckPoster))
-        card.findViewById<android.widget.TextView>(R.id.txtDeckTitle).text = media.title
-        val yr = media.releaseDate?.take(4)?.takeIf { it.isNotBlank() }
-        val typeTxt = if (media.type == "movie") "Película" else "Serie"
-        card.findViewById<android.widget.TextView>(R.id.txtDeckMeta).text = listOfNotNull(
-            yr, typeTxt,
-            if (media.urls.size > 0) "${media.urls.size} servidores" else null
-        ).joinToString(" · ")
-        val rb = card.findViewById<android.widget.TextView>(R.id.txtDeckRating)
-        val r = media.rating ?: 0.0
-        rb.visibility = if (r > 0.0) View.VISIBLE else View.GONE
-        if (r > 0.0) rb.text = "★ %.1f".format(r)
-        val eb = card.findViewById<android.widget.TextView>(R.id.txtDeckEyebrow)
-        val reason = TasteProfile.topReason(this, media)
-        if (reason != null) {
-            eb.visibility = View.VISIBLE
-            eb.text = "PORQUE VES · ${reason.uppercase()}"
-        } else eb.visibility = View.GONE
-        card.animate().alpha(1f).setDuration(200).start()
-    }
-
-    private var deckTracker: android.view.VelocityTracker? = null
-    private var coverflowSnap: androidx.recyclerview.widget.LinearSnapHelper? = null
 
     /** Abre la ficha del titulo compartido (deep link) una vez que el
      *  catalogo esta en memoria; luego limpia el intent para que el
@@ -2286,7 +2092,7 @@ class MainActivity : AppCompatActivity() {
         }
         try { binding.bottomNavigation.selectedItemId = R.id.navigation_cine } catch (_: Exception) {}
         if (media == null) {
-            SmartTips.showOnce(this, "deeplink_miss_$t", "💡 \"$t\" no está en el catálogo: usa el buscador")
+            Toast.makeText(this, "No se encontró el título compartido", Toast.LENGTH_SHORT).show()
             return
         }
         try {
@@ -2297,219 +2103,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateTVMANNav(activeId: Int) {
-        fun style(btn: View, icon: ImageView, label: TextView, id: Int) {
-            val on = id == activeId
-            btn.setBackgroundResource(if (on) R.drawable.bg_apple_dock_active else android.R.color.transparent)
-            icon.setColorFilter(android.graphics.Color.parseColor(if (on) "#FFFFFF" else "#8A8A93"))
-            label.setTextColor(android.graphics.Color.parseColor(if (on) "#FFFFFF" else "#6E6E76"))
-        }
-        style(binding.navBtnHome, binding.imgNavHome, binding.txtNavHome, R.id.navigation_home)
-        style(binding.navBtnChannels, binding.imgNavCh, binding.txtNavChannels, R.id.navigation_channels)
-        style(binding.navBtnSearch, binding.imgNavSearch, binding.txtNavSearch, R.id.navigation_search)
-        style(binding.navBtnCine, binding.imgNavCine, binding.txtNavCine, R.id.navigation_cine)
-        style(binding.navBtnSettings, binding.imgNavSettings, binding.txtNavSettings, R.id.navigation_settings)
-    }
-
-    private fun platformIconOf(label: String): Int = when {
-        label.contains("NETFLIX") -> R.drawable.ic_brand_netflix
-        label.contains("DISNEY") -> R.drawable.ic_brand_disney
-        label.contains("MAX") -> R.drawable.ic_brand_max
-        label.contains("PRIME") -> R.drawable.ic_brand_prime
-        label.contains("APPLE") -> R.drawable.ic_brand_apple
-        label.contains("HULU") -> R.drawable.ic_brand_hulu
-        label.contains("PARAMOUNT") -> R.drawable.ic_brand_paramount
-        label.contains("CRUNCHYROLL") -> R.drawable.ic_brand_crunchyroll
-        label.contains("TUBI") -> R.drawable.ic_brand_tubi
-        label.contains("PEACOCK") -> R.drawable.ic_brand_peacock
-        else -> R.drawable.icon_tvman_play
-    }
-
-    private var premierKind = "all"
-
-    private fun premierSource(): List<CineMedia> =
-        if (premierKind == "all") allCineMedia
-        else allCineMedia.filter { it.type == premierKind }
-
-    private fun updateKindChips() {
-        fun setActive(v: android.widget.TextView, on: Boolean) {
-            v.setBackgroundResource(if (on) R.drawable.bg_chip_active else R.drawable.bg_chip_idle)
-            v.setTextColor(android.graphics.Color.parseColor(if (on) "#0F2144" else "#C9A96E"))
-        }
-        setActive(binding.chipKindMovies, premierKind == "movie")
-        setActive(binding.chipKindSeries, premierKind == "series")
-    }
-
-    private fun switchPremierKind(kind: String) {
-        premierKind = if (premierKind == kind) "all" else kind
-        updateKindChips()
-        // setupCineFeatured() ya llama a buildCineSections() internamente:
-        // antes se llamaba DOS veces por toque y congelaba la pestaña Cine.
-        setupCineFeatured()
-        buildCineReco()
-    }
-
-    private val platformsInFlight = mutableSetOf<String>()
-
-    private fun brandFromText(text: String): String? {
-        val g = text.lowercase()
-        return when {
-            g.contains("netflix") -> "NETFLIX"
-            g.contains("disney") -> "DISNEY+"
-            g.contains("hbo") || (g.contains("max") && !g.contains("maxim") && !g.contains("cinemax")) -> "MAX"
-            g.contains("prime") || g.contains("amazon") -> "PRIME VIDEO"
-            g.contains("apple") -> "APPLE TV+"
-            g.contains("hulu") -> "HULU"
-            g.contains("paramount") -> "PARAMOUNT+"
-            g.contains("crunchy") -> "CRUNCHYROLL"
-            g.contains("tubi") -> "TUBI"
-            g.contains("peacock") -> "PEACOCK"
-            else -> null
-        }
-    }
-
-    private fun platformLabelOf(m: CineMedia): String {
-        brandFromText(m.group)?.let { return it }
-        brandFromText(m.title)?.let { return it }
-        m.platformName?.let { return it }
-        // Pedir a TMDB el streaming real (una vez por titulo) y repintar al llegar
-        if (m.tmdbId != null && platformsInFlight.add(m.url)) {
-            lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                try { CineRepository.fetchWatchProviders(m) } catch (_: Exception) { }
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    currentCoverflowPos?.let { updatePlatformLogoFor(it) }
-                }
+        val selectedSidebarId = when (activeId) {
+            R.id.navigation_home -> R.id.sideNavHome
+            R.id.navigation_channels, R.id.navigation_search -> R.id.sideNavChannels
+            R.id.navigation_cine -> when (selectedCineType) {
+                "series" -> R.id.sideNavSeries
+                else -> R.id.sideNavMovies
             }
+            R.id.navigation_settings -> R.id.sideNavSettings
+            else -> View.NO_ID
         }
-        return android.net.Uri.parse(m.url).host?.substringBefore('.')?.uppercase() ?: "TVMAN"
+        listOf(
+            R.id.sideNavHome, R.id.sideNavChannels, R.id.sideNavMovies,
+            R.id.sideNavSeries, R.id.sideNavMyList, R.id.sideNavSettings
+        ).forEach { id ->
+            findViewById<View>(id)?.isSelected = id == selectedSidebarId
+        }
     }
-
-    private var currentCoverflowPos: Int? = null
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
-
-    private fun buildCineSections() {
-        val container = binding.layoutCineSections
-        container.removeAllViews()
-        // Calcula los generos UNA sola vez por titulo (antes se recomputaba
-        // 5x por cada categoria -> era lo que frenaba la pestaña Cine).
-        val annotated = premierSource().map { it to TasteProfile.genreKeysOf(it).toSet() }
-        listOf(
-            Triple("ACCIÓN", "accion", false),
-            Triple("COMEDIA", "comedia", false),
-            Triple("ROMANCE", "romance", false),
-            Triple("TERROR", "terror", false),
-            Triple("ANIMÉ", "anime", true)
-        ).forEach { (title, key, isAnime) ->
-            val items = if (isAnime) {
-                annotated.filter { (m, _) ->
-                    m.title.lowercase().contains("anime") || m.group.lowercase().contains("anime")
-                }.map { it.first }
-            } else {
-                annotated.filter { (_, genres) -> genres.contains(key) }.map { it.first }
-            }
-            if (items.size < 3) return@forEach
-            val sorted = items.sortedBy { Math.abs(it.title.hashCode()) }.take(12)
-
-            val header = android.widget.LinearLayout(this).apply {
-                orientation = android.widget.LinearLayout.HORIZONTAL
-                gravity = android.view.Gravity.CENTER_VERTICAL
-                setPadding(dp(20), 0, dp(20), 0)
-                layoutParams = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { topMargin = dp(18) }
-            }
-            val titleV = android.widget.TextView(this).apply {
-                text = title
-                setTextColor(android.graphics.Color.WHITE)
-                textSize = 14.5f
-                typeface = android.graphics.Typeface.DEFAULT_BOLD
-                layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            }
-            val seeV = android.widget.TextView(this).apply {
-                text = "See all ›"
-                setTextColor(android.graphics.Color.parseColor("#98989F"))
-                textSize = 11f
-                typeface = android.graphics.Typeface.DEFAULT_BOLD
-                setOnClickListener { openCineList(title, "genre", key) }
-            }
-            header.addView(titleV)
-            header.addView(seeV)
-            container.addView(header)
-
-            val rv = androidx.recyclerview.widget.RecyclerView(this).apply {
-                layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false)
-                layoutParams = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT, dp(212)
-                ).apply { topMargin = dp(10) }
-                clipToPadding = false
-                clipChildren = false
-                setPadding(dp(20), 0, dp(20), 0)
-                adapter = CinePopularAdapter(sorted) { openCineDetail(it) }
-            }
-            container.addView(rv)
-        }
-    }
-
-    private fun setupCineMenu() {
-        binding.premierMenu.setOnClickListener { openCineMenu() }
-        binding.imgIslandSearch.setOnClickListener {
-            startActivity(Intent(this, CineSearchActivity::class.java))
-        }
-        binding.cineMenuScrim.setOnClickListener { closeCineMenu() }
-        binding.btnMenuClose.setOnClickListener { closeCineMenu() }
-
-        binding.menuItemFav.setOnClickListener { openCineList("FAVORITOS", "favorites") }
-        binding.menuItemContinue.setOnClickListener { openCineList("SEGUIR VIENDO", "continue") }
-        binding.menuItemWallpapers.setOnClickListener {
-            startActivity(android.content.Intent(this, CineWallpapersActivity::class.java))
-        }
-        binding.menuItemRecent.setOnClickListener { openCineList("ESTRENOS", "recent") }
-        binding.menuItemAlerts.setOnClickListener { openCineList("ALERTAS", "alerts") }
-        binding.menuItemHistory.setOnClickListener { openCineList("HISTORIAL", "history") }
-        binding.menuItemSettings.setOnClickListener {
-            closeCineMenu()
-            binding.bottomNavigation.selectedItemId = R.id.navigation_settings
-        }
-
-        // Grupos expandibles: generos y plataformas
-        fun toggle(v: android.widget.LinearLayout) {
-            v.visibility = if (v.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-        }
-        binding.menuItemGenres.setOnClickListener { toggle(binding.menuGenresChips) }
-        binding.menuItemPlatforms.setOnClickListener { toggle(binding.menuPlatformsChips) }
-
-        binding.chipGenreAc.setOnClickListener { openCineList("ACCION", "genre", "accion") }
-        binding.chipGenreCo.setOnClickListener { openCineList("COMEDIA", "genre", "comedia") }
-        binding.chipGenreRo.setOnClickListener { openCineList("ROMANCE", "genre", "romance") }
-        binding.chipGenreAn.setOnClickListener { openCineList("ANIME", "genre", "anime") }
-        binding.chipPlatNetflix.setOnClickListener { openCineList("NETFLIX", "platform", "netflix") }
-        binding.chipPlatDisney.setOnClickListener { openCineList("DISNEY+", "platform", "disney") }
-        binding.chipPlatMax.setOnClickListener { openCineList("MAX", "platform", "hbo") }
-        binding.chipPlatPrime.setOnClickListener { openCineList("PRIME VIDEO", "platform", "prime") }
-        binding.chipGenreTe.setOnClickListener { openCineList("TERROR", "genre", "terror") }
-        binding.chipGenreDr.setOnClickListener { openCineList("DRAMA", "genre", "drama") }
-        binding.chipPlatApple.setOnClickListener { openCineList("APPLE TV+", "platform", "apple") }
-        binding.chipPlatHulu.setOnClickListener { openCineList("HULU", "platform", "hulu") }
-
-        binding.chipKindMovies.setOnClickListener { switchPremierKind("movie") }
-        binding.chipKindSeries.setOnClickListener { switchPremierKind("series") }
-        updateKindChips()
-    }
-
-    private fun openCineMenu() {
-        binding.cineMenuOverlay.visibility = View.VISIBLE
-        val w = -(binding.cineMenuPanel.width.takeIf { it > 0 } ?: (300 * resources.displayMetrics.density).toInt()).toFloat()
-        binding.cineMenuPanel.translationX = w
-        binding.cineMenuPanel.animate().translationX(0f).setDuration(240).start()
-    }
-
-    private fun closeCineMenu() {
-        val w = -(binding.cineMenuPanel.width.takeIf { it > 0 } ?: (300 * resources.displayMetrics.density).toInt()).toFloat()
-        binding.cineMenuPanel.animate().translationX(w).setDuration(200)
-            .withEndAction { binding.cineMenuOverlay.visibility = View.GONE }
-            .start()
-    }
 
     private fun openCineList(
         title: String,
@@ -2518,7 +2130,6 @@ class MainActivity : AppCompatActivity() {
         badges: Boolean = false,
         scope: Pair<String, String> = "all" to ""
     ) {
-        closeCineMenu()
         startActivity(Intent(this, CinePopularAllActivity::class.java).apply {
             putExtra("title", title)
             putExtra("kind", kind)
@@ -2529,95 +2140,12 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun updatePlatformLogoFor(pos: Int) {
-        val a = binding.rvCineCoverflow.adapter as? CineCoverAdapter ?: return
-        val m = a.itemAt(pos) ?: return
-        val label = platformLabelOf(m)
-        if (!m.platformLogoUrl.isNullOrBlank()) {
-            binding.imgPlatformLogo.setImageResource(android.R.color.transparent)
-            Glide.with(binding.imgPlatformLogo)
-                .load(m.platformLogoUrl)
-                .transform(com.bumptech.glide.load.resource.bitmap.RoundedCorners(
-                    (9 * resources.displayMetrics.density).toInt()
-                ))
-                .into(binding.imgPlatformLogo)
-        } else {
-            binding.imgPlatformLogo.setImageResource(platformIconOf(label))
-        }
-    }
-
-    private fun onDeckTouch(v: View, ev: android.view.MotionEvent): Boolean {
-        when (ev.actionMasked) {
-            android.view.MotionEvent.ACTION_DOWN -> {
-                deckDownX = ev.x
-                deckTracker = android.view.VelocityTracker.obtain()
-                deckTracker?.addMovement(ev)
-                return true
-            }
-            android.view.MotionEvent.ACTION_MOVE -> {
-                deckTracker?.addMovement(ev)
-                val dx = ev.x - deckDownX
-                v.translationX = dx
-                v.rotation = dx / 22f
-                // la carta de atras sube gradualmente mientras arrastras (vivo)
-                val pr = (kotlin.math.abs(dx) / 160f).coerceIn(0f, 1f)
-                binding.deckCardBack.root.rotation = -4f + 4f * pr
-                binding.deckCardBack.root.scaleX = 0.94f + 0.06f * pr
-                binding.deckCardBack.root.scaleY = 0.94f + 0.06f * pr
-                binding.deckCardBack.root.alpha = 0.6f + 0.4f * pr
-                return true
-            }
-            android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
-                val dx = ev.x - deckDownX
-                deckTracker?.computeCurrentVelocity(1000)
-                val vx = deckTracker?.xVelocity ?: 0f
-                deckTracker?.recycle()
-                deckTracker = null
-                if (kotlin.math.abs(dx) > 150f || kotlin.math.abs(vx) > 1200f) {
-                    flyOutAndAdvance(if ((dx + vx * 0.08f) > 0) 1 else -1)
-                } else {
-                    v.animate().translationX(0f).rotation(0f)
-                        .setDuration(340)
-                        .setInterpolator(android.view.animation.OvershootInterpolator(1.2f))
-                        .start()
-                    binding.deckCardBack.root.animate().rotation(-4f).scaleX(0.94f).scaleY(0.94f).alpha(0.6f)
-                        .setDuration(240).start()
-                }
-                return true
-            }
-        }
-        return false
-    }
-
-    private fun flyOutAndAdvance(dir: Int) {
-        if (deckBusy || deckFront == null) return
-        deckBusy = true
-        val front = binding.deckCardFront.root
-        front.animate()
-            .translationX(dir * front.width * 1.4f)
-            .rotation(dir * 20f)
-            .alpha(0f)
-            .setDuration(210)
-            .setInterpolator(android.view.animation.AccelerateInterpolator(1.4f))
-            .withEndAction {
-                if (deckQueue.isNotEmpty()) deckQueue.removeFirst()
-                if (deckQueue.size < 4) refreshDeck()
-                // reset instantaneo
-                front.rotation = 0f
-                front.translationX = 0f
-                front.alpha = 0f
-                renderDeck()
-                deckBusy = false
-            }
-            .start()
-    }
-
         private fun openCineDetail(media: CineMedia) {
-        TasteProfile.recordOpen(this, media)
         val intent = Intent(this, if (media.type == "movie") CineMovieDetailActivity::class.java else CineTvShowDetailActivity::class.java).apply {
             putExtra("media", media)
         }
         startActivity(intent)
+        overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
     }
 
     private fun hideKeyboard() {
@@ -2628,48 +2156,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupNativeAds() {
-        // Inicio: tarjeta inline (ya está en el layout)
-        // Canales y Buscador: bloque compacto
-        binding.adSlotChannels.visibility = View.GONE
-        binding.adSlotSearch.visibility = View.GONE
-        binding.adSlotSettings.visibility = View.GONE
-        binding.adSlotCine.visibility = View.GONE
-    }
+    private var homeRotatorRunnable: Runnable? = null
 
     private var homeRotatorRunnable: Runnable? = null
 
-    /** Placeholder rotativo del buscador de Inicio: muestra las busquedas
-     *  pasadas una a una (3s, transicion vertical). Se reconstruye en cada
-     *  onResume para reflejar las busquedas nuevas. Con una sola busqueda la
-     *  muestra FIJA (sin transicion que repita el mismo texto). */
     private fun startHomeSearchRotator() {
         homeRotatorRunnable?.let { binding.homeSearchRotator.removeCallbacks(it) }
         homeRotatorRunnable = null
-        val suggestions = LinkedHashSet<String>().apply {
-            addAll(getSearchHistory(CINE_HISTORY_KEY))
-            addAll(getSearchHistory(CHANNELS_HISTORY_KEY))
-        }.toList().filter { it.isNotBlank() }.take(8)
-        val switcher = binding.homeSearchRotator
-        when {
-            suggestions.isEmpty() ->
-                switcher.setText("Busca películas, series y canales…")
-            suggestions.size == 1 ->
-                switcher.setText(suggestions[0])
-            else -> {
-                switcher.setText(suggestions[0])
-                var idx = 0
-                val r = object : Runnable {
-                    override fun run() {
-                        idx = (idx + 1) % suggestions.size
-                        switcher.setText(suggestions[idx])
-                        switcher.postDelayed(this, 3000)
-                    }
-                }
-                homeRotatorRunnable = r
-                switcher.postDelayed(r, 3000)
-            }
-        }
+        binding.homeSearchRotator.setText("Buscar películas y series")
     }
 
     private fun getSearchHistory(key: String): MutableList<String> {
@@ -2698,10 +2192,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var channelsHistoryAdapter: SearchHistoryAdapter
-    private lateinit var cineHistoryAdapter: SearchHistoryAdapter
     
     private val CHANNELS_HISTORY_KEY = "CHANNELS_SEARCH_HISTORY"
-    private val CINE_HISTORY_KEY = "CINE_SEARCH_HISTORY"
     private val PLAYLIST_HISTORY_KEY = "PLAYLIST_URL_HISTORY"
 
     private fun setupSearchHistories() {
@@ -2731,31 +2223,6 @@ class MainActivity : AppCompatActivity() {
             binding.layoutChannelsSearchHistory.visibility = View.GONE
         }
 
-        // Cine search history
-        binding.rvCineSearchHistory.layoutManager = LinearLayoutManager(this)
-        cineHistoryAdapter = SearchHistoryAdapter(getSearchHistory(CINE_HISTORY_KEY),
-            onItemClick = { query ->
-                binding.edtCineSearch.setText(query)
-                performCineSearch(query)
-                binding.layoutCineSearchHistory.visibility = View.GONE
-            },
-            onDeleteClick = { query ->
-                val current = getSearchHistory(CINE_HISTORY_KEY)
-                current.remove(query)
-                saveSearchHistory(CINE_HISTORY_KEY, current)
-                cineHistoryAdapter.updateList(current)
-                if (current.isEmpty()) {
-                    binding.layoutCineSearchHistory.visibility = View.GONE
-                }
-            }
-        )
-        binding.rvCineSearchHistory.adapter = cineHistoryAdapter
-
-        binding.btnCineClearAll.setOnClickListener {
-            saveSearchHistory(CINE_HISTORY_KEY, emptyList())
-            cineHistoryAdapter.updateList(emptyList())
-            binding.layoutCineSearchHistory.visibility = View.GONE
-        }
     }
 
     private fun performChannelsSearch(query: String) {
@@ -2764,32 +2231,15 @@ class MainActivity : AppCompatActivity() {
         addSearchQuery(CHANNELS_HISTORY_KEY, query)
     }
 
-    private fun performCineSearch(query: String) {
-        binding.edtCineSearch.setText(query)
-        applyCineFilters()
-        addSearchQuery(CINE_HISTORY_KEY, query)
-    }
-
     private fun applyAppTheme() {
-        val sharedPref = getSharedPreferences("iptv_pref", Context.MODE_PRIVATE)
-        val selectedTheme = sharedPref.getString("theme_pref", "system") ?: "system"
-        
-        val isDark = if (selectedTheme == "system") {
-            val currentNightMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
-            currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
-        } else {
-            selectedTheme == "dark"
-        }
-        
-        binding.root.post {
-            updateAppThemeColors(isDark)
-        }
+        // The dark cinematic palette is shared by Home, Channels, Search, Cine and Settings.
+        binding.root.post { updateAppThemeColors(isDark = true) }
     }
 
     private fun updateAppThemeColors(isDark: Boolean) {
-        val bgColor = if (isDark) android.graphics.Color.parseColor("#0A1834") else android.graphics.Color.parseColor("#F5F5F5")
-        val cardColor = if (isDark) android.graphics.Color.parseColor("#14294F") else android.graphics.Color.parseColor("#FFFFFF")
-        val textColor = if (isDark) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+        val bgColor = if (isDark) androidx.core.content.ContextCompat.getColor(this, R.color.tv_background) else android.graphics.Color.parseColor("#F1F3F7")
+        val cardColor = if (isDark) androidx.core.content.ContextCompat.getColor(this, R.color.tv_surface) else android.graphics.Color.WHITE
+        val textColor = if (isDark) androidx.core.content.ContextCompat.getColor(this, R.color.tv_text_primary) else android.graphics.Color.BLACK
         
         // 1. Update window background
         window.decorView.setBackgroundColor(bgColor)
@@ -2817,96 +2267,35 @@ class MainActivity : AppCompatActivity() {
         val textColor = if (isDark) android.graphics.Color.WHITE else android.graphics.Color.BLACK
         val cardColor = if (isDark) android.graphics.Color.parseColor("#14294F") else android.graphics.Color.parseColor("#FFFFFF")
         
-        if (view is androidx.cardview.widget.CardView) {
+        if (view is android.widget.EditText) {
+            // EditText extends TextView, so handle it first; keep search/input fields dark too.
+            view.setTextColor(textColor)
+            view.setHintTextColor(if (isDark) android.graphics.Color.parseColor("#96A4B8") else android.graphics.Color.parseColor("#7D8797"))
+            val transparentBackground = (view.background as? android.graphics.drawable.ColorDrawable)?.color == android.graphics.Color.TRANSPARENT
+            if (isDark && !transparentBackground) {
+                androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_settings_card)?.let { view.background = it }
+            } else if (!isDark) {
+                view.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
+            }
+        } else if (view is androidx.cardview.widget.CardView) {
             view.setCardBackgroundColor(cardColor)
         } else if (view is android.widget.TextView) {
-            // Do not override primary orange/red/yellow colored texts
-            val isOrange = view.currentTextColor == android.graphics.Color.parseColor("#FF9800")
-            val isRed = view.currentTextColor == android.graphics.Color.parseColor("#D32F2F")
-            if (!isOrange && !isRed) {
+            // Keep explicit accent and dark-on-lavender action labels intact; lift default dark text.
+            val current = view.currentTextColor
+            val defaultDarkText = current == android.graphics.Color.BLACK ||
+                current == android.graphics.Color.parseColor("#FF212121")
+            val hasDrawableSurface = view.background != null && view.background !is android.graphics.drawable.ColorDrawable
+            if (isDark && defaultDarkText && !hasDrawableSurface) {
+                view.setTextColor(textColor)
+            } else if (!isDark && defaultDarkText) {
                 view.setTextColor(textColor)
             }
-        } else if (view is android.widget.EditText) {
-            view.setTextColor(textColor)
-            view.setHintTextColor(if (isDark) android.graphics.Color.parseColor("#666666") else android.graphics.Color.parseColor("#999999"))
-            view.setBackgroundColor(if (isDark) android.graphics.Color.parseColor("#14294F") else android.graphics.Color.parseColor("#E0E0E0"))
         }
         
         if (view is android.view.ViewGroup) {
             for (i in 0 until view.childCount) {
                 updateSubviewsColorRecursive(view.getChildAt(i), isDark)
             }
-        }
-    }
-
-    private var lastSpidermanSearchQuery = ""
-    private var spidermanOverlayJob: kotlinx.coroutines.Job? = null
-
-    private fun checkAndShowSpidermanEasterEgg(query: String) {
-        val lower = query.lowercase().trim()
-        if (lower.isEmpty()) return
-        
-        // Trigger if the query contains 'spider' (covers 'spiderman', 'spider-man', 'spider man')
-        val containsSpiderman = lower.contains("spider")
-        
-        // Only trigger once per unique search query text to prevent double triggering on text change
-        if (containsSpiderman && lower != lastSpidermanSearchQuery) {
-            lastSpidermanSearchQuery = lower
-            showSpidermanOverlay()
-        } else if (!containsSpiderman) {
-            lastSpidermanSearchQuery = ""
-        }
-    }
-
-    private fun showSpidermanOverlay() {
-        spidermanOverlayJob?.cancel() // Cancel any pending close timer
-        binding.layoutSpidermanOverlay.alpha = 1f
-        binding.layoutSpidermanOverlay.visibility = View.VISIBLE
-        
-        // Apply beautiful hardware-accelerated soft blur behind the overlay on Android 12+ (API 31+)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            val blurEffect = android.graphics.RenderEffect.createBlurEffect(
-                15f, 15f,
-                android.graphics.Shader.TileMode.CLAMP
-            )
-            binding.contentContainer.setRenderEffect(blurEffect)
-        }
-        
-        // Load the GIF using Glide
-        com.bumptech.glide.Glide.with(this)
-            .asGif()
-            .load(R.drawable.spiderman_multiverse)
-            .placeholder(R.drawable.bg_placeholder)
-            .into(binding.imgSpidermanOverlayGif)
-            
-        // Keep the overlay on screen for exactly 3.5 seconds, then hide it with a smooth fade-out!
-        spidermanOverlayJob = lifecycleScope.launch {
-            kotlinx.coroutines.delay(3500)
-            hideSpidermanOverlay()
-        }
-            
-        // Also allow the user to tap to dismiss the overlay immediately!
-        binding.layoutSpidermanOverlay.setOnClickListener {
-            spidermanOverlayJob?.cancel()
-            hideSpidermanOverlay()
-        }
-    }
-
-    private fun hideSpidermanOverlay() {
-        if (binding.layoutSpidermanOverlay.visibility == View.VISIBLE) {
-            binding.layoutSpidermanOverlay.animate()
-                .alpha(0f)
-                .setDuration(400)
-                .withEndAction {
-                    binding.layoutSpidermanOverlay.visibility = View.GONE
-                    binding.layoutSpidermanOverlay.alpha = 1f // Reset alpha for next time
-                    
-                    // Clear the blur effect on Android 12+
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                        binding.contentContainer.setRenderEffect(null)
-                    }
-                }
-                .start()
         }
     }
 

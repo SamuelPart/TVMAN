@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A1834"
+    android:background="@color/tv_background"
     android:fitsSystemWindows="true">
 
     <ScrollView
@@ -74,7 +74,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:text="Título original"
-                    android:textColor="#98989F"
+                    android:textColor="@color/tv_text_secondary"
                     android:textSize="13sp" />
 
                 <!-- Chips: formato + puntuación -->
@@ -117,7 +117,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="2019 · 4 temporadas · 40 episodios"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="12.5sp"
                     android:textStyle="bold" />
 
@@ -176,7 +176,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:text="SINOPSIS"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -190,20 +190,13 @@
                     android:textColor="#D6D6DB"
                     android:textSize="14sp" />
 
-                <!-- Anuncio nativo (con vídeo/imagen) -->
-                <FrameLayout
-                    android:id="@+id/adSlotNative"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp" />
-
-                <!-- ===== INFORMACIÓN GENERAL ===== -->
+                                <!-- ===== INFORMACIÓN GENERAL ===== -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:text="INFORMACIÓN GENERAL"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -230,7 +223,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:text="EQUIPO Y CRÉDITOS"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -262,7 +255,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:text="REPARTO PRINCIPAL"
-                            android:textColor="#8A8A93"
+                            android:textColor="@color/tv_text_muted"
                             android:textSize="9.5sp"
                             android:textStyle="bold" />
 
@@ -274,25 +267,6 @@
                             android:clipToPadding="false"
                             android:overScrollMode="never" />
 
-                        <TextView
-                            android:id="@+id/lblBackdrops"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:text="FONDOS DE PANTALLA"
-                            android:textColor="#8A8A93"
-                            android:textSize="9.5sp"
-                            android:textStyle="bold"
-                            android:visibility="gone" />
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rvBackdrops"
-                            android:layout_width="match_parent"
-                            android:layout_height="118dp"
-                            android:layout_marginTop="8dp"
-                            android:clipToPadding="false"
-                            android:overScrollMode="never"
-                            android:visibility="gone" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -302,7 +276,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:text="CONTENIDO"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -338,7 +312,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="EPISODIOS"
-                        android:textColor="#C9A96E"
+                        android:textColor="@color/tv_accent"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -347,7 +321,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
                         android:text="Temporada"
-                        android:textColor="#98989F"
+                        android:textColor="@color/tv_text_secondary"
                         android:textSize="12sp" />
 
                     <Spinner
@@ -374,6 +348,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:indeterminateTint="#C9A96E"
+        android:indeterminateTint="@color/tv_accent"
         android:visibility="gone" />
 </FrameLayout>

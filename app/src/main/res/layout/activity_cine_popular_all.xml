@@ -46,17 +46,7 @@
             android:contentDescription="Fuego" />
     </LinearLayout>
 
-    <!-- Anuncio nativo (compacto) -->
-    <FrameLayout
-        android:id="@+id/adSlotNative"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="14dp"
-        android:paddingRight="14dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp" />
-
-    <androidx.recyclerview.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvPopularAll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -73,6 +63,6 @@
         android:layout_height="34dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="12dp"
-        android:indeterminateTint="#C9A96E"
+        android:indeterminateTint="@color/tv_accent"
         android:visibility="gone" />
 </LinearLayout>

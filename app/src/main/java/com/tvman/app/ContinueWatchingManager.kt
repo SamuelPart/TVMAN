@@ -63,4 +63,8 @@ object ContinueWatchingManager {
     fun remove(context: Context, url: String) {
         saveAll(context, getAll(context).filter { it.url != url })
     }
+
+    fun clear(context: Context) {
+        saveAll(context, emptyList())
+    }
 }

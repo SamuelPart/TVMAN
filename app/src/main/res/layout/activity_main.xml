@@ -26,9 +26,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <include
+        android:id="@+id/tvSidebar"
+        layout="@layout/view_tv_sidebar"
+        android:layout_width="150dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
     <!-- ═══ DOCK INFERIOR APPLE (v7): vidrio oscuro flotante, iconos SF + labels ═══ -->
     <LinearLayout
         android:id="@+id/tvmanNavBar"
+        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="64dp"
         android:layout_marginHorizontal="16dp"
@@ -87,7 +97,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_nav_tv"
-                app:tint="#8A8A93" />
+                app:tint="@color/tv_text_muted" />
 
             <TextView
                 android:id="@+id/txtNavChannels"
@@ -115,7 +125,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_nav_search"
-                app:tint="#8A8A93" />
+                app:tint="@color/tv_text_muted" />
 
             <TextView
                 android:id="@+id/txtNavSearch"
@@ -143,7 +153,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_nav_cine"
-                app:tint="#8A8A93" />
+                app:tint="@color/tv_text_muted" />
 
             <TextView
                 android:id="@+id/txtNavCine"
@@ -171,7 +181,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_nav_gear"
-                app:tint="#8A8A93" />
+                app:tint="@color/tv_text_muted" />
 
             <TextView
                 android:id="@+id/txtNavSettings"
@@ -189,11 +199,11 @@
     <!-- Main Content Container -->
     <FrameLayout
         android:id="@+id/contentContainer"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/tvmanNavBar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tvSidebar"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- ================= TAB 1: INICIO (HOME HUB - v3.1) ================= -->
@@ -213,7 +223,7 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
                 android:paddingTop="10dp"
-                android:paddingBottom="120dp">
+                android:paddingBottom="36dp">
 
                 <!-- Buscador de Inicio: icono a la izquierda + placeholder rotativo
                      con las busquedas pasadas; el reloj abre el historial visto -->
@@ -241,7 +251,7 @@
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_ios_search"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="Buscar" />
 
                         <TextSwitcher
@@ -257,7 +267,7 @@
                                 android:id="@+id/homeSearchRotatorText1"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#8A8A93"
+                                android:textColor="@color/tv_text_muted"
                                 android:textSize="14sp"
                                 android:maxLines="1"
                                 android:ellipsize="end" />
@@ -266,7 +276,7 @@
                                 android:id="@+id/homeSearchRotatorText2"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#8A8A93"
+                                android:textColor="@color/tv_text_muted"
                                 android:textSize="14sp"
                                 android:maxLines="1"
                                 android:ellipsize="end" />
@@ -281,7 +291,7 @@
                         android:padding="12dp"
                         android:background="@drawable/bg_apple_glass_pill"
                         android:src="@drawable/ic_ios_clock"
-                        app:tint="#C9A96E"
+                        app:tint="@color/tv_accent"
                         android:contentDescription="Historial de lo visto" />
                 </LinearLayout>
 
@@ -398,21 +408,13 @@
                         android:paddingBottom="6dp" />
                 </FrameLayout>
 
-                <!-- Anuncio en bloque: aparece con el banner en modo aleatorio -->
-                <FrameLayout
-                    android:id="@+id/adSlotHomeRandom"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:visibility="gone" />
-
-                <!-- Ultimamente nuevo: cuadricula 3x3 de lo ultimo subido -->
+                                <!-- Ultimamente nuevo: cuadricula 3x3 de lo ultimo subido -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="ÚLTIMAMENTE NUEVO"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -449,7 +451,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_arrow_right"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -479,7 +481,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_refresh"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -499,23 +501,16 @@
                     android:layout_height="34dp"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="14dp"
-                    android:indeterminateTint="#C9A96E"
+                    android:indeterminateTint="@color/tv_accent"
                     android:visibility="gone" />
 
-                <!-- Anuncio en bloque bajo los botones -->
-                <FrameLayout
-                    android:id="@+id/adSlotHomeSections"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp" />
-
-                <!-- STREAMING - PLATAFORMAS: logos oficiales (TMDB) -->
+                                <!-- STREAMING - PLATAFORMAS: logos oficiales (TMDB) -->
                                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="STREAMING - PLATAFORMAS"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -536,7 +531,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="EL NUEVO STREAMING DE HOY"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -571,7 +566,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_arrow_right"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -601,7 +596,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_refresh"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -621,7 +616,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="ESTRENOS EN CINE"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -656,7 +651,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_arrow_right"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -686,7 +681,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_refresh"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -706,7 +701,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="SAGAS EN TENDENCIA"
-                    android:textColor="#C9A96E"
+                    android:textColor="@color/tv_accent"
                     android:letterSpacing="0.12"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -741,7 +736,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_arrow_right"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -771,7 +766,7 @@
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:src="@drawable/ic_ios_refresh"
-                            app:tint="#C9A96E"
+                            app:tint="@color/tv_accent"
                             android:contentDescription="@null" />
 
                         <TextView
@@ -795,163 +790,232 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- ================= TAB 2: CANALES (iPhone panel - v3.1) ================= -->
+        <!-- ================= TAB 2: DIRECTORIO TV DE CANALES ================= -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/containerChannels"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="#080D14"
             android:visibility="gone">
 
-            <!-- Estado vacio: hero amigable -->
             <LinearLayout
                 android:id="@+id/layoutChannelsEmpty"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="32dp"
+                android:padding="36dp"
                 android:visibility="visible">
-
-                <FrameLayout
-                    android:layout_width="118dp"
-                    android:layout_height="118dp"
-                    android:background="@drawable/bg_tile_indigo">
-
-                    <ImageView
-                        android:layout_width="58dp"
-                        android:layout_height="58dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_ios_tv"
-                        app:tint="#FFFFFF" />
-                </FrameLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="22dp"
-                    android:text="Sin canales todavia"
-                    android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:text="Ve a Ajustes y conecta tu lista M3U\no escanea un codigo QR para empezar"
-                    android:textColor="@color/ios_gray"
-                    android:textSize="14sp"
-                    android:lineSpacingMultiplier="1.25" />
-
+                <ImageView
+                    android:layout_width="78dp"
+                    android:layout_height="78dp"
+                    android:src="@drawable/ic_ios_tv"
+                    app:tint="@color/tv_accent"
+                    android:contentDescription="@null" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:background="@drawable/bg_chip_ios"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp"
-                    android:paddingTop="9dp"
-                    android:paddingBottom="9dp"
-                    android:text="1 · Inicio    2 · Pega tu URL    3 · Listo"
-                    android:textColor="@color/ios_cyan"
-                    android:textSize="12sp"
+                    android:text="Tu TV, a tu manera"
+                    android:textColor="#FFF6F8FB"
+                    android:textSize="26sp"
                     android:textStyle="bold" />
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center"
+                    android:text="Carga una lista M3U para explorar canales, guardar favoritos y cambiar de canal con el mando."
+                    android:textColor="#FF9AA9BC"
+                    android:textSize="16sp"
+                    android:maxWidth="560dp" />
+                <TextView
+                    android:id="@+id/btnChannelsEmptySettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="58dp"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp"
+                    android:text="CARGAR LISTA M3U"
+                    android:textColor="#0A1834"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:contentDescription="Abrir ajustes para cargar una lista M3U" />
             </LinearLayout>
 
-            <!-- Contenido cargado: panel "TV EN VIVO" -->
             <LinearLayout
                 android:id="@+id/layoutChannelsContent"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
+                android:paddingStart="36dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="36dp"
+                android:paddingBottom="24dp"
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <!-- Barra de acciones -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingStart="20dp"
-                    android:paddingEnd="16dp"
-                    android:paddingTop="12dp">
-
+                    android:orientation="horizontal">
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Sintonizando"
-                            android:textColor="#FFFFFF"
-                            android:textSize="22sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/txtSelectedFilterInfo"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="Todos los Canales"
-                            android:textColor="@color/ios_blue"
+                            android:text="TV EN VIVO"
+                            android:textColor="@color/tv_accent"
                             android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.16" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Canales"
+                            android:textColor="#FFF6F8FB"
+                            android:textSize="30sp"
                             android:textStyle="bold" />
                     </LinearLayout>
-
+                    <TextView
+                        android:id="@+id/txtSelectedFilterInfo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="Explora tu lista"
+                        android:textColor="#FF9AA9BC"
+                        android:textSize="13sp" />
                     <ImageButton
                         android:id="@+id/btnFilterChannels"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
-                        android:background="@drawable/bg_circle_glass"
-                        android:src="@drawable/ic_ios_filter"
-                        android:contentDescription="Filtrar Canales"
-                        android:padding="11dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:layout_marginEnd="10dp"
-                        app:tint="#FFFFFF" />
-
+                        android:background="@drawable/bg_tv_player_control"
+                        android:foreground="@drawable/tv_focus_ring"
+                        android:contentDescription="Filtrar canales por país o idioma"
+                        android:focusable="true"
+                        android:padding="15dp"
+                        android:src="@drawable/ic_ios_filter"
+                        app:tint="#FFE5EDF5" />
                     <ImageButton
-                        android:id="@+id/btnToggleLayout"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
-                        android:background="@drawable/bg_circle_glass"
-                        android:src="@drawable/ic_ios_grid"
-                        android:contentDescription="Cambiar Vista"
-                        android:padding="11dp"
-                        app:tint="#FFFFFF" />
-
+                        android:id="@+id/btnChannelSearch"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/bg_tv_player_control"
+                        android:foreground="@drawable/tv_focus_ring"
+                        android:contentDescription="Buscar canales"
+                        android:focusable="true"
+                        android:padding="15dp"
+                        android:src="@drawable/ic_ios_search"
+                        app:tint="#FFE5EDF5" />
                 </LinearLayout>
 
-                <!-- Anuncio nativo (compacto) -->
-                <FrameLayout
-                    android:id="@+id/adSlotChannels"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="12dp"
-                    android:paddingRight="12dp"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="2dp" />
+                    android:layout_height="1dp"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginBottom="18dp"
+                    android:background="#22344455" />
 
-                <!-- Grid de canales -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvChannelsGrid"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
-                    android:clipToPadding="false"
-                    android:scrollbars="none"
-                    tools:listitem="@layout/item_channel" />
-
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvChannelCategories"
+                        android:layout_width="248dp"
+                        android:layout_height="match_parent"
+                        android:background="#0D141E"
+                        android:clipToPadding="false"
+                        android:descendantFocusability="afterDescendants"
+                        android:nextFocusRight="@id/rvChannelsGrid"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:scrollbars="none" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="24dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:paddingBottom="12dp">
+                            <TextView
+                                android:id="@+id/txtTvChannelListTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Vistos recientemente"
+                                android:textColor="#FFE8EDF4"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="↑ ↓ recorrer     OK sintonizar     CH +/- cambiar"
+                                android:textColor="#FF8594A8"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1">
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvChannelsGrid"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:clipToPadding="false"
+                                android:descendantFocusability="afterDescendants"
+                                android:nextFocusLeft="@id/rvChannelCategories"
+                                android:paddingStart="4dp"
+                                android:paddingEnd="4dp"
+                                android:scrollbars="none"
+                                tools:listitem="@layout/item_channel_tuner" />
+                            <LinearLayout
+                                android:id="@+id/tvChannelsNoResults"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+                                <TextView
+                                    android:id="@+id/txtTvChannelsNoResultsTitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="No hay canales en esta sección"
+                                    android:textColor="#FFE8EDF4"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:text="Pulsa izquierda para elegir otra sección con arriba o abajo."
+                                    android:textColor="#FF9AA9BC"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+                        </FrameLayout>
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- ================= TAB 3: BUSCADOR (SEARCH) ================= -->
@@ -986,144 +1050,194 @@
                     android:textColor="@color/ios_blue"
                     android:textSize="16sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btnSearchEmptySettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp"
+                    android:text="ABRIR AJUSTES"
+                    android:textColor="#0A1834"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:contentDescription="Abrir ajustes para cargar una lista M3U" />
             </LinearLayout>
 
-            <!-- Search Content (Loaded) -->
             <LinearLayout
                 android:id="@+id/layoutSearchContent"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:paddingStart="40dp"
+                android:paddingTop="32dp"
+                android:paddingEnd="40dp"
+                android:paddingBottom="28dp"
                 android:visibility="gone"
-                tools:visibility="gone">
+                tools:visibility="visible">
 
-                <!-- Search Input area -->
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="16dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="8dp"
-                    android:gravity="center_vertical">
-
-                    <!-- History Toggle Button -->
-                    <ImageButton
-                        android:id="@+id/btnSearchHistoryTab"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_ios_clock"
-                        android:contentDescription="Historial"
-                        android:layout_marginEnd="4dp"
-                        app:tint="@color/ios_blue" />
-
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.05"
+                    android:orientation="vertical"
+                    android:paddingEnd="28dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="BUSCAR CANALES"
+                        android:textColor="@color/tv_accent"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.15" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="18dp"
+                        android:text="Encuentra tu señal"
+                        android:textColor="@color/tv_text_primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
                     <EditText
                         android:id="@+id/edtSearchTab"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_chip_ios"
-                        android:hint="Escribe para buscar canales..."
-                        android:textColorHint="#66FFFFFF"
-                        android:textColor="#FFFFFF"
-                        android:textSize="15sp"
-                        android:padding="12dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="58dp"
+                        android:background="@drawable/bg_tv_player_control"
+                        android:contentDescription="Buscar solo canales IPTV"
+                        android:hint="Nombre del canal..."
+                        android:importantForAutofill="no"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
                         android:maxLines="1"
-                        android:inputType="text" />
-
-                    <!-- Filter Icon Button in Search -->
-                    <ImageButton
-                        android:id="@+id/btnSearchFilter"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_ios_filter"
-                        android:contentDescription="Filtrar Búsqueda"
-                        android:layout_marginStart="8dp"
-                        app:tint="@color/ios_blue" />
-
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:textColor="@color/tv_text_primary"
+                        android:textColorHint="@color/tv_text_muted"
+                        android:textSize="18sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="13dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Usa la cruceta y confirma cada tecla con OK"
+                        android:textColor="@color/tv_text_muted"
+                        android:textSize="12sp" />
+                    <com.tvman.app.TvRemoteKeyboardView
+                        android:id="@+id/tvChannelKeyboard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
-                <!-- Anuncio nativo (compacto) -->
-                <FrameLayout
-                    android:id="@+id/adSlotSearch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="12dp"
-                    android:paddingRight="12dp"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp" />
-
-                <!-- Channels Search History panel -->
                 <LinearLayout
-                    android:id="@+id/layoutChannelsSearchHistory"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="24dp"
+                    android:layout_weight="0.95"
+                    android:background="@drawable/bg_tv_playback_panel"
                     android:orientation="vertical"
-                    android:paddingHorizontal="16dp"
-                    android:layout_marginTop="8dp"
-                    android:visibility="gone">
-
+                    android:padding="22dp">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
-
+                        android:orientation="horizontal">
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Búsquedas Recientes"
-                            android:textColor="@color/ios_gray"
-                            android:textSize="13sp"
+                            android:text="Canales encontrados"
+                            android:textColor="@color/tv_text_primary"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/btnChannelsClearAll"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ELIMINAR TODO"
-                            android:textColor="#FF6E6E"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="4dp"
-                            android:background="?android:attr/selectableItemBackground" />
-
+                        <ImageButton
+                            android:id="@+id/btnSearchHistoryTab"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_tv_player_control"
+                            android:contentDescription="Ver búsquedas recientes de canales"
+                            android:focusable="true"
+                            android:foreground="@drawable/tv_focus_ring"
+                            android:padding="13dp"
+                            android:src="@drawable/ic_ios_clock"
+                            app:tint="@color/tv_accent" />
+                        <ImageButton
+                            android:id="@+id/btnSearchFilter"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_tv_player_control"
+                            android:contentDescription="Filtrar resultados de canales"
+                            android:focusable="true"
+                            android:foreground="@drawable/tv_focus_ring"
+                            android:padding="13dp"
+                            android:src="@drawable/ic_ios_filter"
+                            app:tint="@color/tv_accent" />
                     </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvChannelsSearchHistory"
+                    <TextView
+                        android:id="@+id/txtSearchCount"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
-
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Escribe un nombre para buscar en tu lista"
+                        android:textColor="@color/tv_text_muted"
+                        android:textSize="13sp" />
+                    <LinearLayout
+                        android:id="@+id/layoutChannelsSearchHistory"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Búsquedas recientes"
+                                android:textColor="@color/tv_text_secondary"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/btnChannelsClearAll"
+                                android:layout_width="wrap_content"
+                                android:layout_height="48dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="@drawable/tv_focus_ring"
+                                android:gravity="center"
+                                android:paddingHorizontal="12dp"
+                                android:text="Limpiar"
+                                android:textColor="@color/tv_accent"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvChannelsSearchHistory"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:nestedScrollingEnabled="true"
+                            android:scrollbars="none" />
+                    </LinearLayout>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSearchGrid"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:descendantFocusability="afterDescendants"
+                        android:scrollbars="none"
+                        tools:listitem="@layout/item_channel_tuner" />
                 </LinearLayout>
-
-                <!-- Status matching counts -->
-                <TextView
-                    android:id="@+id/txtSearchCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="Escribe algo para filtrar..."
-                    android:textColor="@color/ios_blue"
-                    android:textSize="13sp"
-                    android:textStyle="italic" />
-
-                <!-- Filtered grid of channels -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvSearchGrid"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:layout_marginHorizontal="8dp"
-                    android:layout_marginTop="8dp"
-                    tools:listitem="@layout/item_channel" />
-
             </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -1133,7 +1247,7 @@
             android:id="@+id/containerBrowser"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#0A1834"
+            android:background="@color/tv_background"
             android:visibility="gone">
 
             <ScrollView
@@ -1192,7 +1306,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
                                 android:text="Cada opción abre su propia pantalla"
-                                android:textColor="#8A8A8E"
+                                android:textColor="@color/tv_text_muted"
                                 android:textSize="13sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -1224,7 +1338,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_ios_tv"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1245,7 +1359,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Añade o cambia tu lista M3U"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1254,7 +1368,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1279,7 +1393,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_ios_shield"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1300,7 +1414,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="PIN y canales bloqueados"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1309,7 +1423,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1334,7 +1448,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_theme"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1355,7 +1469,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Oscuro, claro o automático"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1364,7 +1478,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1388,7 +1502,7 @@
                                 android:layout_width="22dp"
                                 android:layout_height="22dp"
                                 android:background="@drawable/bg_settings_accent"
-                                android:backgroundTint="#C9A96E" />
+                                android:backgroundTint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1409,7 +1523,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Tinta principal de la app"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1418,7 +1532,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1443,7 +1557,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_ios_clock"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1464,7 +1578,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Tus listas recientes"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1473,7 +1587,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1519,7 +1633,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Borrar caché de lista"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1528,7 +1642,7 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
 
                         <View
@@ -1553,7 +1667,7 @@
                                 android:layout_height="22dp"
                                 android:src="@drawable/ic_ios_message"
                                 android:contentDescription="@null"
-                                app:tint="#C9A96E" />
+                                app:tint="@color/tv_accent" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -1574,7 +1688,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:text="Tu semana en números"
-                                    android:textColor="#8A8A8E"
+                                    android:textColor="@color/tv_text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -1583,18 +1697,11 @@
                                 android:layout_height="18dp"
                                 android:src="@drawable/ic_ios_arrow_right"
                                 android:contentDescription="@null"
-                                app:tint="#5A5A5E" />
+                                app:tint="@color/tv_text_muted" />
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Anuncio nativo (compacto) -->
-                    <FrameLayout
-                        android:id="@+id/adSlotSettings"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp" />
-
-                </LinearLayout>
+                                    </LinearLayout>
             </ScrollView>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -1604,774 +1711,133 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"
-            android:background="#0A1834">
-                    <!-- ================= PANTALLA PREMIER ================= -->
-            <androidx.core.widget.NestedScrollView
-                android:id="@+id/premierScroll"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:clipToPadding="false"
-                android:fillViewport="true"
-                android:layout_marginTop="6dp"
-                android:visibility="visible"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+            android:background="@color/tv_background">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingBottom="104dp">
 
-<LinearLayout
-                        android:id="@+id/premierTopBar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="14dp"
-                        android:paddingEnd="14dp"
-                        android:layout_marginTop="16dp">
 
-                        <ImageButton
-                            android:id="@+id/premierMenu"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@android:color/transparent"
-                            android:padding="10dp"
-                            android:src="@drawable/ic_ios_list"
-                            app:tint="#FFFFFF"
-                            android:contentDescription="Menu" />
 
-                        <FrameLayout
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="30dp">
 
-                            <ImageView
-                                android:id="@+id/imgPlatformLogo"
-                                android:layout_width="30dp"
-                                android:layout_height="30dp"
-                                android:layout_gravity="center"
-                                android:scaleType="centerCrop"
-                                android:background="@android:color/transparent"
-                                android:src="@drawable/icon_tvman_play"
-                                android:contentDescription="Logo plataforma" />
-                        </FrameLayout>
-
-                        <ImageButton
-                            android:id="@+id/imgIslandSearch"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@android:color/transparent"
-                            android:padding="10dp"
-                            android:src="@drawable/ic_ios_search"
-                            app:tint="#C9A96E"
-                            android:contentDescription="Buscar en cine" />
-                </LinearLayout>
-
-<androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCineCoverflow"
-                    android:layout_width="match_parent"
-                    android:layout_height="436dp"
-                    android:layout_marginTop="12dp"
-                    android:clipChildren="false"
-                    android:clipToPadding="false"
-                    android:paddingStart="64dp"
-                    android:paddingEnd="64dp" />
-
-                    <!-- Anuncio nativo (con vídeo/imagen) -->
-                    <FrameLayout
-                        android:id="@+id/adSlotCine"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="18dp"
-                        android:paddingRight="18dp"
-                        android:paddingTop="6dp"
-                        android:paddingBottom="2dp" />
-
-<LinearLayout
-                        android:id="@+id/layoutCinePopular"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginTop="2dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:paddingStart="20dp"
-                            android:paddingEnd="20dp">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_weight="1"
-                                android:layout_height="wrap_content"
-                                android:text="Popular Movies"
-                                android:textColor="#FFFFFF"
-                                android:textSize="14.5sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/txtSeeAllPopular"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:clickable="true"
-                                android:focusable="true"
-                                android:text="See all ›"
-                                android:textColor="#98989F"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rvCinePopular"
-                            android:layout_width="match_parent"
-                            android:layout_height="204dp"
-                            android:layout_marginTop="12dp"
-                            android:clipChildren="false"
-                            android:clipToPadding="false"
-                            android:paddingStart="20dp"
-                            android:paddingEnd="20dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/layoutCineSections"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" />
-
-<TextView
-                    android:id="@+id/txtCineRecoLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:letterSpacing="0.16"
-                    android:paddingStart="4dp"
-                    android:text="New Episode"
-                    android:textColor="#7A7A7C"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
-
-<androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCineReco"
-                    android:layout_width="match_parent"
-                    android:layout_height="262dp"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="2dp"
-                    android:clipToPadding="false"
-                    android:visibility="gone" />
-
-                </LinearLayout>
-            </androidx.core.widget.NestedScrollView>
-
-                    
-
-                                        
 
 
             <LinearLayout
+                android:id="@+id/cineCatalogScreen"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:paddingStart="24dp"
+                android:paddingTop="22dp"
+                android:paddingEnd="28dp"
+                android:paddingBottom="20dp"
+                android:visibility="gone">
 
-                <!-- Header "Para ti, Cine" (chico, aireado) -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="10dp"
+                    android:layout_height="58dp"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp">
-
-                    <LinearLayout
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/txtCineCatalogTitle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="🧠 Para ti, Cine"
-                            android:textColor="#FFFFFF"
-                            android:textSize="17sp"
-                            android:textStyle="bold" />
-
-                    </LinearLayout>
-
+                        android:text="Películas"
+                        android:textColor="@color/tv_text_primary"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/btnCineFilters"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:background="@drawable/bg_tv_player_control"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="☷  Filtros"
+                        android:textColor="@color/tv_text_primary"
+                        android:textSize="15sp" />
                     <ImageButton
                         android:id="@+id/btnCineSearchToggle"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
-                        android:background="@drawable/bg_circle_glass"
-                        android:contentDescription="Buscar en cine"
-                        android:padding="11dp"
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_tv_player_control"
+                        android:contentDescription="Buscar películas y series"
+                        android:focusable="true"
+                        android:padding="12dp"
                         android:src="@drawable/ic_ios_search"
-                        app:tint="#FFFFFF" />
+                        app:tint="@color/tv_accent" />
                 </LinearLayout>
 
-                <!-- Busqueda: pildora de vidrio (oculta, se abre con la lupa) -->
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/cardCineSearch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:visibility="gone"
-                    app:cardBackgroundColor="@color/ios_surface"
-                    app:cardCornerRadius="26dp"
-                    app:cardElevation="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="14dp"
-                        android:paddingTop="6dp"
-                        android:paddingBottom="6dp">
-
-                        <ImageButton
-                            android:id="@+id/btnCineSearchHistory"
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:background="@drawable/bg_circle_glass"
-                            android:src="@drawable/ic_ios_clock"
-                            android:contentDescription="Historial"
-                            android:padding="12dp"
-                            app:tint="#FFFFFF" />
-
-                        <EditText
-                            android:id="@+id/edtCineSearch"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="44dp"
-                            android:background="@android:color/transparent"
-                            android:hint="Buscar película o serie..."
-                            android:textColorHint="#66FFFFFF"
-                            android:textColor="#FFFFFF"
-                            android:textSize="14sp"
-                            android:paddingStart="10dp"
-                            android:maxLines="1"
-                            android:singleLine="true"
-                            android:imeOptions="actionSearch" />
-
-                    </LinearLayout>
-
-                </androidx.cardview.widget.CardView>
-
-                <!-- Historial de busqueda (glass) -->
-                <LinearLayout
-                    android:id="@+id/layoutCineSearchHistory"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:background="@drawable/bg_card_ios"
-                    android:padding="16dp"
-                    android:layout_marginBottom="12dp"
-                    android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Búsquedas recientes"
-                            android:textColor="#FFFFFF"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/btnCineClearAll"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ELIMINAR TODO"
-                            android:textColor="#FF6E6E"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="4dp"
-                            android:background="?android:attr/selectableItemBackground" />
-
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvCineSearchHistory"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
-
-                </LinearLayout>
-
-                <!-- Cine v3 · Deck "Descubre" (2 cartas: atras rotada + frontal) -->
-                    <!-- ============ DESTACADO: carrusel 3D (estilo premier) ============ -->
-                    <LinearLayout
-                        android:id="@+id/cineFeaturedBlock"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginTop="10dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:text="ESTRENOS · 2026"
-                            android:textColor="#C9A96E"
-                            android:letterSpacing="0.24"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
-
-                        <LinearLayout
-                            android:id="@+id/cineHeadlineLtrs"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:layout_marginTop="4dp"
-                            android:orientation="horizontal"
-                            android:clipChildren="false" />
-
-                        
-                    </LinearLayout>
-
-                    <!-- ============ POPULAR: rail con sello de calidad ============ -->
-                    
-
-                <FrameLayout
-                    android:id="@+id/layoutCineDeck"
-                    android:layout_width="match_parent"
-                    android:layout_height="420dp"
-                    android:layout_marginTop="10dp"
-                    android:clipToPadding="false">
-
-                    <include
-                        android:id="@+id/deckCardBack"
-                        layout="@layout/item_cine_deck"
-                        android:layout_width="260dp"
-                        android:layout_height="380dp"
-                        android:layout_gravity="center"
-                        android:rotation="-4"
-                        android:scaleX="0.94"
-                        android:scaleY="0.94" />
-
-                    <include
-                        android:id="@+id/deckCardFront"
-                        layout="@layout/item_cine_deck"
-                        android:layout_width="260dp"
-                        android:layout_height="380dp"
-                        android:layout_gravity="center" />
-                </FrameLayout>
-
-                <!-- acciones deck -->
-                <LinearLayout
-                    android:id="@+id/cineDeckActions"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageButton
-                        android:id="@+id/btnDeckSkip"
-                        android:layout_width="54dp"
-                        android:layout_height="54dp"
-                        android:background="@drawable/bg_circle_glass"
-                        android:contentDescription="Saltar"
-                        android:padding="16dp"
-                        android:src="@drawable/ic_ios_xmark"
-                        app:tint="#FFFFFF" />
-
-                    <ImageButton
-                        android:id="@+id/btnDeckPlay"
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:layout_marginStart="22dp"
-                        android:layout_marginEnd="22dp"
-                        android:background="@drawable/bg_circle_glass"
-                        android:contentDescription="Ver"
-                        android:padding="18dp"
-                        android:src="@drawable/ic_ios_play"
-                        app:tint="@color/ios_blue" />
-
-                    <ImageButton
-                        android:id="@+id/btnDeckFav"
-                        android:layout_width="54dp"
-                        android:layout_height="54dp"
-                        android:background="@drawable/bg_circle_glass"
-                        android:contentDescription="Favorito"
-                        android:padding="16dp"
-                        android:src="@drawable/ic_ios_star"
-                        app:tint="@color/ios_cyan" />
-                </LinearLayout>
-
-                <!-- DOCK segmentado del catalogo (solo visible en modo catalogo) -->
-                    <LinearLayout
-                        android:id="@+id/cineCatalogDock"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:visibility="gone"
-                        android:background="@drawable/bg_dock_pill"
-                        android:padding="4dp"
-                        android:layout_marginTop="18dp">
-
-                        <TextView
-                            android:id="@+id/catSegAll"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_chip_active"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingVertical="9dp"
-                            android:text="Todos"
-                            android:textColor="#0F2144"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/catSegMovies"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="4dp"
-                            android:background="@android:color/transparent"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingVertical="9dp"
-                            android:text="Películas"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/catSegSeries"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="4dp"
-                            android:background="@android:color/transparent"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingVertical="9dp"
-                            android:text="Series"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <TextView
-                    android:id="@+id/txtCineCatalogToggle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="14dp"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="8dp"
-                    android:text="▦  Ver catálogo completo  ›"
-                    android:textColor="@color/ios_blue"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <!-- Segmento iOS: Todos / Peliculas / Series -->
-                <!-- Rail "Porque viste X" -->
-                
-
-                
-
-                                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:visibility="gone"
-                    android:background="@drawable/bg_chip_ios"
-                    android:padding="4dp"
-                    android:layout_marginBottom="14dp">
-
-                    <Button
-                        android:id="@+id/btnCineFilterAll"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:background="@color/ios_blue"
-                        android:text="Todos"
-                        android:textAllCaps="false"
-                        android:textColor="#FFFFFF"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btnCineFilterMovies"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="4dp"
-                        android:background="@color/ios_surface_2"
-                        android:text="Películas"
-                        android:textAllCaps="false"
-                        android:textColor="#98989F"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btnCineFilterSeries"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="4dp"
-                        android:background="@color/ios_surface_2"
-                        android:text="Series"
-                        android:textAllCaps="false"
-                        android:textColor="#98989F"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btnCineFilterNews"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:background="@color/ios_surface_2"
-                        android:text="Novedades ✨"
-                        android:textAllCaps="false"
-                        android:textColor="#98989F"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                
-                <!-- Mood chips: 🆕 estrenos / ⭐ top -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:visibility="gone"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btnMoodEstrenos"
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="34dp"
-                        android:background="@drawable/bg_chip_idle"
-                        android:minHeight="0dp"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:text="🆕 Estrenos 2024+"
-                        android:textColor="#98989F"
-                        android:textSize="11sp" />
-
-                    <Button
-                        android:id="@+id/btnMoodTop"
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="34dp"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_chip_idle"
-                        android:minHeight="0dp"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:text="Top valoradas"
-                        android:textColor="#98989F"
-                        android:textSize="11sp" />
-                </LinearLayout>
-</LinearLayout>
-
-                <!-- Chips "Para ti" exactos del boceto E: Todos / Accion / Feel good / Serie larga / Corta <2h / Top / Estrenos -->
-                <HorizontalScrollView
-                    android:id="@+id/cineChipsScroll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="6dp"
-                    android:scrollbars="none">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">                        <TextView
-                            android:id="@+id/chipMoodTodos"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/bg_chip_idle"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="9dp"
-                            android:text="Todos"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />                        <TextView
-                            android:id="@+id/chipMoodAccion"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/bg_chip_idle"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="9dp"
-                            android:text="Acción"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />                        <TextView
-                            android:id="@+id/chipMoodFeel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/bg_chip_idle"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="9dp"
-                            android:text="Feel good"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />                        <TextView
-                            android:id="@+id/chipMoodSerie"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/bg_chip_idle"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="9dp"
-                            android:text="Serie larga"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />                        <TextView
-                            android:id="@+id/chipMoodCorta"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/bg_chip_idle"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="9dp"
-                            android:text="Corta &#60; 2h"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />                        <TextView
-                            android:id="@+id/chipMoodTop2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/bg_chip_idle"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="9dp"
-                            android:text="Top valoradas"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />                        <TextView
-                            android:id="@+id/chipMoodEstrenos2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_chip_idle"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="9dp"
-                            android:text="Estrenos"
-                            android:textColor="#98989F"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </HorizontalScrollView>
-
-                <!-- contador chico encima del grid -->
                 <TextView
                     android:id="@+id/txtCineCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:paddingStart="4dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="10dp"
                     android:text="Total: 0"
-                    android:textColor="#7A7A7C"
-                    android:textSize="10sp" />
+                    android:textColor="@color/tv_text_muted"
+                    android:textSize="12sp" />
 
-                                <!-- Estado de carga -->
                 <LinearLayout
-                    android:id="@+id/layoutCineLoading"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:visibility="gone">
-
-                    <ProgressBar
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:indeterminateTint="@color/ios_cyan" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="Conectando con TMDb..."
-                        android:textColor="#FFFFFF"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Cargando carátulas y detalles oficiales"
-                        android:textColor="@color/ios_gray"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <!-- Movie / Show list Grid -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCineGrid"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:scrollbars="vertical" />
+                    android:orientation="horizontal">
+                    <ScrollView
+                        android:layout_width="190dp"
+                        android:layout_height="match_parent"
+                        android:fillViewport="false"
+                        android:overScrollMode="never"
+                        android:scrollbars="none">
+                        <LinearLayout
+                            android:id="@+id/cineGenreRail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingEnd="14dp" />
+                    </ScrollView>
 
-                <!-- Loading de paginacion (sin texto) -->
-                <ProgressBar
-                    android:id="@+id/pbCineLoader"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="12dp"
-                    android:indeterminateTint="#C9A96E"
-                    android:visibility="gone" />
-
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+                        <LinearLayout
+                            android:id="@+id/layoutCineLoading"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+                            <ProgressBar
+                                android:layout_width="46dp"
+                                android:layout_height="46dp"
+                                android:indeterminateTint="@color/tv_accent" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="Cargando catálogo…"
+                                android:textColor="@color/tv_text_primary"
+                                android:textSize="16sp" />
+                        </LinearLayout>
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvCineGrid"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:clipToPadding="false"
+                            android:overScrollMode="never"
+                            android:scrollbars="vertical" />
+                        <ProgressBar
+                            android:id="@+id/pbCineLoader"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:layout_gravity="bottom|center_horizontal"
+                            android:indeterminateTint="@color/tv_accent"
+                            android:visibility="gone" />
+                    </FrameLayout>
+                </LinearLayout>
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -2389,621 +1855,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Full Screen Easter Egg Spider-Man Overlay with dim and native blur support -->
-    <FrameLayout
-        android:id="@+id/layoutSpidermanOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#A6000000"
-        android:visibility="gone"
-        android:elevation="30dp"
-        android:clickable="true"
-        android:focusable="true">
 
-        <ImageView
-            android:id="@+id/imgSpidermanOverlayGif"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:contentDescription="Spider-Man" />
-
-    </FrameLayout>
-
-
-    <!-- ============ MENU HAMBURGUESA lateral ============ -->
-    <FrameLayout
-        android:id="@+id/cineMenuOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        android:elevation="28dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <View
-            android:id="@+id/cineMenuScrim"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#88000000"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <LinearLayout
-            android:id="@+id/cineMenuPanel"
-            android:layout_width="286dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:orientation="vertical"
-            android:background="#F50F2144"
-            android:elevation="0dp"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="20dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="TVMAN"
-                    android:textColor="#C9A96E"
-                    android:letterSpacing="0.3"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/btnMenuClose"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/ic_ios_xmark"
-                    app:tint="#FFFFFF" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="14dp"
-                android:layout_marginBottom="6dp"
-                android:background="#1AFFFFFF" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="6dp"
-                android:text="TIPO DE CONTENIDO"
-                android:textColor="#98989F"
-                android:letterSpacing="0.14"
-                android:textSize="9.5sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="4dp">
-
-                <TextView
-                    android:id="@+id/chipKindMovies"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="8dp"
-                    android:text="PELÍCULAS"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/chipKindSeries"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="8dp"
-                    android:text="SERIES"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/menuItemFav"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ios_star_fill"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Favoritos"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/menuItemContinue"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ios_play"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Seguir viendo"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/menuItemWallpapers"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ios_photo"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Fondos de pantalla"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/menuItemGenres"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ios_grid"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Colecciones por género"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="▸"
-                android:textColor="#98989F"
-                android:textSize="14sp" />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/menuGenresChips"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="2dp"
-            android:layout_marginBottom="4dp"
-            android:visibility="gone">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                            <TextView
-                    android:id="@+id/chipGenreAc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="Acción"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-
-                            <TextView
-                    android:id="@+id/chipGenreCo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="Comedia"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="6dp">
-
-                            <TextView
-                    android:id="@+id/chipGenreRo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="Romance"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-
-                            <TextView
-                    android:id="@+id/chipGenreAn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="Anime"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="6dp">
-
-                <TextView
-                    android:id="@+id/chipGenreTe"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="Terror"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/chipGenreDr"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="Drama"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/menuItemRecent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ios_clock"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Estrenos recientes"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/menuItemAlerts"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ios_message"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Alertas de estreno"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/menuItemPlatforms"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ios_globe"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Por plataforma"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="▸"
-                android:textColor="#98989F"
-                android:textSize="14sp" />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/menuPlatformsChips"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="2dp"
-            android:layout_marginBottom="4dp"
-            android:visibility="gone">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                            <TextView
-                    android:id="@+id/chipPlatNetflix"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="NETFLIX"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-
-                            <TextView
-                    android:id="@+id/chipPlatDisney"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="DISNEY+"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="6dp">
-
-                            <TextView
-                    android:id="@+id/chipPlatMax"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="MAX"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-
-                            <TextView
-                    android:id="@+id/chipPlatPrime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="PRIME"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="6dp">
-
-                <TextView
-                    android:id="@+id/chipPlatApple"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="APPLE TV+"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/chipPlatHulu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_chip_idle"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="7dp"
-                    android:text="HULU"
-                    android:textColor="#C9A96E"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/menuItemSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_gear_modern"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Configuración"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/menuItemHistory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="13dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ios_search"
-                app:tint="#C9A96E" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="13dp"
-                android:text="Historial de búsqueda"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-
-        </LinearLayout>
-    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
