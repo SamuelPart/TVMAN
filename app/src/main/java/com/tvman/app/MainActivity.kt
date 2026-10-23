@@ -2158,8 +2158,6 @@ class MainActivity : AppCompatActivity() {
 
     private var homeRotatorRunnable: Runnable? = null
 
-    private var homeRotatorRunnable: Runnable? = null
-
     private fun startHomeSearchRotator() {
         homeRotatorRunnable?.let { binding.homeSearchRotator.removeCallbacks(it) }
         homeRotatorRunnable = null
