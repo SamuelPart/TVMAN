@@ -50,7 +50,7 @@ class ChannelAdapter(
 
         fun bind(channel: Channel, position: Int) {
             binding.root.springPress()
-            binding.txtChannelNumber.text = String.format("%02d", position + 1)
+            binding.txtChannelNumber.text = String.format("%03d", position + 1)
             binding.txtChannelName.text = channel.name
             val meta = listOfNotNull(
                 channel.group?.takeIf { it.isNotBlank() },

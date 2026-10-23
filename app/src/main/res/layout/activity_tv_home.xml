@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/tvRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,7 +18,7 @@
         <ImageView
             android:id="@+id/tvBackdrop"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="470dp"
             android:contentDescription="Imagen de fondo del título destacado"
             android:scaleType="centerCrop" />
 
@@ -51,37 +52,50 @@
                 <LinearLayout
                     android:id="@+id/tvHeroInfo"
                     android:layout_width="match_parent"
-                    android:layout_height="260dp"
+                    android:layout_height="300dp"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
                     android:paddingTop="18dp">
 
-                    <TextView android:id="@+id/tvHeroEyebrow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="INICIO" android:textColor="#66E0C2" android:textSize="12sp" android:textStyle="bold" android:letterSpacing="0.14" />
-                    <TextView android:id="@+id/tvHeroTitle" android:layout_width="560dp" android:layout_height="wrap_content" android:layout_marginTop="11dp" android:maxLines="2" android:ellipsize="end" android:text="Canales, películas y series" android:textColor="#FFFFFFFF" android:textSize="39sp" android:lineSpacingExtra="-2dp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvHeroEyebrow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="INICIO" android:textColor="#66E0C2" android:textSize="12sp" android:textStyle="bold" android:letterSpacing="0.14" android:visibility="gone" />
+                    <TextView android:id="@+id/tvHeroTitle" android:layout_width="460dp" android:layout_height="wrap_content" android:layout_marginTop="11dp" android:maxLines="2" android:ellipsize="end" android:text="" android:textColor="#FFFFFFFF" android:textSize="31sp" android:lineSpacingExtra="-2dp" android:textStyle="bold" />
                     <TextView android:id="@+id/tvHeroMeta" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="Películas y series · En TVMAN" android:textColor="#FFD9E0E3" android:textSize="13sp" />
-                    <TextView android:id="@+id/tvHeroDescription" android:layout_width="530dp" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:maxLines="2" android:ellipsize="end" android:text="Tus películas, series y canales favoritos, en una experiencia hecha para la pantalla grande." android:textColor="#FFE1E7E8" android:textSize="14sp" android:lineSpacingExtra="3dp" />
+                    <TextView android:id="@+id/tvHeroDescription" android:layout_width="530dp" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:maxLines="2" android:ellipsize="end" android:text="Tus películas, series y canales favoritos." android:textColor="#FFE1E7E8" android:textSize="14sp" android:lineSpacingExtra="3dp" android:visibility="gone" />
 
                     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="17dp" android:gravity="center_vertical" android:orientation="horizontal">
-                        <TextView android:id="@+id/tvHeroPlay" android:layout_width="148dp" android:layout_height="44dp" android:background="@drawable/tv_play_button" android:clickable="true" android:focusable="true" android:gravity="center" android:text="▶   VER DETALLES" android:textColor="#FFFFFFFF" android:textSize="13sp" android:textStyle="bold" android:contentDescription="Ver detalles del título destacado" />
-                        <TextView android:id="@+id/tvHeroAdd" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginStart="12dp" android:background="@drawable/tv_add_button" android:clickable="true" android:focusable="true" android:gravity="center" android:text="＋" android:textColor="#FFFFFFFF" android:textSize="25sp" android:contentDescription="Añadir a Mi lista" />
-                        <TextView android:id="@+id/tvHeroPrev" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginStart="12dp" android:background="@drawable/tv_top_action" android:clickable="true" android:focusable="true" android:gravity="center" android:text="‹" android:textColor="#FFFFFFFF" android:textSize="32sp" android:contentDescription="Título destacado anterior" />
-                        <TextView android:id="@+id/tvHeroNext" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginStart="8dp" android:background="@drawable/tv_top_action" android:clickable="true" android:focusable="true" android:gravity="center" android:text="›" android:textColor="#FFFFFFFF" android:textSize="32sp" android:contentDescription="Título destacado siguiente" />
+                        <TextView android:id="@+id/tvHeroPlay" android:layout_width="124dp" android:layout_height="44dp" android:background="@drawable/tv_play_button" android:clickable="true" android:focusable="true" android:gravity="center" android:text="▶   Reproducir" android:textColor="#FFFFFFFF" android:textSize="13sp" android:textStyle="bold" android:contentDescription="Reproducir título destacado" />
+                        <TextView android:id="@+id/tvHeroAdd" android:layout_width="112dp" android:layout_height="44dp" android:layout_marginStart="10dp" android:background="@drawable/tv_add_button" android:clickable="true" android:focusable="true" android:gravity="center" android:text="＋   Mi lista" android:textColor="#FFFFFFFF" android:textSize="13sp" android:textStyle="bold" android:contentDescription="Añadir a Mi lista" />
                     </LinearLayout>
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvContinueTitle"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="22dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:text="CONTINUAR VIENDO · VER HISTORIAL"
-                    android:textColor="#FFFFFFFF"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05"
-                    android:visibility="gone" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tvContinueTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="Continuar viendo"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tvContinueAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="8dp"
+                        android:text="Ver todo  ›"
+                        android:textColor="#FFD3D8DD"
+                        android:textSize="12sp" />
+                </LinearLayout>
                 <HorizontalScrollView
                     android:id="@+id/tvContinueScroll"
                     android:layout_width="match_parent"
@@ -101,7 +115,8 @@
                     android:id="@+id/tvHomeSections"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:visibility="gone">
                     <LinearLayout
                         android:id="@+id/tvSectionRecommendations"
                         android:layout_width="match_parent"
@@ -199,6 +214,37 @@
         android:layout_width="150dp"
         android:layout_height="match_parent"
         android:layout_gravity="start" />
+
+    <LinearLayout
+        android:id="@+id/tvHomeTopActions"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="34dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/tvHomeSearchButton"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_tv_player_control"
+            android:contentDescription="Buscar películas y series"
+            android:focusable="true"
+            android:padding="11dp"
+            android:src="@drawable/ic_ios_search"
+            app:tint="@color/tv_text_primary" />
+        <TextClock
+            android:id="@+id/tvHomeClock"
+            android:layout_width="62dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:format24Hour="HH:mm"
+            android:format12Hour="HH:mm"
+            android:textColor="@color/tv_text_primary"
+            android:textSize="13sp"
+            android:contentDescription="Hora local" />
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/tvCatalogErrorOverlay"

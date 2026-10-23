@@ -2,12 +2,12 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="96dp"
-    android:layout_marginHorizontal="12dp"
-    android:layout_marginVertical="6dp"
+    android:layout_height="58dp"
+    android:layout_marginHorizontal="6dp"
+    android:layout_marginVertical="3dp"
     android:foreground="@drawable/tv_focus_ring"
     app:cardBackgroundColor="@color/ios_surface"
-    app:cardCornerRadius="20dp"
+    app:cardCornerRadius="10dp"
     app:cardElevation="0dp">
 
     <FrameLayout
@@ -19,8 +19,8 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="14dp"
-            android:paddingEnd="16dp">
+            android:paddingStart="8dp"
+            android:paddingEnd="10dp">
 
             <!-- Numero del sintonizador (champagne) -->
             <TextView
@@ -35,11 +35,11 @@
 
             <!-- Tile del logo -->
             <androidx.cardview.widget.CardView
-                android:layout_width="62dp"
-                android:layout_height="62dp"
-                android:layout_marginStart="14dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="10dp"
                 app:cardBackgroundColor="@color/ios_surface_2"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="7dp"
                 app:cardElevation="0dp">
 
                 <ImageView
@@ -67,7 +67,7 @@
                     android:singleLine="true"
                     android:text="DAZN 1"
                     android:textColor="#FFFFFF"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -79,6 +79,7 @@
 
                     <View
                         android:id="@+id/viewChannelLiveDot"
+                        android:visibility="gone"
                         android:layout_width="8dp"
                         android:layout_height="8dp"
                         android:layout_marginEnd="6dp"
@@ -91,8 +92,8 @@
                         android:ellipsize="end"
                         android:singleLine="true"
                         android:text="Deportes · Espana"
-                        android:textColor="#7A7A7C"
-                        android:textSize="12sp" />
+                        android:textColor="#FF8B99AB"
+                        android:textSize="11sp" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -100,23 +101,14 @@
             <!-- Estrella favorito -->
             <ImageView
                 android:id="@+id/imgChannelFav"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:layout_marginStart="10dp"
                 android:contentDescription="Favorito"
                 android:padding="4dp"
                 android:src="@drawable/ic_ios_star"
                 android:visibility="gone"
                 app:tint="#E6FFFFFF" />
-
-            <!-- Play champagne -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="▶"
-                android:textColor="@color/ios_blue"
-                android:textSize="14sp" />
 
         </LinearLayout>
 

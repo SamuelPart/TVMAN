@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
     // Public test lists (legal & free streams)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enterTvFullscreen()
         val hasSharedTitle = !intent.getStringExtra("deeplink_title").isNullOrBlank()
         if (intent.getStringExtra(EXTRA_TV_TAB) == null && !hasSharedTitle) {
             startActivity(Intent(this, TvHomeActivity::class.java))
@@ -306,6 +307,11 @@ class MainActivity : AppCompatActivity() {
         binding.cineCatalogScreen.visibility = View.GONE
 
 
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) enterTvFullscreen()
     }
 
     override fun onResume() {
@@ -1204,12 +1210,7 @@ class MainActivity : AppCompatActivity() {
         val isFirstEntry = !channelSectionInitialized
         channelSectionsAdapter.submitSections(sections, preserveSelection = true)
         if (isFirstEntry) {
-            val initial = when {
-                recents.isNotEmpty() -> "recent"
-                favorites.isNotEmpty() -> "favorites"
-                else -> "all"
-            }
-            channelSectionsAdapter.selectKey(initial)
+            channelSectionsAdapter.selectKey("all")
             channelSectionInitialized = true
         } else if (sections.none { it.key == channelSectionsAdapter.selectedKey }) {
             channelSectionsAdapter.selectKey("all")
@@ -1305,19 +1306,15 @@ class MainActivity : AppCompatActivity() {
             "Filtrar y ordenar",
             "Elige una opción con la cruceta y confirma con OK.",
             listOf(
-                R.drawable.ic_ios_globe to "Filtrar por pais",
-                R.drawable.ic_ios_message to "Filtrar por idioma",
-                R.drawable.ic_ios_tv to "Filtrar por categoria",
-                R.drawable.ic_ios_sort to "Ordenar alfabeticamente",
-                R.drawable.ic_ios_refresh to "Restablecer filtros"
+                R.drawable.ic_ios_tv to "Grupo",
+                R.drawable.ic_ios_globe to "País",
+                R.drawable.ic_ios_message to "Idioma"
             )
         ) { which ->
             when (which) {
-                0 -> showCountryFilterSelector()
-                1 -> showLanguageFilterSelector()
-                2 -> showCategoryFilterSelector()
-                3 -> showAlphabetSortSelector()
-                4 -> resetAllFilters()
+                0 -> showCategoryFilterSelector()
+                1 -> showCountryFilterSelector()
+                2 -> showLanguageFilterSelector()
             }
         }
     }

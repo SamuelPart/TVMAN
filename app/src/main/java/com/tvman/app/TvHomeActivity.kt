@@ -71,6 +71,7 @@ class TvHomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enterTvFullscreen()
         setContentView(R.layout.activity_tv_home)
 
         posterRow = findViewById(R.id.tvPosterRow)
@@ -122,14 +123,22 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.sideNavMovies).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "movie") }
         findViewById<View>(R.id.sideNavSeries).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "series") }
         findViewById<View>(R.id.sideNavSettings).setOnClickListener { openMainTab(MainActivity.TAB_SETTINGS) }
-        continueTitle.setOnClickListener { startActivity(Intent(this, WatchHistoryActivity::class.java)) }
+        val openWatchHistory = { startActivity(Intent(this, WatchHistoryActivity::class.java)) }
+        continueTitle.setOnClickListener { openWatchHistory() }
+        findViewById<View>(R.id.tvContinueAll).setOnClickListener { openWatchHistory() }
 
+        findViewById<View>(R.id.tvHomeSearchButton).setOnClickListener {
+            startActivity(Intent(this, CineSearchActivity::class.java))
+        }
         findViewById<View>(R.id.tvHeroPlay).setOnClickListener { featured?.let(::openMedia) ?: openMainTab(MainActivity.TAB_CINE) }
-        findViewById<View>(R.id.tvHeroPrev).setOnClickListener { moveFeatured(-1) }
-        findViewById<View>(R.id.tvHeroNext).setOnClickListener { moveFeatured(1) }
         addButton.setOnClickListener { toggleFeaturedFavorite() }
         findViewById<View>(R.id.tvPostersHint).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
         loadCatalog()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) enterTvFullscreen()
     }
 
     override fun onResume() {
@@ -147,14 +156,6 @@ class TvHomeActivity : AppCompatActivity() {
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
         if (::cradleLoadingOverlay.isInitialized && cradleLoadingOverlay.visibility == View.VISIBLE &&
             event.keyCode != android.view.KeyEvent.KEYCODE_BACK) return true
-        if (event.action == android.view.KeyEvent.ACTION_DOWN &&
-            (event.keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT ||
-                event.keyCode == android.view.KeyEvent.KEYCODE_DPAD_RIGHT) &&
-            (currentFocus?.id == R.id.tvHeroPrev || currentFocus?.id == R.id.tvHeroNext) &&
-            featuredCandidates.size > 1) {
-            moveFeatured(if (event.keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1)
-            return true
-        }
         return super.dispatchKeyEvent(event)
     }
 
@@ -382,9 +383,6 @@ class TvHomeActivity : AppCompatActivity() {
             .takeIf { it >= 0 } ?: 0
         featured = featuredCandidates.getOrNull(featuredIndex)
         featured?.let(::bindFeatured)
-        val canBrowseHero = featuredCandidates.size > 1
-        findViewById<View>(R.id.tvHeroPrev).visibility = if (canBrowseHero) View.VISIBLE else View.GONE
-        findViewById<View>(R.id.tvHeroNext).visibility = if (canBrowseHero) View.VISIBLE else View.GONE
 
         val favorites = FavoritesManager.getAll(this)
             .filterNot { it.isChannel }
@@ -414,27 +412,12 @@ class TvHomeActivity : AppCompatActivity() {
         startHomeEntranceIfReady()
     }
 
-    private fun moveFeatured(direction: Int) {
-        if (featuredCandidates.size < 2) return
-        featuredIndex = (featuredIndex + direction + featuredCandidates.size) % featuredCandidates.size
-        val selected = featuredCandidates[featuredIndex]
-        featured = selected
-        bindFeatured(selected)
-        listOf(titleView, metaView, descriptionView).forEach { view ->
-            view.animate().cancel()
-            view.alpha = 0f
-            view.translationY = dp(12).toFloat()
-            view.animate().alpha(1f).translationY(0f).setDuration(260L).start()
-        }
-    }
-
     private fun bindFeatured(media: CineMedia) {
-        titleView.text = media.title.uppercase(Locale.getDefault())
+        titleView.text = media.title
         titleView.maxLines = if (media.title.length > 26) 2 else 1
         val year = media.releaseDate?.take(4)?.takeIf { it.all(Char::isDigit) }
-        val kind = if (media.type == "series") "SERIE" else "PELÍCULA"
-        val rating = media.rating?.takeIf { it > 0.0 }?.let { "★ ${"%.1f".format(Locale.US, it)}" }
-        metaView.text = listOfNotNull(kind, rating, year, "TMDB").joinToString("   ·   ")
+        val genres = TasteProfile.genreKeysOf(media).take(2)
+        metaView.text = (genres + listOfNotNull(year)).joinToString(" · ")
         descriptionView.text = media.overview?.takeIf { it.isNotBlank() }
             ?: "Canales, películas y series para disfrutar en pantalla grande."
         val backdropUrl = media.backdropUrl?.takeIf(::tmdbImage) ?: media.posterUrl?.takeIf(::tmdbImage)
@@ -459,7 +442,7 @@ class TvHomeActivity : AppCompatActivity() {
                 .into(backdrop)
         }
         val isSaved = FavoritesManager.isFavorite(this, media.url)
-        addButton.text = if (isSaved) "✓" else "+"
+        addButton.text = if (isSaved) "✓   Mi lista" else "＋   Mi lista"
         addButton.contentDescription = if (isSaved) "Quitar de Mi lista" else "Añadir a Mi lista"
     }
 
@@ -528,11 +511,8 @@ class TvHomeActivity : AppCompatActivity() {
             card.addView(name)
             card.setOnFocusChangeListener { view, focused ->
                 view.animate().cancel()
-                view.animate().scaleX(if (focused) 1.06f else 1f).scaleY(if (focused) 1.06f else 1f).setDuration(130).start()
-                if (focused) {
-                    showPosterPreview(media)
-                    schedulePosterBackdropPreview(media, view)
-                } else schedulePosterPreviewDismiss()
+                view.animate().scaleX(if (focused) 1.06f else 1f)
+                    .scaleY(if (focused) 1.06f else 1f).setDuration(130).start()
             }
             row.addView(card)
         }
@@ -542,7 +522,8 @@ class TvHomeActivity : AppCompatActivity() {
         continueRow.removeAllViews()
         entries.forEach { entry ->
             val media = entry.media ?: return@forEach
-            val poster = media.posterUrl?.takeIf(::tmdbImage) ?: return@forEach
+            val artwork = media.backdropUrl?.takeIf(::tmdbImage)
+                ?: media.posterUrl?.takeIf(::tmdbImage) ?: return@forEach
             val percent = if (entry.durationMs > 0L)
                 ((entry.positionMs * 100L) / entry.durationMs).toInt().coerceIn(0, 100) else 0
             val card = LinearLayout(this).apply {
@@ -550,10 +531,10 @@ class TvHomeActivity : AppCompatActivity() {
                 isFocusable = true
                 isClickable = true
                 tag = media
-                contentDescription = posterAccessibilityLabel(media) + ", $percent por ciento visto"
+                contentDescription = "${media.title}, continuar desde ${entry.positionMs / 60000L} minutos, $percent por ciento visto"
                 foreground = getDrawable(R.drawable.tv_focus_ring)
-                setPadding(dp(3), dp(3), dp(3), dp(5))
-                layoutParams = LinearLayout.LayoutParams(dp(112), dp(195)).apply { marginEnd = dp(15) }
+                setPadding(dp(4), dp(4), dp(4), dp(5))
+                layoutParams = LinearLayout.LayoutParams(dp(204), dp(156)).apply { marginEnd = dp(14) }
                 setOnClickListener {
                     clearPosterPreview()
                     startActivity(Intent(this@TvHomeActivity, PlayerActivity::class.java).apply {
@@ -564,24 +545,29 @@ class TvHomeActivity : AppCompatActivity() {
                         putExtra("isLiveTv", false)
                     })
                 }
+                setOnFocusChangeListener { view, focused ->
+                    view.animate().cancel()
+                    view.animate().scaleX(if (focused) 1.04f else 1f)
+                        .scaleY(if (focused) 1.04f else 1f).setDuration(130).start()
+                }
             }
             val image = ImageView(this).apply {
                 scaleType = ImageView.ScaleType.CENTER_CROP
                 background = getDrawable(R.drawable.tv_poster_placeholder)
                 clipToOutline = true
                 contentDescription = media.title
-                layoutParams = LinearLayout.LayoutParams(dp(106), dp(148))
+                layoutParams = LinearLayout.LayoutParams(dp(196), dp(106))
             }
-            Glide.with(this).load(poster).centerCrop()
+            Glide.with(this).load(artwork).centerCrop()
                 .placeholder(R.drawable.tv_poster_placeholder).into(image)
             val name = TextView(this).apply {
                 text = media.title
                 setTextColor(Color.WHITE)
-                textSize = 11f
+                textSize = 12f
                 maxLines = 1
                 ellipsize = android.text.TextUtils.TruncateAt.END
-                setPadding(dp(2), dp(6), dp(2), 0)
-                layoutParams = LinearLayout.LayoutParams(dp(106), dp(22))
+                setPadding(dp(2), dp(5), dp(2), 0)
+                layoutParams = LinearLayout.LayoutParams(dp(196), dp(20))
             }
             val progress = android.widget.ProgressBar(
                 this, null, android.R.attr.progressBarStyleHorizontal
@@ -591,23 +577,14 @@ class TvHomeActivity : AppCompatActivity() {
                 progressTintList = android.content.res.ColorStateList.valueOf(Color.rgb(163, 65, 255))
                 progressBackgroundTintList = android.content.res.ColorStateList.valueOf(0x66FFFFFF)
                 contentDescription = "$percent por ciento visto"
-                layoutParams = LinearLayout.LayoutParams(dp(106), dp(4)).apply {
-                    topMargin = dp(5)
+                layoutParams = LinearLayout.LayoutParams(dp(194), dp(4)).apply {
+                    topMargin = dp(4)
                     marginStart = dp(1)
                 }
             }
             card.addView(image)
             card.addView(name)
             card.addView(progress)
-            card.setOnFocusChangeListener { view, focused ->
-                view.animate().cancel()
-                view.animate().scaleX(if (focused) 1.06f else 1f)
-                    .scaleY(if (focused) 1.06f else 1f).setDuration(130).start()
-                if (focused) {
-                    showPosterPreview(media)
-                    schedulePosterBackdropPreview(media, view)
-                } else schedulePosterPreviewDismiss()
-            }
             continueRow.addView(card)
         }
     }
@@ -727,7 +704,7 @@ class TvHomeActivity : AppCompatActivity() {
             FavoritesManager.remove(this, media.url)
             false
         } else FavoritesManager.toggleMedia(this, media)
-        addButton.text = if (added) "✓" else "+"
+        addButton.text = if (added) "✓   Mi lista" else "＋   Mi lista"
         Toast.makeText(this, if (added) "Añadido a Mi lista" else "Quitado de Mi lista", Toast.LENGTH_SHORT).show()
         displayCatalog()
     }
@@ -740,7 +717,7 @@ class TvHomeActivity : AppCompatActivity() {
 
         val entranceViews = listOf(
             R.id.tvHeroEyebrow, R.id.tvHeroTitle, R.id.tvHeroMeta, R.id.tvHeroDescription,
-            R.id.tvHeroPlay, R.id.tvHeroAdd, R.id.tvHeroPrev, R.id.tvHeroNext,
+            R.id.tvHeroPlay, R.id.tvHeroAdd,
             R.id.tvPostersTitle, R.id.tvPostersHint,
             R.id.tvPosterScroll, R.id.tvSecondRowTitle, R.id.tvPopularRow,
             R.id.tvContinueTitle, R.id.tvContinueScroll

@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_ios_gradient"
-    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
     <!-- Floating glass bottom navigation (iPhone style) -->
@@ -852,170 +851,176 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:paddingStart="36dp"
-                android:paddingTop="24dp"
-                android:paddingEnd="36dp"
-                android:paddingBottom="24dp"
+                android:paddingStart="18dp"
+                android:paddingTop="18dp"
+                android:paddingEnd="22dp"
+                android:paddingBottom="18dp"
                 android:visibility="gone"
                 tools:visibility="visible">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/txtTvChannelListTitle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="TV EN VIVO"
-                            android:textColor="@color/tv_accent"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.16" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Canales"
-                            android:textColor="#FFF6F8FB"
-                            android:textSize="30sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                        android:text="Todos los canales"
+                        android:textColor="@color/tv_text_primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
                     <TextView
                         android:id="@+id/txtSelectedFilterInfo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="16dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="Explora tu lista"
-                        android:textColor="#FF9AA9BC"
-                        android:textSize="13sp" />
-                    <ImageButton
-                        android:id="@+id/btnFilterChannels"
-                        android:layout_width="54dp"
-                        android:layout_height="54dp"
-                        android:layout_marginEnd="10dp"
-                        android:background="@drawable/bg_tv_player_control"
-                        android:foreground="@drawable/tv_focus_ring"
-                        android:contentDescription="Filtrar canales por país o idioma"
-                        android:focusable="true"
-                        android:padding="15dp"
-                        android:src="@drawable/ic_ios_filter"
-                        app:tint="#FFE5EDF5" />
-                    <ImageButton
-                        android:id="@+id/btnChannelSearch"
-                        android:layout_width="54dp"
-                        android:layout_height="54dp"
-                        android:background="@drawable/bg_tv_player_control"
-                        android:foreground="@drawable/tv_focus_ring"
-                        android:contentDescription="Buscar canales"
-                        android:focusable="true"
-                        android:padding="15dp"
-                        android:src="@drawable/ic_ios_search"
-                        app:tint="#FFE5EDF5" />
+                        android:visibility="gone"
+                        android:textColor="@color/tv_text_muted"
+                        android:textSize="12sp" />
+                    <TextClock
+                        android:id="@+id/tvChannelsClock"
+                        android:layout_width="64dp"
+                        android:layout_height="42dp"
+                        android:gravity="center"
+                        android:format24Hour="HH:mm"
+                        android:format12Hour="HH:mm"
+                        android:textColor="@color/tv_text_primary"
+                        android:textSize="13sp"
+                        android:contentDescription="Hora local" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginTop="18dp"
-                    android:layout_marginBottom="18dp"
-                    android:background="#22344455" />
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="#263448" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:orientation="horizontal">
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvChannelCategories"
-                        android:layout_width="248dp"
+                    <LinearLayout
+                        android:layout_width="224dp"
                         android:layout_height="match_parent"
                         android:background="#0D141E"
-                        android:clipToPadding="false"
-                        android:descendantFocusability="afterDescendants"
-                        android:nextFocusRight="@id/rvChannelsGrid"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:scrollbars="none" />
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="24dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="8dp">
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvChannelCategories"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:clipToPadding="false"
+                            android:descendantFocusability="afterDescendants"
+                            android:nextFocusRight="@id/rvChannelsGrid"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"
+                            android:scrollbars="none" />
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
+                            android:orientation="vertical"
                             android:paddingStart="10dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="12dp">
+                            android:paddingEnd="10dp">
+                            <LinearLayout
+                                android:id="@+id/btnChannelSearch"
+                                android:layout_width="match_parent"
+                                android:layout_height="46dp"
+                                android:background="@drawable/bg_tv_sidebar_item"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="12dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_ios_search"
+                                    android:contentDescription="@null"
+                                    app:tint="@color/tv_text_primary" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp"
+                                    android:text="Buscar canales"
+                                    android:textColor="@color/tv_text_primary"
+                                    android:textSize="13sp" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:id="@+id/btnFilterChannels"
+                                android:layout_width="match_parent"
+                                android:layout_height="46dp"
+                                android:layout_marginTop="4dp"
+                                android:background="@drawable/bg_tv_sidebar_item"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="12dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_ios_filter"
+                                    android:contentDescription="@null"
+                                    app:tint="@color/tv_text_primary" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp"
+                                    android:text="Filtros"
+                                    android:textColor="@color/tv_text_primary"
+                                    android:textSize="13sp" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="18dp"
+                        android:layout_weight="1">
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvChannelsGrid"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:clipToPadding="false"
+                            android:descendantFocusability="afterDescendants"
+                            android:nextFocusLeft="@id/rvChannelCategories"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:scrollbars="none"
+                            tools:listitem="@layout/item_channel_tuner" />
+                        <LinearLayout
+                            android:id="@+id/tvChannelsNoResults"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:visibility="gone">
                             <TextView
-                                android:id="@+id/txtTvChannelListTitle"
-                                android:layout_width="0dp"
+                                android:id="@+id/txtTvChannelsNoResultsTitle"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Vistos recientemente"
-                                android:textColor="#FFE8EDF4"
-                                android:textSize="18sp"
+                                android:text="No hay canales en esta sección"
+                                android:textColor="@color/tv_text_primary"
+                                android:textSize="20sp"
                                 android:textStyle="bold" />
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="↑ ↓ recorrer     OK sintonizar     CH +/- cambiar"
-                                android:textColor="#FF8594A8"
-                                android:textSize="12sp" />
+                                android:layout_marginTop="8dp"
+                                android:text="Elige otra sección con arriba o abajo."
+                                android:textColor="@color/tv_text_muted"
+                                android:textSize="14sp" />
                         </LinearLayout>
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1">
-                            <androidx.recyclerview.widget.RecyclerView
-                                android:id="@+id/rvChannelsGrid"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:clipToPadding="false"
-                                android:descendantFocusability="afterDescendants"
-                                android:nextFocusLeft="@id/rvChannelCategories"
-                                android:paddingStart="4dp"
-                                android:paddingEnd="4dp"
-                                android:scrollbars="none"
-                                tools:listitem="@layout/item_channel_tuner" />
-                            <LinearLayout
-                                android:id="@+id/tvChannelsNoResults"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:gravity="center"
-                                android:orientation="vertical"
-                                android:visibility="gone">
-                                <TextView
-                                    android:id="@+id/txtTvChannelsNoResultsTitle"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="No hay canales en esta sección"
-                                    android:textColor="#FFE8EDF4"
-                                    android:textSize="20sp"
-                                    android:textStyle="bold" />
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:text="Pulsa izquierda para elegir otra sección con arriba o abajo."
-                                    android:textColor="#FF9AA9BC"
-                                    android:textSize="14sp" />
-                            </LinearLayout>
-                        </FrameLayout>
-                    </LinearLayout>
+                    </FrameLayout>
                 </LinearLayout>
             </LinearLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- ================= TAB 3: BUSCADOR (SEARCH) ================= -->

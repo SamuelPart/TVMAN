@@ -30,11 +30,11 @@ class TvChannelCategoryAdapter(
             count.text = section.count.toString()
             count.visibility = if (section.count > 0) View.VISIBLE else View.INVISIBLE
             title.setTextColor(if (selected) Color.WHITE else Color.rgb(181, 194, 211))
-            count.setTextColor(if (selected) AccentManager.color(itemView.context) else Color.rgb(125, 142, 164))
+            count.setTextColor(if (selected) itemView.context.getColor(R.color.tv_accent) else Color.rgb(125, 142, 164))
             marker.visibility = if (selected) View.VISIBLE else View.INVISIBLE
             val bg = GradientDrawable().apply {
                 cornerRadius = itemView.resources.displayMetrics.density * 12f
-                setColor(if (selected) Color.rgb(36, 53, 70) else Color.TRANSPARENT)
+                setColor(if (selected) Color.rgb(64, 40, 124) else Color.TRANSPARENT)
             }
             itemView.background = bg
             itemView.contentDescription = "${section.title}, ${section.count} canales${if (selected) ", seleccionado" else ""}"
