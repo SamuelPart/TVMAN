@@ -1090,6 +1090,7 @@ class MainActivity : AppCompatActivity() {
                 true
             } else false
         }
+        binding.edtSearchTab.showSoftInputOnFocus = false
         binding.tvChannelKeyboard.bindInput(binding.edtSearchTab) {
             val query = binding.edtSearchTab.text.toString().trim()
             if (query.isNotEmpty()) addSearchQuery(CHANNELS_HISTORY_KEY, query)

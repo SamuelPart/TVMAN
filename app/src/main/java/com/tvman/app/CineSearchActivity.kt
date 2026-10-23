@@ -87,6 +87,7 @@ class CineSearchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_cine_search)
 
         edtInput = findViewById(R.id.edtCineSearchInput)
+        edtInput.showSoftInputOnFocus = false
         rvHistory = findViewById(R.id.rvCineSearchHistory)
         rvPopular = findViewById(R.id.rvCinePopular)
         rvResults = findViewById(R.id.rvCineResults)

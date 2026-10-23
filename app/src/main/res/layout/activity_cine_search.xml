@@ -67,7 +67,6 @@
                 android:importantForAutofill="no"
                 android:inputType="text"
                 android:maxLines="1"
-                android:showSoftInputOnFocus="false"
                 android:textColor="@color/tv_text_primary"
                 android:textColorHint="@color/tv_text_muted"
                 android:textSize="17sp" />
