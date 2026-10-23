@@ -90,8 +90,10 @@
                     android:visibility="gone" />
             </FrameLayout>
             <TextView android:id="@+id/sideNavChannels" style="@style/TvSidebarItem" android:drawableStart="@drawable/ic_ios_tv" android:text="Canales" android:contentDescription="Canales" />
-            <TextView android:id="@+id/sideNavSeries" style="@style/TvSidebarItem" android:drawableStart="@drawable/ic_nav_cine" android:text="Series" android:contentDescription="Series" />
+            <TextView android:id="@+id/sideNavSearchChannels" style="@style/TvSidebarItem" android:drawableStart="@drawable/ic_ios_search" android:text="Buscar canales" android:contentDescription="Buscar canales" />
             <TextView android:id="@+id/sideNavMovies" style="@style/TvSidebarItem" android:drawableStart="@drawable/ic_ios_movie" android:text="Películas" android:contentDescription="Películas" />
+            <TextView android:id="@+id/sideNavSeries" style="@style/TvSidebarItem" android:drawableStart="@drawable/ic_nav_cine" android:text="Series" android:contentDescription="Series" />
+            <TextView android:id="@+id/sideNavCineSearch" style="@style/TvSidebarItem" android:drawableStart="@drawable/ic_ios_search" android:text="Buscar películas y series" android:contentDescription="Buscar películas y series" />
             <TextView android:id="@+id/sideNavGames" style="@style/TvSidebarItem" android:drawableStart="@drawable/ic_sidebar_games" android:text="Juegos" android:contentDescription="Juegos" />
 
             <TextView android:id="@+id/sideSectionTrend" style="@style/TvSidebarSection" android:text="DISCOVERY" />

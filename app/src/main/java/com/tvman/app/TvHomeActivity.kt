@@ -120,8 +120,13 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.sideNavContinue).setOnClickListener { openMainTab(MainActivity.TAB_SEARCH, cineAction = "continue") }
         findViewById<View>(R.id.sideNavMyList).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineAction = "favorites") }
         findViewById<View>(R.id.sideNavChannels).setOnClickListener { openMainTab(MainActivity.TAB_CHANNELS) }
+        findViewById<View>(R.id.sideNavSearchChannels).setOnClickListener { openMainTab(MainActivity.TAB_SEARCH) }
         findViewById<View>(R.id.sideNavMovies).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "movie") }
         findViewById<View>(R.id.sideNavSeries).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "series") }
+        findViewById<View>(R.id.sideNavCineSearch).setOnClickListener {
+            startActivity(Intent(this, CineSearchActivity::class.java))
+            overridePendingTransition(R.anim.ps_enter, R.anim.ps_exit)
+        }
         findViewById<View>(R.id.sideNavPopular).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineMood = "top") }
         findViewById<View>(R.id.sideNavReleases).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "new") }
         findViewById<View>(R.id.sideNavGames).setOnClickListener {

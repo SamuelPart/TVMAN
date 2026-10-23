@@ -84,6 +84,8 @@ class MainActivity : AppCompatActivity() {
     private var selectedLanguage: String = "Todos"
     private var selectedAlphabet: String = "Sin Ordenar" // "Sin Ordenar", "A-Z", "Z-A"
     private var selectedSearchCountry: String = "Todos"
+    private var selectedSearchGroup: String = "Todos"
+    private var selectedSearchLanguage: String = "Todos"
 
     // Cine & Series states
     private lateinit var cineAdapter: CineSearchResultAdapter
@@ -126,6 +128,9 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         updateCineFilterButtons()
         updateParaTiChips()
+        if (binding.bottomNavigation.selectedItemId == R.id.navigation_cine) {
+            binding.root.post { showCinePage() }
+        }
         intent.getStringExtra(EXTRA_SEARCH_QUERY)?.takeIf { it.isNotBlank() }?.let { query ->
             selectedCineType = "all"
             cineMood = null
@@ -180,11 +185,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.navigation_search -> {
                     showTab(View.GONE, View.GONE, View.GONE, View.GONE, View.VISIBLE)
-                    SmartTips.showOnce(this, "search", "💡 Busca canales y películas al instante, con historial incluido")
+                    binding.root.post { binding.tvChannelKeyboard.focusFirstKey() }
                     true
                 }
                 R.id.navigation_cine -> {
                     showTab(View.GONE, View.GONE, View.VISIBLE, View.GONE, View.GONE)
+                    binding.root.post { showCinePage() }
                     SmartTips.showOnce(this, "cine", "💡 El BOT busca los mejores servidores por ti: toca una película y solo disfruta")
                     true
                 }
@@ -214,6 +220,12 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.sideNavChannels).setOnClickListener {
             binding.bottomNavigation.selectedItemId = R.id.navigation_channels
         }
+        findViewById<View>(R.id.sideNavSearchChannels).setOnClickListener {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_search
+        }
+        findViewById<View>(R.id.sideNavCineSearch).setOnClickListener {
+            startActivity(Intent(this, CineSearchActivity::class.java))
+        }
         findViewById<View>(R.id.sideNavMovies).setOnClickListener { showSidebarCine("movie", null) }
         findViewById<View>(R.id.sideNavSeries).setOnClickListener { showSidebarCine("series", null) }
         findViewById<View>(R.id.sideNavPopular).setOnClickListener { showSidebarCine("all", "top") }
@@ -232,11 +244,19 @@ class MainActivity : AppCompatActivity() {
         cineMood = mood
         binding.bottomNavigation.selectedItemId = R.id.navigation_cine
         updateTVMANNav(R.id.navigation_cine)
-        binding.root.post {
-            updateCineFilterButtons()
-            updateParaTiChips()
-            applyCineFilters()
-        }
+        binding.root.post { showCinePage() }
+    }
+
+    private fun showCinePage() {
+        val catalogSelected = selectedCineType != "all"
+        binding.premierScroll.visibility = if (catalogSelected) View.GONE else View.VISIBLE
+        binding.cineCatalogScreen.visibility = if (catalogSelected) View.VISIBLE else View.GONE
+        updateCineFilterButtons()
+        updateParaTiChips()
+        updateCatalogSegments()
+        setDeckMode(false)
+        applyCineFilters()
+        if (catalogSelected) binding.rvCineGrid.requestFocus()
     }
 
     private fun returnToTvHome() {
@@ -297,8 +317,8 @@ class MainActivity : AppCompatActivity() {
         channelsAdapter.gridColumns = 1
         channelsAdapter.tunerMode = true
 
-        // 2. Setup Search Grid in Buscador tab (3 columns)
-        val searchGridLayout = GridLayoutManager(this, 3)
+        // Channel search has its own TV screen and a single-focus channel list.
+        val searchGridLayout = GridLayoutManager(this, 1)
         binding.rvSearchGrid.layoutManager = searchGridLayout
         searchAdapter = ChannelAdapter(
             emptyList(),
@@ -306,15 +326,14 @@ class MainActivity : AppCompatActivity() {
             isFavorite = { FavoritesManager.isFavorite(this, it.url) },
             onFavoriteToggle = { channel ->
                 val added = FavoritesManager.toggleChannel(this, channel)
-                Toast.makeText(this, if (added) "Guardado en Favoritos ⭐" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
-                    }
+                Toast.makeText(this, if (added) "Añadido a Favoritos" else "Quitado de Favoritos", Toast.LENGTH_SHORT).show()
+                refreshTvChannelDirectory()
+            },
+            showAds = false
         )
         binding.rvSearchGrid.adapter = searchAdapter
-        searchAdapter.gridColumns = 3 // 3 columnas → anuncio cada 4 filas (12 canales)
-        searchGridLayout.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int =
-                if (searchAdapter.isAdAt(position)) searchGridLayout.spanCount else 1
-        }
+        searchAdapter.gridColumns = 1
+        searchAdapter.tunerMode = true
 
         // 3. Setup Cine Grid in Cine tab (2 columns for high-end poster aspect ratio)
         val cineGridLayout = GridLayoutManager(this, 2)
@@ -1065,15 +1084,16 @@ class MainActivity : AppCompatActivity() {
         binding.edtSearchTab.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
                 val query = binding.edtSearchTab.text.toString().trim()
-                if (query.isNotEmpty()) {
-                    addSearchQuery(CHANNELS_HISTORY_KEY, query)
-                }
+                if (query.isNotEmpty()) addSearchQuery(CHANNELS_HISTORY_KEY, query)
                 binding.layoutChannelsSearchHistory.visibility = View.GONE
                 hideKeyboard()
                 true
-            } else {
-                false
-            }
+            } else false
+        }
+        binding.tvChannelKeyboard.bindInput(binding.edtSearchTab) {
+            val query = binding.edtSearchTab.text.toString().trim()
+            if (query.isNotEmpty()) addSearchQuery(CHANNELS_HISTORY_KEY, query)
+            binding.layoutChannelsSearchHistory.visibility = View.GONE
         }
 
         // Settings: cada opción abre su propia pantalla
@@ -1251,15 +1271,9 @@ class MainActivity : AppCompatActivity() {
             applyCineFilters()
         }
 
-        // Lupa: muestra/oculta la pildora de busqueda del cine
+        // La búsqueda de películas y series vive en su pantalla independiente.
         binding.btnCineSearchToggle.setOnClickListener {
-            val card = binding.cardCineSearch
-            if (card.visibility == View.VISIBLE) {
-                card.visibility = View.GONE
-            } else {
-                card.visibility = View.VISIBLE
-                binding.edtCineSearch.requestFocus()
-            }
+            startActivity(Intent(this, CineSearchActivity::class.java))
         }
         binding.btnCineSearchToggle.springPress()
 
@@ -1645,22 +1659,61 @@ class MainActivity : AppCompatActivity() {
     /** Parental control: select whole channel categories to hide when active. */
     private fun showSearchFilterDialog() {
         showIosOptionPopup(
-            "Opciones de busqueda",
-            "Filtra los resultados por pais",
+            "Filtros de canales",
+            "Elige una opción con la cruceta y confirma con OK.",
             listOf(
-                R.drawable.ic_ios_globe to "Filtrar por pais",
-                R.drawable.ic_ios_refresh to "Restablecer filtro de pais"
+                R.drawable.ic_ios_tv to "Grupo o categoría",
+                R.drawable.ic_ios_globe to "País",
+                R.drawable.ic_ios_message to "Idioma",
+                R.drawable.ic_ios_refresh to "Restablecer filtros"
             )
         ) { which ->
             when (which) {
-                0 -> showSearchCountryFilterSelector()
-                1 -> {
+                0 -> showSearchGroupFilterSelector()
+                1 -> showSearchCountryFilterSelector()
+                2 -> showSearchLanguageFilterSelector()
+                3 -> {
+                    selectedSearchGroup = "Todos"
                     selectedSearchCountry = "Todos"
+                    selectedSearchLanguage = "Todos"
                     filterSearchTabUnified()
-                    Toast.makeText(this, "Filtro de búsqueda restablecido", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    private fun showSearchGroupFilterSelector() {
+        val options = categories.filter { it.isNotBlank() }.distinct().toTypedArray()
+        if (options.isEmpty()) {
+            Toast.makeText(this, "No hay grupos de canales cargados.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Grupo de canales")
+            .setSingleChoiceItems(options, options.indexOf(selectedSearchGroup).coerceAtLeast(0)) { dialog, which ->
+                selectedSearchGroup = options[which]
+                dialog.dismiss()
+                filterSearchTabUnified()
+            }
+            .setNegativeButton("Cerrar", null)
+            .show()
+    }
+
+    private fun showSearchLanguageFilterSelector() {
+        val options = languages.filter { it.isNotBlank() }.distinct().toTypedArray()
+        if (options.isEmpty()) {
+            Toast.makeText(this, "No hay idiomas cargados.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Idioma del canal")
+            .setSingleChoiceItems(options, options.indexOf(selectedSearchLanguage).coerceAtLeast(0)) { dialog, which ->
+                selectedSearchLanguage = options[which]
+                dialog.dismiss()
+                filterSearchTabUnified()
+            }
+            .setNegativeButton("Cerrar", null)
+            .show()
     }
 
     private fun showSearchCountryFilterSelector() {
@@ -1767,6 +1820,8 @@ class MainActivity : AppCompatActivity() {
                         selectedCountry = "Todos"
                         selectedLanguage = "Todos"
                         selectedSearchCountry = "Todos"
+                        selectedSearchGroup = "Todos"
+                        selectedSearchLanguage = "Todos"
                         selectedAlphabet = "Sin Ordenar"
                         
                         channelSectionInitialized = false
@@ -1860,6 +1915,8 @@ class MainActivity : AppCompatActivity() {
                     selectedCountry = "Todos"
                     selectedLanguage = "Todos"
                     selectedSearchCountry = "Todos"
+                    selectedSearchGroup = "Todos"
+                    selectedSearchLanguage = "Todos"
                     selectedAlphabet = "Sin Ordenar"
                     
                     // Refresh the TV directory and the separate search grid.
@@ -1956,8 +2013,10 @@ class MainActivity : AppCompatActivity() {
         val query = binding.edtSearchTab.text.toString().trim()
         var filtered = allChannels.filter {
             val matchesQuery = query.isEmpty() || it.name.contains(query, ignoreCase = true) || (it.group != null && it.group.contains(query, ignoreCase = true))
+            val matchesGroup = selectedSearchGroup == "Todos" || it.group == selectedSearchGroup
             val matchesCountry = selectedSearchCountry == "Todos" || it.country == selectedSearchCountry
-            matchesQuery && matchesCountry
+            val matchesLanguage = selectedSearchLanguage == "Todos" || it.language == selectedSearchLanguage
+            matchesQuery && matchesGroup && matchesCountry && matchesLanguage
         }
 
         if (isParentalActive) {
@@ -1965,10 +2024,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         searchAdapter.updateList(filtered)
-        if (query.isEmpty() && selectedSearchCountry == "Todos") {
-            binding.txtSearchCount.text = "Mostrando todos: ${allChannels.size} canales"
-        } else {
-            binding.txtSearchCount.text = "Encontrados: ${filtered.size} de ${allChannels.size} (Filtro: $selectedSearchCountry)"
+        val activeSearchFilters = listOfNotNull(
+            selectedSearchGroup.takeUnless { it == "Todos" },
+            selectedSearchCountry.takeUnless { it == "Todos" },
+            selectedSearchLanguage.takeUnless { it == "Todos" }
+        )
+        binding.txtSearchCount.text = when {
+            query.isEmpty() && activeSearchFilters.isEmpty() -> "${allChannels.size} canales · escribe para filtrar"
+            activeSearchFilters.isEmpty() -> "${filtered.size} canales encontrados"
+            else -> "${filtered.size} resultados · ${activeSearchFilters.joinToString(" · ")}"
         }
         
         // Trigger the Spiderman overlay if they search for Spiderman
@@ -2144,6 +2208,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateCineFilterButtons() {
+        binding.txtCineCatalogTitle.text = when (selectedCineType) {
+            "movie" -> "Películas"
+            "series" -> "Series"
+            "new" -> "Novedades"
+            else -> "Catálogo"
+        }
         val orangeColor = AccentManager.color(this)
         val grayColor = android.graphics.Color.parseColor("#0F2144")
         
@@ -2438,7 +2508,7 @@ class MainActivity : AppCompatActivity() {
         val selectedSidebarId = when (activeId) {
             R.id.navigation_home -> R.id.sideNavHome
             R.id.navigation_channels -> R.id.sideNavChannels
-            R.id.navigation_search -> View.NO_ID
+            R.id.navigation_search -> R.id.sideNavSearchChannels
             R.id.navigation_cine -> when {
                 cineMood == "top" -> R.id.sideNavPopular
                 selectedCineType == "new" -> R.id.sideNavReleases
@@ -2450,8 +2520,9 @@ class MainActivity : AppCompatActivity() {
             else -> View.NO_ID
         }
         listOf(R.id.sideNavHome, R.id.sideNavContinue, R.id.sideNavMyList, R.id.sideNavChannels,
-            R.id.sideNavSeries, R.id.sideNavMovies, R.id.sideNavGames, R.id.sideNavReleases,
-            R.id.sideNavPopular, R.id.sideNavSettings, R.id.sideNavExit).forEach { id ->
+            R.id.sideNavSearchChannels, R.id.sideNavMovies, R.id.sideNavSeries, R.id.sideNavCineSearch,
+            R.id.sideNavGames, R.id.sideNavReleases, R.id.sideNavPopular, R.id.sideNavSettings,
+            R.id.sideNavExit).forEach { id ->
             findViewById<View>(id)?.isSelected = id == selectedSidebarId
         }
     }
@@ -2778,7 +2849,6 @@ class MainActivity : AppCompatActivity() {
     private fun setupNativeAds() {
         // Inicio: tarjeta inline (ya está en el layout)
         // El directorio de canales mantiene navegación limpia, sin anuncios.
-        binding.adSlotSearch.visibility = View.GONE
         binding.adSlotSettings.visibility = View.GONE
         binding.adSlotCine.visibility = View.GONE
     }

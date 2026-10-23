@@ -1084,142 +1084,176 @@
                     android:contentDescription="Abrir ajustes para cargar una lista M3U" />
             </LinearLayout>
 
-            <!-- Search Content (Loaded) -->
             <LinearLayout
                 android:id="@+id/layoutSearchContent"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:paddingStart="40dp"
+                android:paddingTop="32dp"
+                android:paddingEnd="40dp"
+                android:paddingBottom="28dp"
                 android:visibility="gone"
-                tools:visibility="gone">
+                tools:visibility="visible">
 
-                <!-- Search Input area -->
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="16dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="8dp"
-                    android:gravity="center_vertical">
-
-                    <!-- History Toggle Button -->
-                    <ImageButton
-                        android:id="@+id/btnSearchHistoryTab"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_ios_clock"
-                        android:contentDescription="Historial"
-                        android:layout_marginEnd="4dp"
-                        app:tint="@color/ios_blue" />
-
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.05"
+                    android:orientation="vertical"
+                    android:paddingEnd="28dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="BUSCAR CANALES"
+                        android:textColor="@color/tv_accent"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.15" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="18dp"
+                        android:text="Encuentra tu señal"
+                        android:textColor="@color/tv_text_primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
                     <EditText
                         android:id="@+id/edtSearchTab"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_chip_ios"
-                        android:hint="Escribe para buscar canales..."
-                        android:textColorHint="#66FFFFFF"
-                        android:textColor="#FFFFFF"
-                        android:textSize="15sp"
-                        android:padding="12dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="58dp"
+                        android:background="@drawable/bg_tv_player_control"
+                        android:contentDescription="Buscar solo canales IPTV"
+                        android:hint="Nombre del canal..."
+                        android:importantForAutofill="no"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
                         android:maxLines="1"
-                        android:inputType="text" />
-
-                    <!-- Filter Icon Button in Search -->
-                    <ImageButton
-                        android:id="@+id/btnSearchFilter"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_ios_filter"
-                        android:contentDescription="Filtrar Búsqueda"
-                        android:layout_marginStart="8dp"
-                        app:tint="@color/ios_blue" />
-
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:showSoftInputOnFocus="false"
+                        android:textColor="@color/tv_text_primary"
+                        android:textColorHint="@color/tv_text_muted"
+                        android:textSize="18sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="13dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Usa la cruceta y confirma cada tecla con OK"
+                        android:textColor="@color/tv_text_muted"
+                        android:textSize="12sp" />
+                    <com.tvman.app.TvRemoteKeyboardView
+                        android:id="@+id/tvChannelKeyboard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
-                <!-- Anuncio nativo (compacto) -->
-                <FrameLayout
-                    android:id="@+id/adSlotSearch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="12dp"
-                    android:paddingRight="12dp"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp" />
-
-                <!-- Channels Search History panel -->
                 <LinearLayout
-                    android:id="@+id/layoutChannelsSearchHistory"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="24dp"
+                    android:layout_weight="0.95"
+                    android:background="@drawable/bg_tv_playback_panel"
                     android:orientation="vertical"
-                    android:paddingHorizontal="16dp"
-                    android:layout_marginTop="8dp"
-                    android:visibility="gone">
-
+                    android:padding="22dp">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
-
+                        android:orientation="horizontal">
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Búsquedas Recientes"
-                            android:textColor="@color/ios_gray"
-                            android:textSize="13sp"
+                            android:text="Canales encontrados"
+                            android:textColor="@color/tv_text_primary"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/btnChannelsClearAll"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ELIMINAR TODO"
-                            android:textColor="#FF6E6E"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="4dp"
-                            android:background="?android:attr/selectableItemBackground" />
-
+                        <ImageButton
+                            android:id="@+id/btnSearchHistoryTab"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_tv_player_control"
+                            android:contentDescription="Ver búsquedas recientes de canales"
+                            android:focusable="true"
+                            android:foreground="@drawable/tv_focus_ring"
+                            android:padding="13dp"
+                            android:src="@drawable/ic_ios_clock"
+                            app:tint="@color/tv_accent" />
+                        <ImageButton
+                            android:id="@+id/btnSearchFilter"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_tv_player_control"
+                            android:contentDescription="Filtrar resultados de canales"
+                            android:focusable="true"
+                            android:foreground="@drawable/tv_focus_ring"
+                            android:padding="13dp"
+                            android:src="@drawable/ic_ios_filter"
+                            app:tint="@color/tv_accent" />
                     </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvChannelsSearchHistory"
+                    <TextView
+                        android:id="@+id/txtSearchCount"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
-
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Escribe un nombre para buscar en tu lista"
+                        android:textColor="@color/tv_text_muted"
+                        android:textSize="13sp" />
+                    <LinearLayout
+                        android:id="@+id/layoutChannelsSearchHistory"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Búsquedas recientes"
+                                android:textColor="@color/tv_text_secondary"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/btnChannelsClearAll"
+                                android:layout_width="wrap_content"
+                                android:layout_height="48dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="@drawable/tv_focus_ring"
+                                android:gravity="center"
+                                android:paddingHorizontal="12dp"
+                                android:text="Limpiar"
+                                android:textColor="@color/tv_accent"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvChannelsSearchHistory"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:nestedScrollingEnabled="true"
+                            android:scrollbars="none" />
+                    </LinearLayout>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSearchGrid"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:descendantFocusability="afterDescendants"
+                        android:scrollbars="none"
+                        tools:listitem="@layout/item_channel_tuner" />
                 </LinearLayout>
-
-                <!-- Status matching counts -->
-                <TextView
-                    android:id="@+id/txtSearchCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="Escribe algo para filtrar..."
-                    android:textColor="@color/ios_blue"
-                    android:textSize="13sp"
-                    android:textStyle="italic" />
-
-                <!-- Filtered grid of channels -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvSearchGrid"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:layout_marginHorizontal="8dp"
-                    android:layout_marginTop="8dp"
-                    tools:listitem="@layout/item_channel" />
-
             </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -1872,12 +1906,17 @@
 
 
             <LinearLayout
+                android:id="@+id/cineCatalogScreen"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:paddingStart="36dp"
+                android:paddingTop="28dp"
+                android:paddingEnd="36dp"
+                android:paddingBottom="24dp"
+                android:visibility="gone">
 
-                <!-- Header "Para ti, Cine" (chico, aireado) -->
+                <!-- Catálogo de películas o series, orientado a control remoto -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -1895,11 +1934,12 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/txtCineCatalogTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🧠 Para ti, Cine"
-                            android:textColor="#FFFFFF"
-                            android:textSize="17sp"
+                            android:text="Películas"
+                            android:textColor="@color/tv_text_primary"
+                            android:textSize="26sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>

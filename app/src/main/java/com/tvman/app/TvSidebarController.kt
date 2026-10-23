@@ -24,7 +24,8 @@ object TvSidebarController {
 
     private val rowIds = intArrayOf(
         R.id.sideNavHome, R.id.sideNavContinue, R.id.sideNavMyList, R.id.sideNavChannels,
-        R.id.sideNavSeries, R.id.sideNavMovies, R.id.sideNavGames, R.id.sideNavReleases,
+        R.id.sideNavSearchChannels, R.id.sideNavMovies, R.id.sideNavSeries, R.id.sideNavCineSearch,
+        R.id.sideNavGames, R.id.sideNavReleases,
         R.id.sideNavPopular, R.id.sideNavSettings, R.id.sideNavExit
     )
 

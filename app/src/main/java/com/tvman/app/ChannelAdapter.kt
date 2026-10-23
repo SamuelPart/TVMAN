@@ -86,7 +86,6 @@ class ChannelAdapter(
             binding.viewChannelLiveDot.alpha = 1f
             binding.root.enableTVFocus()
             binding.root.contentDescription = "Canal ${position + 1}: ${channel.name}. ${meta.ifBlank { "Canal en vivo" }}. Pulsa OK para sintonizar."
-            binding.root.nextFocusLeftId = R.id.rvChannelCategories
             binding.root.setOnClickListener { onChannelClick(channel) }
         }
     }

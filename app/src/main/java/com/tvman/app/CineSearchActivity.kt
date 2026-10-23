@@ -94,6 +94,15 @@ class CineSearchActivity : AppCompatActivity() {
         txtHistoryEmpty = findViewById(R.id.txtHistoryEmpty)
         txtResultsEmpty = findViewById(R.id.txtResultsEmpty)
         btnClear = findViewById(R.id.btnCineSearchClear)
+        val tvKeyboard = findViewById<TvRemoteKeyboardView>(R.id.tvCineSearchKeyboard)
+        tvKeyboard.bindInput(edtInput) {
+            val query = edtInput.text.toString().trim()
+            if (query.isNotEmpty()) {
+                submitSearch(query)
+                SearchHistoryStore.add(this, query)
+                refreshHistory()
+            }
+        }
 
         rvHistory.layoutManager = LinearLayoutManager(this)
         historyAdapter = SearchHistoryRowAdapter(
@@ -173,11 +182,8 @@ class CineSearchActivity : AppCompatActivity() {
             } else false
         }
 
-        NativeAds.attach(this, findViewById(R.id.adSlotSearch), NativeAds.VARIANT_MEDIA)
-
-        // Teclado visible al entrar
-        edtInput.requestFocus()
-        window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+        // Teclado remoto propio: no abrir el teclado táctil del sistema en TV.
+        tvKeyboard.post { tvKeyboard.focusFirstKey() }
 
         refreshHistory()
 
