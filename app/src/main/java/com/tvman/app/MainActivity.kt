@@ -110,7 +110,6 @@ class MainActivity : AppCompatActivity() {
             TAB_SETTINGS -> binding.bottomNavigation.selectedItemId = R.id.navigation_settings
         }
         setupRecyclerViews()
-        configurePortraitChannelLayout()
         incrementOpenCounter()
         setupHomeBanner()
         setupHomeNewSection()
@@ -306,20 +305,8 @@ class MainActivity : AppCompatActivity() {
         })
 
         binding.cineCatalogScreen.visibility = View.GONE
-    }
 
-    private fun configurePortraitChannelLayout() {
-        if (resources.configuration.orientation != android.content.res.Configuration.ORIENTATION_PORTRAIT) return
-        binding.channelsBody.orientation = LinearLayout.VERTICAL
-        binding.channelCategoryRail.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            dp(248)
-        )
-        binding.channelsResultPanel.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            0,
-            1f
-        ).apply { topMargin = dp(12) }
+
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
