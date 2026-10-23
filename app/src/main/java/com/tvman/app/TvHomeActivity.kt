@@ -123,6 +123,7 @@ class TvHomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.sideNavMovies).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "movie") }
         findViewById<View>(R.id.sideNavSeries).setOnClickListener { openMainTab(MainActivity.TAB_CINE, cineType = "series") }
         findViewById<View>(R.id.sideNavSettings).setOnClickListener { openMainTab(MainActivity.TAB_SETTINGS) }
+        configurePortraitLayout()
         val openWatchHistory = { startActivity(Intent(this, WatchHistoryActivity::class.java)) }
         continueTitle.setOnClickListener { openWatchHistory() }
         findViewById<View>(R.id.tvContinueAll).setOnClickListener { openWatchHistory() }
@@ -134,6 +135,32 @@ class TvHomeActivity : AppCompatActivity() {
         addButton.setOnClickListener { toggleFeaturedFavorite() }
         findViewById<View>(R.id.tvPostersHint).setOnClickListener { openMainTab(MainActivity.TAB_CINE) }
         loadCatalog()
+    }
+
+    private fun configurePortraitLayout() {
+        if (resources.configuration.orientation != android.content.res.Configuration.ORIENTATION_PORTRAIT) return
+        val scroll = findViewById<android.widget.ScrollView>(R.id.tvContentScroll)
+        scroll.setPaddingRelative(scroll.paddingStart, scroll.paddingTop, dp(18), scroll.paddingBottom)
+        findViewById<View>(R.id.tvHomeTopActions).layoutParams =
+            (findViewById<View>(R.id.tvHomeTopActions).layoutParams as android.widget.FrameLayout.LayoutParams).apply {
+                topMargin = dp(10)
+                marginEnd = dp(14)
+            }
+        val actions = findViewById<LinearLayout>(R.id.tvHeroActions)
+        actions.orientation = LinearLayout.VERTICAL
+        actions.gravity = Gravity.START
+        val play = findViewById<View>(R.id.tvHeroPlay)
+        play.layoutParams = (play.layoutParams as LinearLayout.LayoutParams).apply {
+            width = LinearLayout.LayoutParams.MATCH_PARENT
+            height = dp(44)
+            marginStart = 0
+        }
+        addButton.layoutParams = (addButton.layoutParams as LinearLayout.LayoutParams).apply {
+            width = LinearLayout.LayoutParams.MATCH_PARENT
+            height = dp(44)
+            marginStart = 0
+            topMargin = dp(8)
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

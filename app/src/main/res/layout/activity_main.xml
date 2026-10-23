@@ -899,11 +899,13 @@
                     android:background="#263448" />
 
                 <LinearLayout
+                    android:id="@+id/channelsBody"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:orientation="horizontal">
                     <LinearLayout
+                        android:id="@+id/channelCategoryRail"
                         android:layout_width="224dp"
                         android:layout_height="match_parent"
                         android:background="#0D141E"
@@ -979,6 +981,7 @@
                         </LinearLayout>
                     </LinearLayout>
                     <FrameLayout
+                        android:id="@+id/channelsResultPanel"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_marginStart="18dp"

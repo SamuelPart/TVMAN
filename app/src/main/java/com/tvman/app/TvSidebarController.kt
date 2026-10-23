@@ -9,8 +9,6 @@ import android.widget.TextView
 
 /** Fixed, always-labeled TV navigation rail matching the approved screen plan. */
 object TvSidebarController {
-    private const val SIDEBAR_WIDTH_DP = 150
-    private const val CONTENT_INSET_DP = 166
 
     private val itemIds = intArrayOf(
         R.id.sideNavHome,
@@ -22,13 +20,21 @@ object TvSidebarController {
     )
 
     fun install(activity: Activity, sidebar: View, contentScroll: View? = null) {
+        val portrait = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
+        val sidebarWidth = if (portrait) 112 else 150
+        val contentInset = if (portrait) 124 else 166
         val params = sidebar.layoutParams
-        params.width = dp(activity, SIDEBAR_WIDTH_DP)
+        params.width = dp(activity, sidebarWidth)
         sidebar.layoutParams = params
-        sidebar.setPadding(dp(activity, 10), dp(activity, 20), dp(activity, 10), dp(activity, 16))
+        sidebar.setPadding(dp(activity, if (portrait) 5 else 10), dp(activity, 20), dp(activity, if (portrait) 5 else 10), dp(activity, 16))
 
         itemIds.forEach { id ->
             sidebar.findViewById<View>(id)?.apply {
+                if (portrait && this is TextView) {
+                    textSize = 11f
+                    compoundDrawablePadding = dp(activity, 6)
+                    setPaddingRelative(dp(activity, 6), paddingTop, dp(activity, 4), paddingBottom)
+                }
                 isFocusable = true
                 isClickable = true
                 setOnFocusChangeListener { view, hasFocus ->
@@ -46,7 +52,7 @@ object TvSidebarController {
 
         contentScroll?.let { scroll ->
             scroll.setPaddingRelative(
-                dp(activity, CONTENT_INSET_DP),
+                dp(activity, contentInset),
                 scroll.paddingTop,
                 scroll.paddingEnd,
                 scroll.paddingBottom
